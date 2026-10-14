@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <!-- Top Right Cap (Google Red) -->
-  <path d="M18 5 C18 2.79 19.79 1 22 1 C24.21 1 26 2.79 26 5 V9 H18 V5 Z" fill="#EA4335"/>
+  <path d="M18 5 C18 2.79 19.79 1 22 1 C24.21 1 26 2.79 26 5 V9 H18 V5 Z" fill="#4285F4"/>
   
   <!-- Main Vertical Stem (Google Blue) -->
   <rect x="18" y="9" width="8" height="12" fill="#4285F4"/>
   
   <!-- Bottom Curve / Hook (Google Green) -->
-  <path d="M26 21 A10 10 0 0 1 6 21 H14 A2 2 0 0 0 18 21 H26 Z" fill="#34A853"/>
+  <path d="M26 21 A10 10 0 0 1 6 21 H14 A2 2 0 0 0 18 21 H26 Z" fill="#4285F4"/>
   
   <!-- Left Accent Cap (Google Yellow) -->
-  <path d="M6 19 C6 16.79 7.79 15 10 15 C12.21 15 14 16.79 14 19 V21 H6 V19 Z" fill="#FBBC04"/>
+  <path d="M6 19 C6 16.79 7.79 15 10 15 C12.21 15 14 16.79 14 19 V21 H6 V19 Z" fill="#4285F4"/>
 </svg>
