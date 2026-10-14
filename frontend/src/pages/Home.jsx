@@ -1,397 +1,345 @@
 import { Link } from "react-router-dom";
 
-function LinkMark({ className = "" }) {
+// --- TRUST METRICS SECTION ---
+function TrustMetricsSection() {
+  const metrics = [
+    {
+      title: "4.9 out of 5",
+      description: "Average Rating from 4,000+ reviews",
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+      ),
+      accentColor: "text-[#fbbc04]",
+      bgColor: "bg-[#fef7e0]",
+    },
+    {
+      title: "200,000+",
+      description: "Businesses Served",
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      ),
+      accentColor: "text-[#1a73e8]",
+      bgColor: "bg-[#e8f0fe]",
+    },
+    {
+      title: "1,000,000+",
+      description: "Backlinks Built",
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      ),
+      accentColor: "text-[#1e8e3e]",
+      bgColor: "bg-[#e6f4ea]",
+    },
+    {
+      title: "Managed or DIY",
+      description: "Fully custom solutions",
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
+      ),
+      accentColor: "text-[#9334e6]",
+      bgColor: "bg-[#f3e8fd]",
+    },
+  ];
+
   return (
-    <svg
-      className={className}
-      viewBox="0 0 32 32"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="m12.1 19.9-2.3 2.3a5.25 5.25 0 0 1-7.4-7.4l5.3-5.3a5.25 5.25 0 0 1 7.4 0m4.8 2.6 2.3-2.3a5.25 5.25 0 1 1 7.4 7.4l-5.3 5.3a5.25 5.25 0 0 1-7.4 0m-6.1-2.5 9.2-9.2"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function ArtworkNode({ className, iconClassName, children, detail, icon }) {
-  return (
-    <div
-      className={`absolute z-10 flex min-h-[72px] min-w-[208px] items-center gap-3 rounded-[16px] border border-gray-200/80 bg-white/95 px-4 py-3.5 shadow-[0_10px_30px_rgba(0,0,0,0.06)] backdrop-blur-md max-[1050px]:min-h-[65px] max-[1050px]:min-w-[184px] max-[1050px]:gap-[9px] max-[1050px]:p-[10px] max-[480px]:min-h-[50px] max-[480px]:min-w-0 max-[480px]:gap-[7px] max-[480px]:rounded-[12px] max-[480px]:p-[7px] ${className}`}
-    >
-      <span
-        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl max-[1050px]:h-9 max-[1050px]:w-9 max-[480px]:h-[30px] max-[480px]:w-[30px] max-[480px]:rounded-[9px] ${iconClassName}`}
-      >
-        {icon}
-      </span>
-      <span className="flex flex-col gap-1 whitespace-nowrap">
-        <strong className="text-[13px] font-semibold text-[#202124] tracking-tight max-[1050px]:text-[11px] max-[480px]:text-[9px]">
-          {children}
-        </strong>
-        <small className="text-[11px] text-[#5f6368] font-normal max-[1050px]:text-[9px] max-[480px]:text-[8px]">
-          {detail}
-        </small>
-      </span>
-    </div>
-  );
-}
-
-function AuthorityArtwork() {
-  return (
-    <div
-      className="relative isolate aspect-[560/520] w-full max-w-[590px] justify-self-end max-[1100px]:mx-auto max-[1100px]:max-w-[560px]"
-      aria-label="Illustration of connected websites"
-    >
-      <div className="absolute -inset-[9%] -z-20 rounded-full bg-[radial-gradient(circle,rgba(232,240,254,0.9),rgba(248,249,250,0.3)_60%,transparent_72%)]" />
-      <div className="absolute left-1/2 top-1/2 -z-10 aspect-square w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#1a73e8]/[0.1]" />
-      <div className="absolute left-1/2 top-1/2 -z-10 aspect-square w-[55%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-[#1a73e8]/[0.15]" />
-
-      <svg
-        className="absolute inset-0 h-full w-full overflow-visible"
-        viewBox="0 0 560 520"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M280 260 118 133M280 260l168-125M280 260l175 144M280 260 110 397"
-          stroke="rgba(26,115,232,0.2)"
-          strokeWidth="1.5"
-          strokeDasharray="6 6"
-        />
-        <g fill="white" stroke="#93c5fd" strokeWidth="2">
-          <circle cx="280" cy="260" r="5" />
-          <circle cx="118" cy="133" r="5" />
-          <circle cx="448" cy="135" r="5" />
-          <circle cx="455" cy="404" r="5" />
-          <circle cx="110" cy="397" r="5" />
-        </g>
-      </svg>
-
-      <div className="absolute left-1/2 top-1/2 flex h-[180px] w-[180px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-3 rounded-full border border-white bg-[linear-gradient(145deg,#ffffff,#f8f9fa)] shadow-[0_20px_50px_rgba(26,115,232,0.12),inset_0_0_0_8px_rgba(232,240,254,0.6)] max-[480px]:h-[130px] max-[480px]:w-[130px]">
-        <span className="absolute -inset-4 -z-10 rounded-full bg-[#1a73e8]/[0.08] blur-xl" />
-        <span className="grid h-[68px] w-[68px] place-items-center rounded-2xl bg-[#1a73e8] text-white shadow-[0_8px_20px_rgba(26,115,232,0.3)] max-[480px]:h-[50px] max-[480px]:w-[50px]">
-          <LinkMark className="h-8 w-8 text-white" />
-        </span>
-        <span className="text-[10px] font-bold tracking-[1.5px] text-[#5f6368]">
-          JASA BACKLINKS
-        </span>
-      </div>
-
-      <ArtworkNode
-        className="left-0 top-[12%]"
-        iconClassName="bg-[#e8f0fe] text-[#1a73e8]"
-        detail="Contextual links"
-        icon={
-          <svg
-            className="h-5 w-5 stroke-current stroke-[1.8]"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path d="M6 4.5h8l4 4v11H6zM14 4.5v4h4M9 12h6M9 15.5h6" />
-          </svg>
-        }
-      >
-        Relevant content
-      </ArtworkNode>
-
-      <ArtworkNode
-        className="right-0 top-[12%]"
-        iconClassName="bg-[#fef7e0] text-[#b06000]"
-        detail="Verified metrics"
-        icon={
-          <svg
-            className="h-5 w-5 stroke-current stroke-[1.8]"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path d="m3.5 9 8.5-4.5L20.5 9 12 13.5zM6.5 10.5v5c3.4 2.5 7.6 2.5 11 0v-5M20.5 9v6" />
-          </svg>
-        }
-      >
-        Trusted sources
-      </ArtworkNode>
-
-      <ArtworkNode
-        className="bottom-[10%] left-0"
-        iconClassName="bg-[#e6f4ea] text-[#188038]"
-        detail="Targeted reach"
-        icon={
-          <svg
-            className="h-5 w-5 stroke-current stroke-[1.8]"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <circle cx="12" cy="12" r="8.5" />
-            <path d="M3.8 12h16.4M12 3.5c2.2 2.3 3.2 5.1 3.2 8.5s-1 6.2-3.2 8.5c-2.2-2.3-3.2-5.1-3.2-8.5S9.8 5.8 12 3.5Z" />
-          </svg>
-        }
-      >
-        Built for growth
-      </ArtworkNode>
-
-      <ArtworkNode
-        className="bottom-[10%] right-0"
-        iconClassName="bg-[#f0ebfa] text-[#7c3aed]"
-        detail="Permanent placements"
-        icon={
-          <svg
-            className="h-5 w-5 stroke-current stroke-[1.8]"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path d="m12 3 2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2zM19 16v5M16.5 18.5h5" />
-          </svg>
-        }
-      >
-        Lasting authority
-      </ArtworkNode>
-    </div>
-  );
-}
-
-const audiences = [
-  {
-    title: "Local businesses",
-    description:
-      "Build local authority and help nearby customers find the services you offer.",
-    icon: "store",
-    accent: "text-[#1a73e8]",
-    span: "col-span-6 md:col-span-3 lg:col-span-2",
-  },
-  {
-    title: "E-commerce brands",
-    description:
-      "Earn relevant mentions that support product discovery and category growth.",
-    icon: "cart",
-    accent: "text-[#1a73e8]",
-    span: "col-span-6 md:col-span-3 lg:col-span-2",
-  },
-  {
-    title: "Agencies & consultants",
-    description:
-      "Extend your SEO offering with dependable link-building support for clients.",
-    icon: "agency",
-    accent: "text-[#1a73e8]",
-    span: "col-span-6 md:col-span-3 lg:col-span-2",
-  },
-  {
-    title: "National brands",
-    description:
-      "Strengthen authority across competitive markets with a strategy built to scale.",
-    icon: "brand",
-    accent: "text-[#1a73e8]",
-    span: "col-span-6 md:col-span-3 lg:col-span-3",
-  },
-  {
-    title: "Franchises & multi-location",
-    description:
-      "Support consistent brand authority while staying relevant to each location.",
-    icon: "locations",
-    accent: "text-[#1a73e8]",
-    span: "col-span-6 md:col-span-3 lg:col-span-3",
-  },
-];
-
-function AudienceIcon({ name }) {
-  const icons = {
-    store: (
-      <path d="M4 10.5V20h16v-9.5M3 9l2-5h14l2 5M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6" />
-    ),
-    cart: (
-      <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 1.9-1.4L21 8H6M10 20a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8zm7 0a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8z" />
-    ),
-    agency: (
-      <path d="M20 7v5h-5M4 17v-5h5M6.1 9a7 7 0 0 1 11.7-2L20 9M4 15l2.2 2a7 7 0 0 0 11.7-2" />
-    ),
-    brand: (
-      <path d="M4 20V5h11v15M15 10h5v10M7 8h2M11 8h1M7 12h2M11 12h1M7 16h2M11 16h1M17 14h1M17 17h1M2 20h20" />
-    ),
-    locations: (
-      <path d="M3 20V9l5-4v15M8 20V4l7-2v18M15 20V9l6-3v14M2 20h22M5 11h1M5 14h1M11 7h1M11 11h1M11 15h1M18 12h1M18 16h1" />
-    ),
-  };
-  return (
-    <svg
-      className="h-6 w-6 stroke-current stroke-[1.7]"
-      viewBox="0 0 24 24"
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {icons[name]}
-    </svg>
-  );
-}
-
-function AudienceSection() {
-  return (
-    <section className="relative mx-auto my-14 w-[calc(100%-48px)] max-w-[1360px] overflow-hidden rounded-[28px] border border-[#e8eaed] bg-[#f8f9fa] px-10 py-14 text-[#202124]">
-      <div className="relative max-w-[700px] mb-10">
-        <span className="mb-3 inline-flex items-center gap-2 text-xs font-bold tracking-[1.2px] text-[#1a73e8] uppercase">
-          <span className="h-2 w-2 rounded-full bg-[#1a73e8]" />
-          Who We Help
-        </span>
-        <h2 className="text-[36px] font-normal leading-[1.2] tracking-tight text-[#202124]">
-          Smarter link building for every kind of business
-        </h2>
-        <p className="mt-3 text-[16px] leading-[1.6] text-[#5f6368]">
-          From local teams to national brands and agencies, find a thoughtful
-          backlink strategy shaped around your goals.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-6 gap-5">
-        {audiences.map((audience) => (
-          <article
-            key={audience.title}
-            className={`col-span-6 flex flex-col items-start rounded-2xl border border-[#dadce0] bg-white p-7 shadow-sm transition duration-200 hover:border-[#1a73e8] hover:shadow-md ${audience.span}`}
-          >
-            <span className="mb-4 grid h-12 w-12 place-items-center rounded-xl bg-[#e8f0fe] text-[#1a73e8]">
-              <AudienceIcon name={audience.icon} />
-            </span>
-            <h3 className="mb-2 text-[18px] font-medium text-[#202124]">
-              {audience.title}
-            </h3>
-            <p className="m-0 text-[14px] leading-[1.6] text-[#5f6368]">
-              {audience.description}
-            </p>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-const trustHighlights = [
-  {
-    title: "Relevant by design",
-    description:
-      "Prioritize websites and placements that make sense for your niche.",
-  },
-  {
-    title: "Quality over volume",
-    description:
-      "Focus on thoughtful, contextual backlinks instead of chasing numbers.",
-  },
-  {
-    title: "Built around your goals",
-    description:
-      "Shape a link-building approach around your market and audience priorities.",
-  },
-  {
-    title: "Flexible support",
-    description:
-      "Get focused placement support or build a longer-term campaign together.",
-  },
-];
-
-function TrustSection() {
-  return (
-    <section className="relative px-6 py-20 bg-white">
-      <div className="mx-auto max-w-[1280px]">
-        <div className="mx-auto mb-12 max-w-[700px] text-center">
-          <span className="mb-3 inline-flex items-center gap-2 text-xs font-bold tracking-[1.2px] text-[#1a73e8] uppercase">
-            <span className="h-2 w-2 rounded-full bg-[#1a73e8]" />
-            The Jasa Approach
-          </span>
-          <h2 className="text-[38px] font-normal leading-[1.2] tracking-tight text-[#202124]">
-            Trusted by businesses. Built to grow with you.
+    <section className="relative w-full bg-white py-24 lg:py-32 px-4 sm:px-6 border-t border-[#e8eaed]">
+      <div className="max-w-[1200px] mx-auto text-center">
+        
+        {/* Section Heading & Subtitle */}
+        <div className="max-w-[700px] mx-auto mb-16 lg:mb-20">
+          <h2 className="gw-font-display text-[36px] md:text-[46px] lg:text-[52px] font-medium text-[#202124] leading-[1.12] tracking-[-0.03em] mb-5">
+            Trusted by Businesses. <br />
+            <span className="text-[#1a73e8]">Built to Scale.</span>
           </h2>
-          <p className="mt-3 text-[16px] leading-[1.6] text-[#5f6368]">
-            Thoughtful link building starts with relevance, clear goals, and a
-            strategy that fits your business.
+          <p className="gw-font-text text-[17px] md:text-[18px] text-[#5f6368] leading-[1.65]">
+            When you partner with Jasa Backlinks, you get more than SEO—you get visibility that adapts to how people search today. Build trust with search engines, AI systems, and real customers.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {trustHighlights.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-[#dadce0] bg-[#f8f9fa] p-8 text-left transition hover:border-[#1a73e8] hover:bg-white hover:shadow-md"
+        {/* 4 Stat Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {metrics.map((item, index) => (
+            <div 
+              key={index}
+              className="bg-[#fafafa] hover:bg-white rounded-[24px] p-8 border border-[#e8eaed] shadow-[0_2px_12px_rgba(60,64,67,0.02)] hover:shadow-[0_16px_40px_rgba(26,115,232,0.08)] hover:border-[#d2e3fc] hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center justify-center text-center group cursor-default"
             >
-              <h3 className="text-[17px] font-medium text-[#202124] mb-2">
+              {/* Icon Container */}
+              <div className={`w-[52px] h-[52px] rounded-[16px] ${item.bgColor} ${item.accentColor} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                {item.icon}
+              </div>
+
+              {/* Stat Number / Title */}
+              <h3 className="gw-font-display text-[28px] md:text-[32px] font-medium text-[#202124] tracking-tight mb-2">
                 {item.title}
               </h3>
-              <p className="text-[14px] leading-[1.6] text-[#5f6368] m-0">
+
+              {/* Description */}
+              <p className="gw-font-text text-[14px] md:text-[15px] text-[#5f6368] font-normal leading-[1.5]">
                 {item.description}
               </p>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );
 }
 
+// --- BENTO GRID SECTION ---
+function AudienceBentoSection() {
+  return (
+    <section className="relative w-full bg-[#f8f9fa] py-24 lg:py-32 px-4 sm:px-6 border-t border-[#e8eaed] overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[400px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#e8f0fe]/50 via-[#f8f9fa]/20 to-transparent opacity-80 pointer-events-none" />
+
+      <div className="max-w-[1200px] mx-auto relative z-10">
+        <div className="mb-16 lg:mb-20 flex flex-col items-center sm:items-start text-center sm:text-left">
+          <h2 className="gw-font-display text-[36px] md:text-[48px] lg:text-[56px] font-medium text-[#202124] leading-[1.12] tracking-[-0.03em] max-w-[700px]">
+            Smarter visibility for <br className="hidden sm:block" />
+            <span className="text-[#1a73e8]">every kind of business.</span>
+          </h2>
+          <p className="gw-font-text mt-5 md:mt-6 text-[17px] md:text-[19px] text-[#5f6368] leading-[1.65] max-w-[650px]">
+            From local storefronts to national brands and scaling agencies, Jasa Backlinks gives you the flexibility to build authority your way.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 auto-rows-[minmax(220px,auto)]">
+          <div className="col-span-1 bg-white hover:bg-gradient-to-br hover:from-white hover:to-[#f8fafd] rounded-[24px] p-8 lg:p-10 border border-[#e8eaed] shadow-[0_2px_12px_rgba(60,64,67,0.02)] hover:shadow-[0_16px_48px_rgba(26,115,232,0.08)] hover:border-[#d2e3fc] hover:-translate-y-1.5 transition-all duration-500 group flex flex-col justify-between cursor-default relative overflow-hidden">
+            <div className="flex justify-between items-start mb-8">
+              <div className="w-[48px] h-[48px] rounded-[14px] bg-[#e8f0fe] flex items-center justify-center text-[#1a73e8] group-hover:scale-110 group-hover:bg-[#d2e3fc] transition-all duration-300 border border-[#d2e3fc]/50">
+                <svg className="w-[24px] h-[24px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#e8f0fe] flex items-center justify-center text-[#1a73e8] opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 ease-out">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="gw-font-display text-[22px] md:text-[24px] font-medium text-[#202124] mb-3">Local Businesses</h3>
+              <p className="gw-font-text text-[15px] text-[#5f6368] leading-[1.6]">
+                Show up in local search and AI Overviews when customers ask for services near them.
+              </p>
+            </div>
+          </div>
+
+          <div className="col-span-1 bg-white hover:bg-gradient-to-br hover:from-white hover:to-[#f6fcf8] rounded-[24px] p-8 lg:p-10 border border-[#e8eaed] shadow-[0_2px_12px_rgba(60,64,67,0.02)] hover:shadow-[0_16px_48px_rgba(52,168,83,0.08)] hover:border-[#ceead6] hover:-translate-y-1.5 transition-all duration-500 group flex flex-col justify-between cursor-default relative overflow-hidden">
+            <div className="flex justify-between items-start mb-8">
+              <div className="w-[48px] h-[48px] rounded-[14px] bg-[#e6f4ea] flex items-center justify-center text-[#1e8e3e] group-hover:scale-110 group-hover:bg-[#ceead6] transition-all duration-300 border border-[#ceead6]/50">
+                <svg className="w-[24px] h-[24px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#e6f4ea] flex items-center justify-center text-[#1e8e3e] opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 ease-out">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="gw-font-display text-[22px] md:text-[24px] font-medium text-[#202124] mb-3">E-Commerce Stores</h3>
+              <p className="gw-font-text text-[15px] text-[#5f6368] leading-[1.6]">
+                Get your products recommended by AI systems and featured in high-intent search results.
+              </p>
+            </div>
+          </div>
+
+          <div className="col-span-1 bg-white hover:bg-gradient-to-br hover:from-white hover:to-[#fcfafc] rounded-[24px] p-8 lg:p-10 border border-[#e8eaed] shadow-[0_2px_12px_rgba(60,64,67,0.02)] hover:shadow-[0_16px_48px_rgba(147,52,230,0.08)] hover:border-[#f3e8fd] hover:-translate-y-1.5 transition-all duration-500 group flex flex-col justify-between cursor-default relative overflow-hidden">
+            <div className="flex justify-between items-start mb-8">
+              <div className="w-[48px] h-[48px] rounded-[14px] bg-[#f3e8fd] flex items-center justify-center text-[#9334e6] group-hover:scale-110 group-hover:bg-[#e9d2fc] transition-all duration-300 border border-[#e9d2fc]/50">
+                <svg className="w-[24px] h-[24px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#f3e8fd] flex items-center justify-center text-[#9334e6] opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 ease-out">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </div>
+            </div>
+            <div>
+              <h3 className="gw-font-display text-[22px] md:text-[24px] font-medium text-[#202124] mb-3">Agencies & Resellers</h3>
+              <p className="gw-font-text text-[15px] text-[#5f6368] leading-[1.6]">
+                Expand your services with fully managed, white-label SEO and AI visibility campaigns.
+              </p>
+            </div>
+          </div>
+
+          <div className="col-span-1 md:col-span-2 bg-white hover:bg-gradient-to-br hover:from-white hover:to-[#fdf9f9] rounded-[24px] p-8 md:p-10 lg:p-12 border border-[#e8eaed] shadow-[0_2px_12px_rgba(60,64,67,0.02)] hover:shadow-[0_16px_48px_rgba(217,48,37,0.08)] hover:border-[#fad2cf] hover:-translate-y-1.5 transition-all duration-500 group flex flex-col justify-between relative overflow-hidden cursor-default">
+            <div className="absolute right-[-2%] bottom-[-15%] opacity-[0.02] group-hover:opacity-[0.05] group-hover:scale-105 transition-all duration-700 pointer-events-none">
+               <svg width="240" height="240" viewBox="0 0 24 24" fill="none" stroke="#202124" strokeWidth="1"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+            </div>
+            <div className="flex justify-between items-start mb-8 md:mb-12 relative z-10">
+              <div className="w-[52px] h-[52px] rounded-[16px] bg-[#fce8e6] flex items-center justify-center text-[#d93025] group-hover:scale-110 group-hover:bg-[#fad2cf] transition-all duration-300 border border-[#fad2cf]/50">
+                <svg className="w-[26px] h-[26px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-[#fce8e6] flex items-center justify-center text-[#d93025] opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 ease-out">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </div>
+            </div>
+            <div className="relative z-10 max-w-[85%]">
+              <h3 className="gw-font-display text-[26px] md:text-[30px] font-medium text-[#202124] mb-3">National Brands</h3>
+              <p className="gw-font-text text-[16px] md:text-[17px] text-[#5f6368] leading-[1.65]">
+                Simplify multi-channel AEO and SEO with data-driven strategies that scale across diverse teams, locations, and highly competitive markets.
+              </p>
+            </div>
+          </div>
+
+          <div className="col-span-1 bg-white hover:bg-gradient-to-br hover:from-white hover:to-[#f8f9fa] rounded-[24px] p-8 md:p-10 lg:p-12 border border-[#e8eaed] shadow-[0_2px_12px_rgba(60,64,67,0.02)] hover:shadow-[0_16px_48px_rgba(95,99,104,0.12)] hover:border-[#dadce0] hover:-translate-y-1.5 transition-all duration-500 group flex flex-col justify-between cursor-default relative overflow-hidden">
+            <div className="flex justify-between items-start mb-8 md:mb-12 relative z-10">
+              <div className="w-[52px] h-[52px] rounded-[16px] bg-[#f1f3f4] flex items-center justify-center text-[#5f6368] group-hover:scale-110 group-hover:bg-[#e8eaed] transition-all duration-300 border border-[#e8eaed]/50">
+                <svg className="w-[26px] h-[26px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-[#f1f3f4] flex items-center justify-center text-[#5f6368] opacity-0 -translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 ease-out">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </div>
+            </div>
+            <div className="relative z-10">
+              <h3 className="gw-font-display text-[26px] md:text-[30px] font-medium text-[#202124] mb-3">Franchises</h3>
+              <p className="gw-font-text text-[16px] md:text-[17px] text-[#5f6368] leading-[1.65]">
+                Manage search visibility for every location consistently from one powerful strategy.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- MAIN HOME COMPONENT ---
 export default function Home() {
   return (
-    <>
-      {/* Redesigned Hero Section */}
-      <section className="relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_75%_40%,rgba(232,240,254,0.7),transparent_40%),linear-gradient(180deg,#fff_0%,#f8f9fa_100%)]">
-        <div className="mx-auto grid min-[700px]:min-h-[700px] w-[calc(100%-48px)] max-w-[1360px] grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-center gap-12 py-20 max-[1100px]:grid-cols-1 max-[1100px]:py-16">
-          {/* Left Text Content */}
-          <div className="relative z-[1] max-w-[620px]">
-            <span className="inline-flex items-center gap-2.5 text-xs font-bold tracking-[1.2px] text-[#1a73e8] uppercase">
-              <span className="h-2 w-2 rounded-full bg-[#1a73e8]" />
-              Link Building for Long-Term Growth
-            </span>
+    <main className="w-full bg-[#fcfcfc] overflow-hidden relative">
+      <style>{`
+        .bg-dotted-grid {
+          background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px);
+          background-size: 32px 32px;
+        }
+        @keyframes floatBlob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.05); }
+          66% { transform: translate(-20px, 20px) scale(0.95); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+          animation: floatBlob 18s infinite alternate ease-in-out;
+        }
+        .delay-2000 { animation-delay: 2s; }
+        .delay-4000 { animation-delay: 4s; }
+        @keyframes pulseNode {
+          0% { r: 3; opacity: 0.5; }
+          50% { r: 4.5; opacity: 1; }
+          100% { r: 3; opacity: 0.5; }
+        }
+        .node-pulse {
+          animation: pulseNode 3s infinite ease-in-out;
+        }
+      `}</style>
 
-            <h1 className="mt-6 text-[clamp(42px,5vw,64px)] font-normal leading-[1.1] tracking-tight text-[#202124]">
-              Build authority. <br />
-              <span className="text-[#1a73e8] font-medium">
-                Earn visibility.
-              </span>
-            </h1>
+      {/* Hero Background Layers */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden pt-[64px]">
+        <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-50" />
+        <svg 
+          className="absolute inset-0 w-full h-full opacity-[0.15] md:opacity-[0.22] hidden sm:block" 
+          viewBox="0 0 1000 600" 
+          preserveAspectRatio="xMidYMid slice" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M250 150 L400 220 L500 120 L650 200 L800 150 L850 320 L750 450 L550 380 L450 480 L300 380 Z" stroke="#1a73e8" strokeWidth="0.75" strokeDasharray="4 4" />
+          <path d="M400 220 L550 380 M650 200 L750 450 M500 120 L800 150" stroke="#1a73e8" strokeWidth="0.5" opacity="0.4" />
+          <circle cx="250" cy="150" r="3" fill="#1a73e8" className="node-pulse" style={{ animationDelay: '0s' }}/>
+          <circle cx="400" cy="220" r="4" fill="#1a73e8" />
+          <circle cx="500" cy="120" r="3" fill="#1a73e8" className="node-pulse" style={{ animationDelay: '1s' }}/>
+          <circle cx="650" cy="200" r="4.5" fill="#1a73e8" />
+          <circle cx="800" cy="150" r="3" fill="#1a73e8" className="node-pulse" style={{ animationDelay: '0.5s' }}/>
+          <circle cx="850" cy="320" r="4" fill="#1a73e8" />
+          <circle cx="750" cy="450" r="3" fill="#1a73e8" className="node-pulse" style={{ animationDelay: '1.5s' }}/>
+          <circle cx="550" cy="380" r="5" fill="#1a73e8" />
+          <circle cx="450" cy="480" r="3" fill="#1a73e8" className="node-pulse" style={{ animationDelay: '2s' }}/>
+          <circle cx="300" cy="380" r="4" fill="#1a73e8" />
+        </svg>
 
-            <p className="mt-6 text-[18px] leading-[1.6] text-[#5f6368]">
-              Relevant backlinks and a strategy shaped around your audience and
-              goals help your business earn stronger search visibility.
-            </p>
+        <div className="absolute top-[10%] md:top-[15%] left-[5%] md:left-[15%] w-[300px] md:w-[450px] h-[300px] md:h-[450px] bg-[#1a73e8] rounded-full mix-blend-multiply filter blur-[100px] md:blur-[140px] opacity-[0.10] animate-blob" />
+        <div className="absolute top-[20%] md:top-[25%] right-[5%] md:right-[10%] w-[250px] md:w-[400px] h-[250px] md:h-[400px] bg-[#34a853] rounded-full mix-blend-multiply filter blur-[90px] md:blur-[130px] opacity-[0.08] animate-blob delay-2000" />
+        <div className="absolute bottom-[5%] left-[20%] md:left-[30%] w-[350px] md:w-[550px] h-[350px] md:h-[550px] bg-[#fbbc04] rounded-full mix-blend-multiply filter blur-[120px] md:blur-[150px] opacity-[0.06] animate-blob delay-4000" />
+      </div>
 
-            {/* Action Buttons */}
-            <div className="mt-8 flex items-center gap-4">
-              <Link
-                to="/pbn/homepage-post"
-                className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1a73e8] px-8 text-[15px] font-medium text-white shadow-sm hover:bg-[#1557b0] transition-colors"
-              >
-                Explore backlink services
-              </Link>
-              <Link
-                to="/contact"
-                className="inline-flex h-[48px] items-center justify-center rounded-full border border-[#dadce0] bg-white px-7 text-[15px] font-medium text-[#202124] hover:bg-[#f8f9fa] hover:border-[#1a73e8] transition-colors"
-              >
-                Let&apos;s talk
-              </Link>
+      {/* Hero Section */}
+      <section className="relative z-10 min-h-screen pt-[64px] flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-16 md:pb-24">
+        <div className="flex flex-col items-center justify-center w-full max-w-[1300px] mt-10 md:mt-16 relative">
+          
+          <h2 className="gw-font-display text-[46px] sm:text-[58px] md:text-[76px] lg:text-[92px] font-medium leading-[1.12] md:leading-[1.08] tracking-[-0.02em] md:tracking-[-0.03em] text-[#202124] mb-8 md:mb-12 w-full">
+            Build organic authority <br className="hidden sm:block" />
+            <span className="text-[#1a73e8]">with premium PBN backlinks.</span>
+          </h2>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full px-4 sm:px-0 mb-10 md:mb-14 z-20">
+            <Link
+              to="/pbn/homepage-post"
+              className="gw-font-display w-full sm:w-[240px] inline-flex h-[52px] md:h-[56px] items-center justify-center rounded-full bg-[#1a73e8] text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-white shadow-[0_6px_20px_rgba(26,115,232,0.25)] hover:bg-[#1557b0] hover:shadow-[0_8px_28px_rgba(26,115,232,0.35)] transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              Explore SEO packages
+            </Link>
+            <Link
+              to="/contact"
+              className="gw-font-display w-full sm:w-[240px] inline-flex h-[52px] md:h-[56px] items-center justify-center rounded-full border border-[#dadce0] bg-white/85 backdrop-blur-md text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-[#3c4043] shadow-[0_2px_10px_rgba(60,64,67,0.04)] hover:bg-white hover:border-[#bdc1c6] hover:text-[#202124] transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              Talk to an expert
+            </Link>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 px-5 md:px-6 py-3 rounded-[24px] sm:rounded-full bg-white/70 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_rgba(32,33,36,0.06)] relative z-20 transition-transform duration-300 hover:scale-105 cursor-default max-w-[90%] sm:max-w-none">
+            <div className="flex -space-x-2 md:-space-x-3">
+              <img src="https://i.pravatar.cc/100?img=33" alt="Agency Partner" className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover" />
+              <img src="https://i.pravatar.cc/100?img=11" alt="Agency Partner" className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover" />
+              <img src="https://i.pravatar.cc/100?img=12" alt="Agency Partner" className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover" />
+              <img src="https://i.pravatar.cc/100?img=59" alt="Agency Partner" className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover" />
             </div>
-
-            {/* Trust Badges */}
-            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-[14px] text-[#3c4043]">
-              <span className="inline-flex items-center gap-2">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#e6f4ea] text-[#137333]">
-                  ✓
-                </span>
-                Quality-led placements
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#e6f4ea] text-[#137333]">
-                  ✓
-                </span>
-                Built around your goals
+            <div className="flex flex-col items-center sm:items-start">
+              <div className="flex items-center gap-0.5 mb-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} className="w-3.5 h-3.5 md:w-3.5 md:h-3.5 text-[#fbbc04]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <span className="gw-font-text text-[12px] md:text-[13px] font-medium text-[#5f6368] leading-tight text-center sm:text-left">
+                Trusted by 500+ SEO agencies & brands
               </span>
             </div>
           </div>
 
-          {/* Right Interactive Artwork */}
-          <AuthorityArtwork />
         </div>
       </section>
 
-      <AudienceSection />
-      <TrustSection />
-    </>
+      {/* --- TRUST METRICS SECTION (NEW) --- */}
+      <TrustMetricsSection />
+
+      {/* --- BENTO GRID SECTION --- */}
+      <AudienceBentoSection />
+
+    </main>
   );
 }
