@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --brand-blue: #1a73e8;
+  --brand-blue-hover: #1558b0;
+  --brand-blue-tint: #e8f0fe;
+  --font-body: "Inter", sans-serif;
+  --font-display: "Inter", sans-serif;
+
+  font-family: var(--font-body);
+  font-synthesis: none;
+  background: #fff;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
