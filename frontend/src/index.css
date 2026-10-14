@@ -1,24 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
-:root {
-  --brand-blue: #1a73e8;
-  --brand-blue-hover: #1558b0;
-  --brand-blue-tint: #e8f0fe;
-  --font-body: "Inter", sans-serif;
-  --font-display: "Inter", sans-serif;
+@layer base {
 
-  font-family: var(--font-body);
-  font-synthesis: none;
-  background: #fff;
-}
-
-body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
-}
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
+  html,
+  body {
+    font-family: 'Google Sans Text', 'Google Sans', 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #202124;
+    background-color: #ffffff;
+    font-optical-sizing: auto;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
 }
