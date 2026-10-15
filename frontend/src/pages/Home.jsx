@@ -348,7 +348,7 @@ function AudienceBentoSection() {
   );
 }
 
-// --- NEW SECTION: 3-STEP WORKFLOW (HOW IT WORKS) ---
+// --- 3-STEP WORKFLOW (HOW IT WORKS) ---
 function HowItWorksSection() {
   const steps = [
     {
@@ -426,7 +426,7 @@ function HowItWorksSection() {
   );
 }
 
-// --- LIVE PACKAGE ESTIMATOR & CHECKOUT MODAL SECTION (COMPACT MOBILE + STICKY DESKTOP) ---
+// --- LIVE PACKAGE ESTIMATOR & CHECKOUT MODAL SECTION ---
 function PackageEstimator() {
   const [cart, setCart] = useState({ hp_post: 50 });
   const [activeCategory, setActiveCategory] = useState("all");
@@ -623,13 +623,11 @@ function PackageEstimator() {
             </p>
           </div>
 
-          {/* Main 2-Column Wrapper: items-start + NO overflow-hidden on ancestors = working sticky sidebar */}
           <div className="flex flex-col lg:flex-row lg:items-start gap-6 sm:gap-8 xl:gap-10 relative">
             {/* Left Column: Sliders Builder */}
             <div className="flex-1 w-full min-w-0">
               {/* Top Filter & Preset Control Box */}
               <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] mb-4 sm:mb-5 space-y-3">
-                {/* Category Tabs (Reduces scrolling on mobile) */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
                     {categories.map((cat) => {
@@ -655,7 +653,6 @@ function PackageEstimator() {
                   </span>
                 </div>
 
-                {/* Quick Presets Row */}
                 <div className="flex items-center gap-2 pt-2 border-t border-[#f1f3f4] overflow-x-auto no-scrollbar">
                   <span className="text-[11.5px] font-medium text-[#5f6368] shrink-0">
                     Presets:
@@ -692,7 +689,6 @@ function PackageEstimator() {
                           : "p-3.5 sm:p-5 bg-white border-[#e8eaed] hover:border-[#dadce0] hover:shadow-[0_4px_12px_rgba(60,64,67,0.04)]"
                       }`}
                     >
-                      {/* Top Row: Info & Price / Mobile Quick-Add */}
                       <div
                         onClick={() => {
                           if (!isActive) setServiceQty(service.id, 50);
@@ -753,7 +749,6 @@ function PackageEstimator() {
                               /link
                             </span>
                           </span>
-                          {/* Mobile Quick Activate Button when inactive */}
                           {!isActive && (
                             <button
                               type="button"
@@ -769,7 +764,6 @@ function PackageEstimator() {
                         </div>
                       </div>
 
-                      {/* Slider & Stepper Row: On mobile, only shown when active to save 60% vertical scroll! On desktop (sm:flex), always shown */}
                       <div
                         className={`${
                           isActive ? "flex" : "hidden sm:flex"
@@ -808,7 +802,6 @@ function PackageEstimator() {
                             />
                           </div>
 
-                          {/* Clickable Milestone Stop Pills */}
                           <div className="flex justify-between items-center mt-1 px-0.5">
                             {stops.map((stopVal) => {
                               const isCurrentStop =
@@ -845,7 +838,6 @@ function PackageEstimator() {
                           </div>
                         </div>
 
-                        {/* Direct Quantity Input & Subtotal */}
                         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e8eaed]/80">
                           <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 sm:p-1 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
                             <button
@@ -948,7 +940,6 @@ function PackageEstimator() {
                     )}
                   </div>
 
-                  {/* Selected Packages List */}
                   <div className="flex-1 overflow-y-auto max-h-[240px] mb-4 sm:mb-5 pr-1 space-y-2 gw-font-text custom-scrollbar">
                     {selectedPackagesCount === 0 ? (
                       <div className="text-center py-7 px-4 bg-[#f8f9fa] rounded-[16px] border border-dashed border-[#dadce0]">
@@ -1012,7 +1003,6 @@ function PackageEstimator() {
                     )}
                   </div>
 
-                  {/* Totals Box */}
                   <div className="bg-[#f8f9fa] rounded-[16px] sm:rounded-[18px] p-4 sm:p-5 mb-4 sm:mb-5 border border-[#e8eaed]">
                     <div className="flex justify-between items-center mb-2 text-[12.5px] sm:text-[13px] text-[#5f6368]">
                       <span>Selected Services</span>
@@ -1051,7 +1041,6 @@ function PackageEstimator() {
                     </div>
                   </div>
 
-                  {/* Checkout Buttons */}
                   <div className="space-y-2.5">
                     <button
                       type="button"
@@ -1391,28 +1380,28 @@ function ReviewsSection() {
       name: "Anthony",
       role: "SEO Agency Lead",
       time: "28 days ago",
-      avatar: "https://i.pravatar.cc/100?img=33",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     },
     {
       text: "The custom placements you guys do for .ID domains are unmatched. Being able to scale local authority instantly is a game changer.",
       name: "Fridolin Haemmer",
       role: "Head of Growth",
       time: "33 days ago",
-      avatar: "https://i.pravatar.cc/100?img=11",
+      avatar: "https://randomuser.me/api/portraits/men/46.jpg",
     },
     {
       text: "No need to follow-up. The system is transparent and the calculator makes ordering bulk placements effortless.",
       name: "Alyssa Douglas",
       role: "Digital Marketing Director",
       time: "35 days ago",
-      avatar: "https://i.pravatar.cc/100?img=5",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
     },
     {
       text: "We ordered 1,000 homepage and EDU placements for a competitive fintech client. Rankings jumped into the top 3 within 4 weeks.",
       name: "Marcus Vance",
       role: "Founder, Vance Media",
       time: "41 days ago",
-      avatar: "https://i.pravatar.cc/100?img=59",
+      avatar: "https://randomuser.me/api/portraits/men/85.jpg",
     },
   ];
 
@@ -1476,7 +1465,6 @@ function ReviewsSection() {
               </p>
             </div>
 
-            {/* Mobile-only compact 4.8/5 badge so mobile banner stays short */}
             <div className="lg:hidden text-right">
               <span className="gw-font-display text-[32px] font-medium text-[#202124] leading-none block">
                 4.8/5
@@ -1580,6 +1568,8 @@ function ReviewsSection() {
                   <img
                     src={review.avatar}
                     alt={review.name}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
                     className="w-8 h-8 rounded-full object-cover border border-[#e8eaed]"
                   />
                   <div>
@@ -1599,7 +1589,7 @@ function ReviewsSection() {
           ))}
         </div>
 
-        {/* Mobile Slider Controls (Dots + Prev/Next Buttons) */}
+        {/* Mobile Slider Controls */}
         <div className="flex lg:hidden items-center justify-between mt-4 px-1">
           <div className="flex items-center gap-1.5">
             {reviews.map((_, idx) => (
@@ -1656,7 +1646,7 @@ function ReviewsSection() {
   );
 }
 
-// --- NEW SECTION: GOOGLE WORKSPACE STYLE FAQ ACCORDION ---
+// --- GOOGLE WORKSPACE STYLE FAQ ACCORDION ---
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);
 
@@ -1845,19 +1835,25 @@ function CTASection() {
               <div className="flex items-center justify-between bg-white rounded-[16px] p-3 sm:p-3.5 border border-[#e8eaed] shadow-[0_2px_8px_rgba(60,64,67,0.04)]">
                 <div className="flex -space-x-2">
                   <img
-                    src="https://i.pravatar.cc/100?img=33"
+                    src="https://randomuser.me/api/portraits/men/32.jpg"
                     alt="Partner"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
                   />
                   <img
-                    src="https://i.pravatar.cc/100?img=11"
+                    src="https://randomuser.me/api/portraits/men/46.jpg"
                     alt="Partner"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
                   />
                   <img
-                    src="https://i.pravatar.cc/100?img=12"
+                    src="https://randomuser.me/api/portraits/women/68.jpg"
                     alt="Partner"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
                   />
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white bg-[#1a73e8] text-white text-[10px] sm:text-[11px] font-bold flex items-center justify-center">
                     5k+
@@ -2047,23 +2043,27 @@ export default function Home() {
           <div className="flex flex-row items-center gap-3 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white/85 backdrop-blur-xl border border-[#e8eaed] shadow-[0_8px_32px_rgba(32,33,36,0.06)] relative z-20 transition-transform duration-300 hover:scale-105 cursor-default max-w-full">
             <div className="flex -space-x-2 shrink-0">
               <img
-                src="https://i.pravatar.cc/100?img=33"
+                src="https://randomuser.me/api/portraits/men/32.jpg"
                 alt="Agency Partner"
+                referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
-                src="https://i.pravatar.cc/100?img=11"
+                src="https://randomuser.me/api/portraits/men/46.jpg"
                 alt="Agency Partner"
+                referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
-                src="https://i.pravatar.cc/100?img=12"
+                src="https://randomuser.me/api/portraits/women/68.jpg"
                 alt="Agency Partner"
+                referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
-                src="https://i.pravatar.cc/100?img=59"
+                src="https://randomuser.me/api/portraits/men/85.jpg"
                 alt="Agency Partner"
+                referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
             </div>
@@ -2094,16 +2094,16 @@ export default function Home() {
       {/* --- BENTO GRID SECTION --- */}
       <AudienceBentoSection />
 
-      {/* --- 3-STEP WORKFLOW SECTION (NEW) --- */}
+      {/* --- 3-STEP WORKFLOW SECTION --- */}
       <HowItWorksSection />
 
       {/* --- PACKAGE ESTIMATOR SECTION --- */}
       <PackageEstimator />
 
-      {/* --- REVIEWS SECTION (WITH SMOOTH MOBILE SLIDER) --- */}
+      {/* --- REVIEWS SECTION --- */}
       <ReviewsSection />
 
-      {/* --- FAQ ACCORDION SECTION (NEW) --- */}
+      {/* --- FAQ ACCORDION SECTION --- */}
       <FAQSection />
 
       {/* --- COMPACT CTA SECTION --- */}
