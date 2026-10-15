@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
-// --- TRUST METRICS SECTION (GOOGLE MATERIAL 3 STYLE) ---
+// --- TRUST METRICS SECTION (2x2 MOBILE GRID, 4-COL DESKTOP) ---
 function TrustMetricsSection() {
   const metrics = [
     {
@@ -10,7 +10,7 @@ function TrustMetricsSection() {
       badge: "Top Rated",
       icon: (
         <svg
-          className="w-[22px] h-[22px]"
+          className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -31,7 +31,7 @@ function TrustMetricsSection() {
       badge: "Global Reach",
       icon: (
         <svg
-          className="w-[22px] h-[22px]"
+          className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -55,7 +55,7 @@ function TrustMetricsSection() {
       badge: "Verified DR 50+",
       icon: (
         <svg
-          className="w-[22px] h-[22px]"
+          className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -77,7 +77,7 @@ function TrustMetricsSection() {
       badge: "API & Instant",
       icon: (
         <svg
-          className="w-[22px] h-[22px]"
+          className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -95,50 +95,49 @@ function TrustMetricsSection() {
   ];
 
   return (
-    <section className="relative w-full bg-white py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]">
+    <section className="relative w-full bg-white py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]">
       <div className="max-w-[1200px] mx-auto text-center">
-        <div className="max-w-[720px] mx-auto mb-14 lg:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f8f9fa] border border-[#e8eaed] text-[#5f6368] text-[12.5px] font-medium mb-4">
+        <div className="max-w-[720px] mx-auto mb-10 sm:mb-14 lg:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#f8f9fa] border border-[#e8eaed] text-[#5f6368] text-[11.5px] sm:text-[12.5px] font-medium mb-3 sm:mb-4">
             <span className="w-2 h-2 rounded-full bg-[#34a853]" />
             Enterprise-Grade Link Infrastructure
           </div>
-          <h2 className="gw-font-display text-[34px] md:text-[44px] lg:text-[50px] font-medium text-[#202124] leading-[1.12] tracking-[-0.03em] mb-4">
+          <h2 className="gw-font-display text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-3 sm:mb-4">
             Trusted by Businesses. <br />
             <span className="text-[#1a73e8]">Built to Scale.</span>
           </h2>
-          <p className="gw-font-text text-[16px] md:text-[18px] text-[#5f6368] leading-[1.65]">
+          <p className="gw-font-text text-[14.5px] sm:text-[16px] md:text-[18px] text-[#5f6368] leading-[1.6] px-1">
             When you partner with Jasa Backlinks, you get more than SEO—you get
             visibility that adapts to how people search today. Build trust with
             search engines, AI systems, and real customers.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
           {metrics.map((item, index) => (
             <div
               key={index}
-              className="relative overflow-hidden bg-white rounded-[24px] p-6 lg:p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.04)] hover:shadow-[0_14px_36px_rgba(26,115,232,0.08)] hover:border-[#d2e3fc] hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center text-center group cursor-default"
+              className="relative overflow-hidden bg-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 lg:p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.04)] hover:shadow-[0_14px_36px_rgba(26,115,232,0.08)] hover:border-[#d2e3fc] hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center text-center group cursor-default"
             >
-              {/* Subtle Google Top Accent Bar */}
               <div
-                className={`absolute top-0 inset-x-0 h-[3px] ${item.topBar} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                className={`absolute top-0 inset-x-0 h-[3px] ${item.topBar} opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
               />
 
               <div
-                className={`w-[50px] h-[50px] rounded-[16px] ${item.bgColor} ${item.accentColor} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}
+                className={`w-[40px] h-[40px] sm:w-[50px] sm:h-[50px] rounded-[12px] sm:rounded-[16px] ${item.bgColor} ${item.accentColor} flex items-center justify-center mb-3 sm:mb-5 group-hover:scale-110 transition-transform duration-300`}
               >
                 {item.icon}
               </div>
 
-              <span className="text-[11px] font-medium text-[#5f6368] bg-[#f8f9fa] border border-[#e8eaed] px-2.5 py-0.5 rounded-full mb-3">
+              <span className="text-[10px] sm:text-[11px] font-medium text-[#5f6368] bg-[#f8f9fa] border border-[#e8eaed] px-2 sm:px-2.5 py-0.5 rounded-full mb-2 sm:mb-3">
                 {item.badge}
               </span>
 
-              <h3 className="gw-font-display text-[24px] lg:text-[26px] font-medium text-[#202124] tracking-tight mb-2 whitespace-nowrap">
+              <h3 className="gw-font-display text-[17px] sm:text-[24px] lg:text-[26px] font-medium text-[#202124] tracking-tight mb-1 sm:mb-2 leading-snug">
                 {item.title}
               </h3>
 
-              <p className="gw-font-text text-[13.5px] lg:text-[14px] text-[#5f6368] font-normal leading-[1.55] max-w-[210px]">
+              <p className="gw-font-text text-[11.5px] sm:text-[13.5px] lg:text-[14px] text-[#5f6368] font-normal leading-[1.45] sm:leading-[1.55] max-w-[210px]">
                 {item.description}
               </p>
             </div>
@@ -149,35 +148,35 @@ function TrustMetricsSection() {
   );
 }
 
-// --- BENTO GRID SECTION (GOOGLE WORKSPACE SHOWCASE STYLE) ---
+// --- BENTO GRID SECTION ---
 function AudienceBentoSection() {
   return (
-    <section className="relative w-full bg-[#f8f9fa] py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed] overflow-hidden">
+    <section className="relative w-full bg-[#f8f9fa] py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed] overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[400px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#e8f0fe]/60 via-[#f8f9fa]/20 to-transparent opacity-90 pointer-events-none" />
 
       <div className="max-w-[1200px] mx-auto relative z-10">
-        <div className="mb-14 lg:mb-16 flex flex-col items-center sm:items-start text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e8eaed] text-[#1a73e8] text-[12.5px] font-medium mb-4 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
+        <div className="mb-10 sm:mb-14 lg:mb-16 flex flex-col items-center sm:items-start text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-white border border-[#e8eaed] text-[#1a73e8] text-[11.5px] sm:text-[12.5px] font-medium mb-3 sm:mb-4 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
             <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
             Solutions by Business Type
           </div>
-          <h2 className="gw-font-display text-[34px] md:text-[44px] lg:text-[50px] font-medium text-[#202124] leading-[1.12] tracking-[-0.03em] max-w-[700px]">
+          <h2 className="gw-font-display text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] max-w-[700px]">
             Smarter visibility for <br className="hidden sm:block" />
             <span className="text-[#1a73e8]">every kind of business.</span>
           </h2>
-          <p className="gw-font-text mt-4 md:mt-5 text-[16px] md:text-[18px] text-[#5f6368] leading-[1.65] max-w-[650px]">
+          <p className="gw-font-text mt-3 sm:mt-4 md:mt-5 text-[14.5px] sm:text-[16px] md:text-[18px] text-[#5f6368] leading-[1.6] max-w-[650px]">
             From local storefronts to national brands and scaling agencies, Jasa
             Backlinks gives you the flexibility to build authority your way.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 auto-rows-[minmax(230px,auto)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 auto-rows-auto md:auto-rows-[minmax(220px,auto)]">
           {/* Card 1 */}
-          <div className="col-span-1 bg-white rounded-[24px] p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(26,115,232,0.07)] hover:border-[#d2e3fc] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default relative overflow-hidden">
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-[46px] h-[46px] rounded-[14px] bg-[#e8f0fe] flex items-center justify-center text-[#1a73e8] group-hover:scale-105 transition-all duration-300">
+          <div className="col-span-1 bg-white rounded-[20px] sm:rounded-[24px] p-5 sm:p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(26,115,232,0.07)] hover:border-[#d2e3fc] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <div className="w-[42px] h-[42px] sm:w-[46px] sm:h-[46px] rounded-[12px] sm:rounded-[14px] bg-[#e8f0fe] flex items-center justify-center text-[#1a73e8]">
                 <svg
-                  className="w-[22px] h-[22px]"
+                  className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -189,15 +188,15 @@ function AudienceBentoSection() {
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
               </div>
-              <span className="text-[11.5px] font-medium text-[#1a73e8] bg-[#e8f0fe]/80 px-2.5 py-1 rounded-full">
+              <span className="text-[11px] sm:text-[11.5px] font-medium text-[#1a73e8] bg-[#e8f0fe]/80 px-2.5 py-1 rounded-full">
                 Local Maps & AEO
               </span>
             </div>
             <div>
-              <h3 className="gw-font-display text-[21px] md:text-[22px] font-medium text-[#202124] mb-2">
+              <h3 className="gw-font-display text-[18px] sm:text-[21px] md:text-[22px] font-medium text-[#202124] mb-1.5 sm:mb-2">
                 Local Businesses
               </h3>
-              <p className="gw-font-text text-[14.5px] text-[#5f6368] leading-[1.6]">
+              <p className="gw-font-text text-[13.5px] sm:text-[14.5px] text-[#5f6368] leading-[1.55]">
                 Show up in local search and AI Overviews when customers ask for
                 services near them.
               </p>
@@ -205,11 +204,11 @@ function AudienceBentoSection() {
           </div>
 
           {/* Card 2 */}
-          <div className="col-span-1 bg-white rounded-[24px] p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(52,168,83,0.07)] hover:border-[#ceead6] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default relative overflow-hidden">
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-[46px] h-[46px] rounded-[14px] bg-[#e6f4ea] flex items-center justify-center text-[#1e8e3e] group-hover:scale-105 transition-all duration-300">
+          <div className="col-span-1 bg-white rounded-[20px] sm:rounded-[24px] p-5 sm:p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(52,168,83,0.07)] hover:border-[#ceead6] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <div className="w-[42px] h-[42px] sm:w-[46px] sm:h-[46px] rounded-[12px] sm:rounded-[14px] bg-[#e6f4ea] flex items-center justify-center text-[#1e8e3e]">
                 <svg
-                  className="w-[22px] h-[22px]"
+                  className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -222,15 +221,15 @@ function AudienceBentoSection() {
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
               </div>
-              <span className="text-[11.5px] font-medium text-[#1e8e3e] bg-[#e6f4ea] px-2.5 py-1 rounded-full">
+              <span className="text-[11px] sm:text-[11.5px] font-medium text-[#1e8e3e] bg-[#e6f4ea] px-2.5 py-1 rounded-full">
                 High-Intent SERPs
               </span>
             </div>
             <div>
-              <h3 className="gw-font-display text-[21px] md:text-[22px] font-medium text-[#202124] mb-2">
+              <h3 className="gw-font-display text-[18px] sm:text-[21px] md:text-[22px] font-medium text-[#202124] mb-1.5 sm:mb-2">
                 E-Commerce Stores
               </h3>
-              <p className="gw-font-text text-[14.5px] text-[#5f6368] leading-[1.6]">
+              <p className="gw-font-text text-[13.5px] sm:text-[14.5px] text-[#5f6368] leading-[1.55]">
                 Get your products recommended by AI systems and featured in
                 high-converting search results.
               </p>
@@ -238,11 +237,11 @@ function AudienceBentoSection() {
           </div>
 
           {/* Card 3 */}
-          <div className="col-span-1 bg-white rounded-[24px] p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(147,52,230,0.07)] hover:border-[#e9d2fc] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default relative overflow-hidden">
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-[46px] h-[46px] rounded-[14px] bg-[#f3e8fd] flex items-center justify-center text-[#9334e6] group-hover:scale-105 transition-all duration-300">
+          <div className="col-span-1 bg-white rounded-[20px] sm:rounded-[24px] p-5 sm:p-8 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(147,52,230,0.07)] hover:border-[#e9d2fc] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <div className="w-[42px] h-[42px] sm:w-[46px] sm:h-[46px] rounded-[12px] sm:rounded-[14px] bg-[#f3e8fd] flex items-center justify-center text-[#9334e6]">
                 <svg
-                  className="w-[22px] h-[22px]"
+                  className="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -255,27 +254,27 @@ function AudienceBentoSection() {
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
               </div>
-              <span className="text-[11.5px] font-medium text-[#9334e6] bg-[#f3e8fd] px-2.5 py-1 rounded-full">
+              <span className="text-[11px] sm:text-[11.5px] font-medium text-[#9334e6] bg-[#f3e8fd] px-2.5 py-1 rounded-full">
                 100% White-Label
               </span>
             </div>
             <div>
-              <h3 className="gw-font-display text-[21px] md:text-[22px] font-medium text-[#202124] mb-2">
+              <h3 className="gw-font-display text-[18px] sm:text-[21px] md:text-[22px] font-medium text-[#202124] mb-1.5 sm:mb-2">
                 Agencies & Resellers
               </h3>
-              <p className="gw-font-text text-[14.5px] text-[#5f6368] leading-[1.6]">
+              <p className="gw-font-text text-[13.5px] sm:text-[14.5px] text-[#5f6368] leading-[1.55]">
                 Expand your services with fully managed, wholesale PBN and AI
                 visibility campaigns.
               </p>
             </div>
           </div>
 
-          {/* Card 4: Wide National Brands Card with Google Mini Analytics Pill */}
-          <div className="col-span-1 md:col-span-2 bg-white rounded-[24px] p-8 md:p-10 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(217,48,37,0.06)] hover:border-[#fad2cf] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden cursor-default">
-            <div className="flex flex-wrap justify-between items-start gap-4 mb-8 relative z-10">
-              <div className="w-[48px] h-[48px] rounded-[14px] bg-[#fce8e6] flex items-center justify-center text-[#d93025] group-hover:scale-105 transition-all duration-300">
+          {/* Card 4 */}
+          <div className="col-span-1 md:col-span-2 bg-white rounded-[20px] sm:rounded-[24px] p-5 sm:p-8 md:p-10 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(217,48,37,0.06)] hover:border-[#fad2cf] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden cursor-default">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-4 sm:mb-8 relative z-10">
+              <div className="w-[42px] h-[42px] sm:w-[48px] sm:h-[48px] rounded-[12px] sm:rounded-[14px] bg-[#fce8e6] flex items-center justify-center text-[#d93025]">
                 <svg
-                  className="w-[24px] h-[24px]"
+                  className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -288,24 +287,23 @@ function AudienceBentoSection() {
                 </svg>
               </div>
 
-              {/* Google Workspace Style Mini Status Chip */}
-              <div className="flex items-center gap-3 bg-[#f8f9fa] border border-[#e8eaed] rounded-full px-3.5 py-1.5">
-                <span className="flex items-center gap-1.5 text-[12px] font-medium text-[#202124]">
+              <div className="flex items-center gap-2 sm:gap-3 bg-[#f8f9fa] border border-[#e8eaed] rounded-full px-3 py-1 sm:px-3.5 sm:py-1.5">
+                <span className="flex items-center gap-1.5 text-[11px] sm:text-[12px] font-medium text-[#202124]">
                   <span className="w-2 h-2 rounded-full bg-[#34a853]" />
-                  DR 50+ Network
+                  DR 50+
                 </span>
-                <span className="w-[1px] h-3.5 bg-[#dadce0]" />
-                <span className="text-[12px] font-medium text-[#1a73e8]">
-                  .COM • .ID • .EDU • .GOV
+                <span className="w-[1px] h-3 bg-[#dadce0]" />
+                <span className="text-[11px] sm:text-[12px] font-medium text-[#1a73e8]">
+                  .COM • .ID • .EDU
                 </span>
               </div>
             </div>
 
-            <div className="relative z-10 max-w-[90%]">
-              <h3 className="gw-font-display text-[24px] md:text-[26px] font-medium text-[#202124] mb-2.5">
+            <div className="relative z-10 sm:max-w-[90%]">
+              <h3 className="gw-font-display text-[19px] sm:text-[24px] md:text-[26px] font-medium text-[#202124] mb-1.5 sm:mb-2">
                 National & Enterprise Brands
               </h3>
-              <p className="gw-font-text text-[15px] md:text-[16px] text-[#5f6368] leading-[1.6]">
+              <p className="gw-font-text text-[13.5px] sm:text-[15px] md:text-[16px] text-[#5f6368] leading-[1.55]">
                 Simplify multi-channel AEO and SEO with data-driven link
                 strategies that scale across diverse teams, regional domains,
                 and highly competitive keywords.
@@ -314,11 +312,11 @@ function AudienceBentoSection() {
           </div>
 
           {/* Card 5 */}
-          <div className="col-span-1 bg-white rounded-[24px] p-8 md:p-10 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(60,64,67,0.08)] hover:border-[#dadce0] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default relative overflow-hidden">
-            <div className="flex justify-between items-start mb-8 relative z-10">
-              <div className="w-[48px] h-[48px] rounded-[14px] bg-[#f1f3f4] flex items-center justify-center text-[#5f6368] group-hover:scale-105 transition-all duration-300">
+          <div className="col-span-1 bg-white rounded-[20px] sm:rounded-[24px] p-5 sm:p-8 md:p-10 border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_14px_36px_rgba(60,64,67,0.08)] hover:border-[#dadce0] hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between cursor-default">
+            <div className="flex justify-between items-center mb-4 sm:mb-8 relative z-10">
+              <div className="w-[42px] h-[42px] sm:w-[48px] sm:h-[48px] rounded-[12px] sm:rounded-[14px] bg-[#f1f3f4] flex items-center justify-center text-[#5f6368]">
                 <svg
-                  className="w-[24px] h-[24px]"
+                  className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -330,15 +328,15 @@ function AudienceBentoSection() {
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
               </div>
-              <span className="text-[11.5px] font-medium text-[#5f6368] bg-[#f1f3f4] px-2.5 py-1 rounded-full">
+              <span className="text-[11px] sm:text-[11.5px] font-medium text-[#5f6368] bg-[#f1f3f4] px-2.5 py-1 rounded-full">
                 Multi-Region
               </span>
             </div>
             <div className="relative z-10">
-              <h3 className="gw-font-display text-[24px] md:text-[26px] font-medium text-[#202124] mb-2.5">
+              <h3 className="gw-font-display text-[19px] sm:text-[24px] md:text-[26px] font-medium text-[#202124] mb-1.5 sm:mb-2">
                 Franchises
               </h3>
-              <p className="gw-font-text text-[15px] md:text-[16px] text-[#5f6368] leading-[1.6]">
+              <p className="gw-font-text text-[13.5px] sm:text-[15px] md:text-[16px] text-[#5f6368] leading-[1.55]">
                 Manage search visibility for every location consistently from
                 one unified authority strategy.
               </p>
@@ -350,14 +348,94 @@ function AudienceBentoSection() {
   );
 }
 
-// --- LIVE PACKAGE ESTIMATOR & CHECKOUT MODAL SECTION (GOOGLE CLOUD CALCULATOR STYLE) ---
+// --- NEW SECTION: 3-STEP WORKFLOW (HOW IT WORKS) ---
+function HowItWorksSection() {
+  const steps = [
+    {
+      step: "01",
+      title: "Select Placements & Volume",
+      desc: "Use our live estimator below to mix Homepage, Blogroll, .ID regional, or EDU/GOV links starting from 50 placements.",
+      badge: "Instant Pricing",
+      color: "bg-[#e8f0fe] text-[#1a73e8]",
+    },
+    {
+      step: "02",
+      title: "Submit Target URLs & Anchors",
+      desc: "Complete your checkout via Stripe, PayPal, or Crypto and submit your target URLs and keywords in our onboarding form.",
+      badge: "100% Footprint-Free",
+      color: "bg-[#fef7e0] text-[#f29900]",
+    },
+    {
+      step: "03",
+      title: "Live Indexing & White-Label Report",
+      desc: "Our team publishes your contextual links across aged DA/DR 50+ domains and delivers a clean, verifiable tracking sheet.",
+      badge: "5–7 Days Turnaround",
+      color: "bg-[#e6f4ea] text-[#1e8e3e]",
+    },
+  ];
+
+  return (
+    <section className="w-full bg-white py-12 sm:py-20 px-4 sm:px-6 border-t border-[#e8eaed]">
+      <div className="max-w-[1200px] mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 gap-4 text-center md:text-left">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f8f9fa] border border-[#e8eaed] text-[#5f6368] text-[11.5px] sm:text-[12px] font-medium mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
+              Streamlined Execution
+            </div>
+            <h2 className="gw-font-display text-[26px] sm:text-[34px] md:text-[40px] font-medium text-[#202124] leading-[1.15] tracking-[-0.02em]">
+              How your campaign{" "}
+              <span className="text-[#1a73e8]">goes live.</span>
+            </h2>
+          </div>
+          <p className="gw-font-text text-[14px] sm:text-[15.5px] text-[#5f6368] max-w-[440px] mx-auto md:mx-0">
+            Zero manual outreach headaches. We handle content creation, niche
+            placement, and safe indexing from start to finish.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          {steps.map((item, idx) => (
+            <div
+              key={idx}
+              className="bg-[#f8f9fa] hover:bg-white rounded-[20px] sm:rounded-[24px] p-5 sm:p-7 border border-[#e8eaed] hover:border-[#d2e3fc] hover:shadow-[0_10px_30px_rgba(26,115,232,0.06)] transition-all duration-300 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <span
+                    className={`gw-font-display text-[13px] font-bold px-3 py-1 rounded-full ${item.color}`}
+                  >
+                    Step {item.step}
+                  </span>
+                  <span className="text-[11px] font-medium text-[#5f6368] bg-white px-2.5 py-1 rounded-full border border-[#e8eaed]">
+                    {item.badge}
+                  </span>
+                </div>
+                <h3 className="gw-font-display text-[18px] sm:text-[20px] font-medium text-[#202124] mb-2">
+                  {item.title}
+                </h3>
+                <p className="gw-font-text text-[13.5px] sm:text-[14.5px] text-[#5f6368] leading-[1.6]">
+                  {item.desc}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- LIVE PACKAGE ESTIMATOR & CHECKOUT MODAL SECTION (COMPACT MOBILE + STICKY DESKTOP) ---
 function PackageEstimator() {
   const [cart, setCart] = useState({ hp_post: 50 });
+  const [activeCategory, setActiveCategory] = useState("all");
   const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
 
   const services = [
     {
       id: "hp_post",
+      category: "standard",
       name: "Homepage Post",
       price: 1.0,
       desc: "Contextual homepage placement",
@@ -366,6 +444,7 @@ function PackageEstimator() {
     },
     {
       id: "sidebar",
+      category: "standard",
       name: "Sidebar Blogroll",
       price: 2.0,
       desc: "High-authority sitewide sidebar link",
@@ -373,6 +452,7 @@ function PackageEstimator() {
     },
     {
       id: "sticky",
+      category: "standard",
       name: "Homepage Sticky Post",
       price: 2.0,
       desc: "Pinned on homepage for maximum link juice",
@@ -380,6 +460,7 @@ function PackageEstimator() {
     },
     {
       id: "id_hp_post",
+      category: "id_net",
       name: ".ID Homepage Post",
       price: 2.0,
       desc: "Indonesian regional contextual homepage link",
@@ -388,6 +469,7 @@ function PackageEstimator() {
     },
     {
       id: "id_sidebar",
+      category: "id_net",
       name: ".ID Sidebar Blogroll",
       price: 3.0,
       desc: "Local .ID sitewide blogroll placement",
@@ -395,6 +477,7 @@ function PackageEstimator() {
     },
     {
       id: "id_sticky",
+      category: "id_net",
       name: ".ID Sticky Post",
       price: 2.5,
       desc: "Pinned .ID homepage placement",
@@ -402,6 +485,7 @@ function PackageEstimator() {
     },
     {
       id: "hidden_links",
+      category: "edu_gov",
       name: "Hidden Links (AC.ID, SCH.ID, GO.ID)",
       price: 20.0,
       desc: "Official academic & government domains",
@@ -410,6 +494,7 @@ function PackageEstimator() {
     },
     {
       id: "edu_post",
+      category: "edu_gov",
       name: "EDU PBN Blogpost",
       price: 3.0,
       desc: "Academic contextual article placement",
@@ -417,6 +502,7 @@ function PackageEstimator() {
     },
     {
       id: "edu_sidebar",
+      category: "edu_gov",
       name: "EDU PBN Blogroll",
       price: 5.0,
       desc: "University sidebar sitewide placement",
@@ -424,7 +510,13 @@ function PackageEstimator() {
     },
   ];
 
-  // Quick 1-Click Presets for Multi-Package Selection
+  const categories = [
+    { id: "all", label: "All Placements (9)" },
+    { id: "standard", label: "Standard PBN (3)" },
+    { id: "id_net", label: ".ID Regional (3)" },
+    { id: "edu_gov", label: "EDU & GOV (3)" },
+  ];
+
   const presets = [
     {
       label: "Starter (100 Links)",
@@ -472,6 +564,11 @@ function PackageEstimator() {
 
   const clearCart = () => setCart({});
 
+  const filteredServices =
+    activeCategory === "all"
+      ? services
+      : services.filter((s) => s.category === activeCategory);
+
   const selectedEntries = Object.entries(cart).filter(([, qty]) => qty > 0);
   const selectedPackagesCount = selectedEntries.length;
 
@@ -507,56 +604,81 @@ function PackageEstimator() {
     <>
       <section
         id="estimator"
-        className="w-full bg-white py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]"
+        className="w-full bg-[#fcfcfc] py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]"
       >
         <div className="max-w-[1200px] mx-auto">
           {/* Header */}
-          <div className="mb-10 lg:mb-14 max-w-[740px] mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[12.5px] font-medium mb-4">
+          <div className="mb-8 sm:mb-12 max-w-[740px] mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] sm:text-[12.5px] font-medium mb-3 sm:mb-4">
               <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
               Interactive Cost Calculator
             </div>
-            <h2 className="gw-font-display text-[34px] md:text-[46px] font-medium text-[#202124] leading-[1.15] tracking-[-0.02em] mb-4">
+            <h2 className="gw-font-display text-[28px] sm:text-[36px] md:text-[46px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-3">
               Customise your{" "}
               <span className="text-[#1a73e8]">PBN package.</span>
             </h2>
-            <p className="gw-font-text text-[16px] md:text-[17px] text-[#5f6368] leading-[1.6]">
-              Slide any bar from 50 to 5,000 links or click a 1,000-link
-              milestone stop. Combine multiple placements to build a custom
-              multi-tiered campaign in USD.
+            <p className="gw-font-text text-[14.5px] sm:text-[16px] md:text-[17px] text-[#5f6368] leading-[1.6]">
+              Tap any placement to start from 50 links or slide up to 5,000
+              links. Combine multiple packages in real-time.
             </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-start gap-8 xl:gap-10 relative">
+          {/* Main 2-Column Wrapper: items-start + NO overflow-hidden on ancestors = working sticky sidebar */}
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 sm:gap-8 xl:gap-10 relative">
             {/* Left Column: Sliders Builder */}
-            <div className="flex-1 w-full">
-              {/* Top Control Bar with Quick Presets */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-[#f8f9fa] p-4 sm:px-5 rounded-[20px] border border-[#e8eaed]">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[13px] font-medium text-[#5f6368]">
-                    Quick Presets:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {presets.map((preset, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setCart(preset.config)}
-                        className="text-[12px] font-medium bg-white hover:bg-[#e8f0fe] text-[#3c4043] hover:text-[#1a73e8] border border-[#dadce0] hover:border-[#d2e3fc] px-3 py-1 rounded-full transition-all cursor-pointer shadow-[0_1px_2px_rgba(60,64,67,0.03)]"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
+            <div className="flex-1 w-full min-w-0">
+              {/* Top Filter & Preset Control Box */}
+              <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] mb-4 sm:mb-5 space-y-3">
+                {/* Category Tabs (Reduces scrolling on mobile) */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                    {categories.map((cat) => {
+                      const active = activeCategory === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setActiveCategory(cat.id)}
+                          className={`text-[12px] sm:text-[12.5px] font-medium px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+                            active
+                              ? "bg-[#1a73e8] text-white shadow-sm"
+                              : "bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      );
+                    })}
                   </div>
+                  <span className="hidden sm:inline-block bg-[#e6f4ea] text-[#1e8e3e] text-[11.5px] font-semibold px-3 py-1 rounded-full border border-[#ceead6] shrink-0">
+                    DA/DR 50+
+                  </span>
                 </div>
-                <span className="bg-[#e6f4ea] text-[#1e8e3e] text-[12px] font-semibold px-3 py-1 rounded-full border border-[#ceead6] self-start sm:self-auto shrink-0">
-                  Guaranteed DA/DR 50+
-                </span>
+
+                {/* Quick Presets Row */}
+                <div className="flex items-center gap-2 pt-2 border-t border-[#f1f3f4] overflow-x-auto no-scrollbar">
+                  <span className="text-[11.5px] font-medium text-[#5f6368] shrink-0">
+                    Presets:
+                  </span>
+                  {presets.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setActiveCategory("all");
+                        setCart(preset.config);
+                      }}
+                      className="text-[11.5px] font-medium bg-[#f8f9fa] hover:bg-[#e8f0fe] text-[#3c4043] hover:text-[#1a73e8] border border-[#dadce0] hover:border-[#d2e3fc] px-2.5 py-1 rounded-full transition-all cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Service Rows */}
-              <div className="grid grid-cols-1 gap-4">
-                {services.map((service) => {
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                {filteredServices.map((service) => {
                   const currentQty = cart[service.id] || 0;
                   const isActive = currentQty > 0;
                   const fillPercent = Math.min(100, (currentQty / 5000) * 100);
@@ -564,21 +686,29 @@ function PackageEstimator() {
                   return (
                     <div
                       key={service.id}
-                      className={`p-5 sm:p-6 rounded-[20px] border transition-all duration-200 ${
+                      className={`rounded-[18px] sm:rounded-[20px] border transition-all duration-200 ${
                         isActive
-                          ? "bg-[#f8fbff] border-[#1a73e8] ring-3 ring-[#e8f0fe]/60"
-                          : "bg-white border-[#e8eaed] hover:border-[#dadce0] hover:shadow-[0_4px_12px_rgba(60,64,67,0.04)]"
+                          ? "p-4 sm:p-5 bg-[#f8fbff] border-[#1a73e8] ring-2 ring-[#e8f0fe]/70"
+                          : "p-3.5 sm:p-5 bg-white border-[#e8eaed] hover:border-[#dadce0] hover:shadow-[0_4px_12px_rgba(60,64,67,0.04)]"
                       }`}
                     >
-                      {/* Top Row: Info & Price */}
-                      <div className="flex flex-wrap justify-between items-start gap-2 mb-4">
-                        <div className="flex items-start gap-3">
+                      {/* Top Row: Info & Price / Mobile Quick-Add */}
+                      <div
+                        onClick={() => {
+                          if (!isActive) setServiceQty(service.id, 50);
+                        }}
+                        className={`flex justify-between items-center gap-2 ${
+                          isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
                           <button
                             type="button"
-                            onClick={() =>
-                              setServiceQty(service.id, isActive ? 0 : 50)
-                            }
-                            className={`mt-1 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setServiceQty(service.id, isActive ? 0 : 50);
+                            }}
+                            className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
                               isActive
                                 ? "bg-[#1a73e8] border-[#1a73e8] text-white"
                                 : "bg-white border-[#bdc1c6] hover:border-[#1a73e8]"
@@ -596,47 +726,63 @@ function PackageEstimator() {
                               </svg>
                             )}
                           </button>
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="gw-font-display text-[17px] font-medium text-[#202124]">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                              <h4 className="gw-font-display text-[15px] sm:text-[17px] font-medium text-[#202124] leading-snug">
                                 {service.name}
                               </h4>
-                              <span className="text-[11px] font-medium bg-[#f1f3f4] text-[#5f6368] px-2 py-0.5 rounded-md">
+                              <span className="text-[10px] sm:text-[11px] font-medium bg-[#f1f3f4] text-[#5f6368] px-1.5 sm:px-2 py-0.5 rounded-md">
                                 {service.metric}
                               </span>
                               {service.tag && (
-                                <span className="text-[11px] font-medium bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-md">
+                                <span className="text-[10px] sm:text-[11px] font-medium bg-[#e8f0fe] text-[#1a73e8] px-1.5 sm:px-2 py-0.5 rounded-md">
                                   {service.tag}
                                 </span>
                               )}
                             </div>
-                            <p className="gw-font-text text-[13px] text-[#5f6368] mt-0.5">
+                            <p className="gw-font-text text-[12px] sm:text-[13px] text-[#5f6368] mt-0.5 leading-snug truncate sm:whitespace-normal">
                               {service.desc}
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className="gw-font-display text-[14.5px] font-medium text-[#1a73e8] bg-white border border-[#d2e3fc] px-3 py-1 rounded-full shadow-[0_1px_2px_rgba(26,115,232,0.06)]">
-                            ${service.price.toFixed(2)}{" "}
-                            <span className="text-[12px] font-normal text-[#5f6368]">
-                              / link
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="gw-font-display text-[13px] sm:text-[14.5px] font-medium text-[#1a73e8] bg-white border border-[#d2e3fc] px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
+                            ${service.price.toFixed(2)}
+                            <span className="text-[10.5px] sm:text-[12px] font-normal text-[#5f6368]">
+                              /link
                             </span>
                           </span>
+                          {/* Mobile Quick Activate Button when inactive */}
+                          {!isActive && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setServiceQty(service.id, 50);
+                              }}
+                              className="sm:hidden text-[11.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-1 rounded-full"
+                            >
+                              + Add
+                            </button>
+                          )}
                         </div>
                       </div>
 
-                      {/* Middle Row: Slider Bar with 1,000 Milestone Tick Dots & Direct Input */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-3">
+                      {/* Slider & Stepper Row: On mobile, only shown when active to save 60% vertical scroll! On desktop (sm:flex), always shown */}
+                      <div
+                        className={`${
+                          isActive ? "flex" : "hidden sm:flex"
+                        } flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-4 mt-2`}
+                      >
                         <div className="flex-1">
                           <div className="relative flex items-center h-7">
-                            {/* Milestone Stop Dots on Track */}
                             <div className="absolute inset-x-0 flex justify-between items-center pointer-events-none px-[6px] z-10">
                               {[0, 1000, 2000, 3000, 4000, 5000].map(
                                 (milestone) => (
                                   <span
                                     key={milestone}
-                                    className={`w-2 h-2 rounded-full transition-colors ${
+                                    className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
                                       currentQty >= milestone && currentQty > 0
                                         ? "bg-white ring-2 ring-[#1a73e8]"
                                         : "bg-[#bdc1c6]"
@@ -655,15 +801,15 @@ function PackageEstimator() {
                               onChange={(e) =>
                                 handleSliderChange(service.id, e.target.value)
                               }
-                              className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer focus:outline-none relative z-20"
+                              className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer focus:outline-none relative z-20 touch-pan-y"
                               style={{
                                 background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${fillPercent}%, #e8eaed ${fillPercent}%, #e8eaed 100%)`,
                               }}
                             />
                           </div>
 
-                          {/* Clickable Milestone Stop Pills (50 & every 1,000) */}
-                          <div className="flex justify-between items-center mt-1.5 px-0.5">
+                          {/* Clickable Milestone Stop Pills */}
+                          <div className="flex justify-between items-center mt-1 px-0.5">
                             {stops.map((stopVal) => {
                               const isCurrentStop =
                                 currentQty === stopVal && stopVal > 0;
@@ -674,17 +820,25 @@ function PackageEstimator() {
                                   onClick={() =>
                                     setServiceQty(service.id, stopVal)
                                   }
-                                  className={`text-[11px] font-medium px-2 py-0.5 rounded-full transition-colors cursor-pointer ${
+                                  className={`text-[10.5px] sm:text-[11px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full transition-colors cursor-pointer ${
                                     isCurrentStop
                                       ? "bg-[#1a73e8] text-white font-semibold"
                                       : "text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe]/70"
                                   }`}
                                 >
-                                  {stopVal === 0
-                                    ? "Off"
-                                    : stopVal === 50
-                                      ? "50 (Min)"
-                                      : `${stopVal / 1000}k`}
+                                  {stopVal === 0 ? (
+                                    "Off"
+                                  ) : stopVal === 50 ? (
+                                    <>
+                                      50
+                                      <span className="hidden sm:inline">
+                                        {" "}
+                                        (Min)
+                                      </span>
+                                    </>
+                                  ) : (
+                                    `${stopVal / 1000}k`
+                                  )}
                                 </button>
                               );
                             })}
@@ -692,8 +846,8 @@ function PackageEstimator() {
                         </div>
 
                         {/* Direct Quantity Input & Subtotal */}
-                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e8eaed]">
-                          <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-1 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
+                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e8eaed]/80">
+                          <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 sm:p-1 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
                             <button
                               type="button"
                               onClick={() =>
@@ -702,7 +856,7 @@ function PackageEstimator() {
                                   currentQty === 50 ? 0 : currentQty - 50,
                                 )
                               }
-                              className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
+                              className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] active:bg-[#e8eaed] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
                             >
                               −
                             </button>
@@ -715,7 +869,7 @@ function PackageEstimator() {
                               onChange={(e) =>
                                 setServiceQty(service.id, e.target.value)
                               }
-                              className="w-[60px] text-center bg-transparent text-[14px] font-semibold text-[#202124] focus:outline-none"
+                              className="w-[54px] sm:w-[60px] text-center bg-transparent text-[13.5px] sm:text-[14px] font-semibold text-[#202124] focus:outline-none"
                             />
                             <button
                               type="button"
@@ -725,18 +879,18 @@ function PackageEstimator() {
                                   currentQty === 0 ? 50 : currentQty + 50,
                                 )
                               }
-                              className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"
+                              className="w-7 h-7 rounded-full text-[#1a73e8] active:bg-[#d2e3fc] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"
                             >
                               +
                             </button>
                           </div>
 
-                          <div className="w-[84px] text-right">
-                            <span className="block text-[11px] text-[#5f6368]">
+                          <div className="min-w-[78px] text-right">
+                            <span className="block text-[10px] sm:text-[11px] text-[#5f6368]">
                               Subtotal
                             </span>
                             <span
-                              className={`gw-font-display text-[15px] font-semibold ${isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"}`}
+                              className={`gw-font-display text-[14px] sm:text-[15px] font-semibold ${isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"}`}
                             >
                               $
                               {(currentQty * service.price).toLocaleString(
@@ -756,10 +910,12 @@ function PackageEstimator() {
               </div>
             </div>
 
-            {/* Right Column: Sticky Order Summary with Google 4-Colour Bar */}
-            <div className="w-full lg:w-[390px] xl:w-[420px] shrink-0 sticky top-[88px] transition-all duration-300">
-              <div className="bg-white rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col">
-                {/* Authentic Google 4-Colour Top Strip */}
+            {/* Right Column: Sticky Order Summary on Desktop */}
+            <aside
+              id="order-summary-card"
+              className="w-full lg:w-[390px] xl:w-[420px] shrink-0 lg:sticky lg:top-[96px] self-start transition-all duration-300 mt-2 lg:mt-0"
+            >
+              <div className="bg-white rounded-[22px] sm:rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col">
                 <div className="grid grid-cols-4 h-[4px] w-full">
                   <div className="bg-[#4285F4]" />
                   <div className="bg-[#EA4335]" />
@@ -767,13 +923,13 @@ function PackageEstimator() {
                   <div className="bg-[#34A853]" />
                 </div>
 
-                <div className="p-6 lg:p-7 flex flex-col">
-                  <div className="flex items-center justify-between mb-5 border-b border-[#e8eaed] pb-4">
+                <div className="p-5 sm:p-6 lg:p-7 flex flex-col">
+                  <div className="flex items-center justify-between mb-4 sm:mb-5 border-b border-[#e8eaed] pb-3.5 sm:pb-4">
                     <div>
-                      <h3 className="gw-font-display text-[20px] font-medium text-[#202124]">
+                      <h3 className="gw-font-display text-[19px] sm:text-[20px] font-medium text-[#202124]">
                         Order Summary
                       </h3>
-                      <p className="text-[12.5px] text-[#5f6368] mt-0.5">
+                      <p className="text-[12px] sm:text-[12.5px] text-[#5f6368] mt-0.5">
                         {selectedPackagesCount}{" "}
                         {selectedPackagesCount === 1
                           ? "placement type"
@@ -793,15 +949,14 @@ function PackageEstimator() {
                   </div>
 
                   {/* Selected Packages List */}
-                  <div className="flex-1 overflow-y-auto max-h-[250px] mb-5 pr-1 space-y-2.5 gw-font-text custom-scrollbar">
+                  <div className="flex-1 overflow-y-auto max-h-[240px] mb-4 sm:mb-5 pr-1 space-y-2 gw-font-text custom-scrollbar">
                     {selectedPackagesCount === 0 ? (
-                      <div className="text-center py-8 px-4 bg-[#f8f9fa] rounded-[16px] border border-dashed border-[#dadce0]">
-                        <p className="text-[14px] text-[#5f6368] font-medium">
+                      <div className="text-center py-7 px-4 bg-[#f8f9fa] rounded-[16px] border border-dashed border-[#dadce0]">
+                        <p className="text-[13.5px] text-[#5f6368] font-medium">
                           No placements selected
                         </p>
-                        <p className="text-[12.5px] text-[#9aa0a6] mt-1">
-                          Slide any bar or choose a preset to start from 50
-                          links.
+                        <p className="text-[12px] text-[#9aa0a6] mt-1">
+                          Tap any placement or preset to start from 50 links.
                         </p>
                       </div>
                     ) : (
@@ -811,23 +966,23 @@ function PackageEstimator() {
                         return (
                           <div
                             key={id}
-                            className="flex justify-between items-center bg-[#f8f9fa] hover:bg-[#f1f3f4]/70 px-3.5 py-2.5 rounded-[14px] border border-[#e8eaed] transition-colors"
+                            className="flex justify-between items-center bg-[#f8f9fa] hover:bg-[#f1f3f4]/70 px-3 py-2.5 rounded-[12px] border border-[#e8eaed] transition-colors"
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="text-[12px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-0.5 rounded-full shrink-0">
+                              <span className="text-[11.5px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full shrink-0">
                                 {qty.toLocaleString()}
                               </span>
                               <div className="min-w-0">
-                                <p className="text-[13.5px] font-medium text-[#202124] truncate">
+                                <p className="text-[13px] sm:text-[13.5px] font-medium text-[#202124] truncate">
                                   {svc.name}
                                 </p>
-                                <p className="text-[11.5px] text-[#5f6368]">
+                                <p className="text-[11px] text-[#5f6368]">
                                   ${svc.price.toFixed(2)} / link
                                 </p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0 pl-2">
-                              <span className="text-[13.5px] font-semibold text-[#202124]">
+                            <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                              <span className="text-[13px] sm:text-[13.5px] font-semibold text-[#202124]">
                                 $
                                 {(svc.price * qty).toLocaleString("en-US", {
                                   minimumFractionDigits: 2,
@@ -858,15 +1013,15 @@ function PackageEstimator() {
                   </div>
 
                   {/* Totals Box */}
-                  <div className="bg-[#f8f9fa] rounded-[18px] p-5 mb-5 border border-[#e8eaed]">
-                    <div className="flex justify-between items-center mb-2.5 text-[13px] text-[#5f6368]">
+                  <div className="bg-[#f8f9fa] rounded-[16px] sm:rounded-[18px] p-4 sm:p-5 mb-4 sm:mb-5 border border-[#e8eaed]">
+                    <div className="flex justify-between items-center mb-2 text-[12.5px] sm:text-[13px] text-[#5f6368]">
                       <span>Selected Services</span>
                       <span className="font-medium text-[#202124]">
                         {selectedPackagesCount}{" "}
                         {selectedPackagesCount === 1 ? "Service" : "Services"}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#dadce0] text-[13px] text-[#5f6368]">
+                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#dadce0] text-[12.5px] sm:text-[13px] text-[#5f6368]">
                       <span>Total Volume</span>
                       <span className="font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
                         {totalLinks.toLocaleString()} Backlinks
@@ -874,22 +1029,22 @@ function PackageEstimator() {
                     </div>
                     <div className="flex justify-between items-end pt-1">
                       <div>
-                        <span className="gw-font-display text-[15px] font-medium text-[#202124] block">
+                        <span className="gw-font-display text-[14.5px] sm:text-[15px] font-medium text-[#202124] block">
                           Estimated Total
                         </span>
-                        <span className="text-[11.5px] text-[#1e8e3e] font-medium">
+                        <span className="text-[11px] sm:text-[11.5px] text-[#1e8e3e] font-medium">
                           ● Instant Setup Included
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="gw-font-display text-[30px] font-medium text-[#1a73e8] leading-none">
+                        <span className="gw-font-display text-[26px] sm:text-[30px] font-medium text-[#1a73e8] leading-none">
                           $
                           {finalTotal.toLocaleString("en-US", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
                         </span>
-                        <span className="gw-font-text text-[12.5px] text-[#5f6368] font-medium ml-1">
+                        <span className="gw-font-text text-[12px] text-[#5f6368] font-medium ml-1">
                           USD
                         </span>
                       </div>
@@ -902,10 +1057,10 @@ function PackageEstimator() {
                       type="button"
                       onClick={openStripeModal}
                       disabled={totalLinks === 0}
-                      className="gw-font-display w-full h-[50px] rounded-full bg-[#635BFF] text-white font-medium text-[15px] hover:bg-[#5851df] hover:shadow-[0_4px_14px_rgba(99,91,255,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635BFF] text-white font-medium text-[14.5px] sm:text-[15px] hover:bg-[#5851df] hover:shadow-[0_4px_14px_rgba(99,91,255,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <svg
-                        className="h-[19px] w-auto"
+                        className="h-[18px] sm:h-[19px] w-auto"
                         viewBox="0 0 468 222.5"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -950,10 +1105,10 @@ function PackageEstimator() {
                       type="button"
                       onClick={handlePayPalSubmit}
                       disabled={totalLinks === 0}
-                      className="gw-font-display w-full h-[50px] rounded-full bg-[#FFC439] hover:bg-[#F4BB33] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(255,196,57,0.25)] cursor-pointer"
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] hover:bg-[#F4BB33] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(255,196,57,0.25)] cursor-pointer"
                     >
                       <svg
-                        className="h-[21px] w-auto"
+                        className="h-[20px] sm:h-[21px] w-auto"
                         viewBox="0 0 188 49"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -984,7 +1139,7 @@ function PackageEstimator() {
                     <button
                       type="button"
                       disabled={totalLinks === 0}
-                      className="gw-font-display w-full h-[50px] rounded-full border border-[#dadce0] bg-white text-[#202124] font-medium text-[14.5px] hover:bg-[#f8f9fa] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-white text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#f8f9fa] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <svg
                         className="w-4 h-4 text-[#1a73e8]"
@@ -1002,20 +1157,66 @@ function PackageEstimator() {
                   </div>
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </section>
 
+      {/* --- FLOATING MOBILE QUICK-SUMMARY BAR --- */}
+      {totalLinks > 0 && !isStripeModalOpen && (
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
+              <span>
+                {selectedPackagesCount}{" "}
+                {selectedPackagesCount === 1 ? "Service" : "Services"} •{" "}
+                {totalLinks.toLocaleString()} Links
+              </span>
+            </div>
+            <div className="gw-font-display text-[18px] font-semibold text-white leading-tight">
+              $
+              {finalTotal.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{" "}
+              <span className="text-[11px] font-normal text-[#9aa0a6]">
+                USD
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById("order-summary-card")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="text-[12px] font-medium text-white/90 bg-white/10 hover:bg-white/15 px-3 py-2 rounded-full transition-colors"
+            >
+              Summary
+            </button>
+            <button
+              type="button"
+              onClick={openStripeModal}
+              className="gw-font-display text-[13px] font-medium bg-[#1a73e8] hover:bg-[#1557b0] text-white px-4 py-2 rounded-full shadow-sm transition-colors"
+            >
+              Checkout
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* --- STRIPE CHECKOUT MODAL OVERLAY --- */}
       {isStripeModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-[#202124]/40 backdrop-blur-[2px] transition-opacity"
+            className="absolute inset-0 bg-[#202124]/45 backdrop-blur-[2px] transition-opacity"
             onClick={closeStripeModal}
           />
-          <div className="relative w-full max-w-[440px] bg-white rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.18)] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-[#635BFF] px-6 py-6 text-white relative">
+          <div className="relative w-full max-w-[440px] max-h-[92vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.2)] animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-[#635BFF] px-5 py-5 sm:px-6 sm:py-6 text-white relative">
               <button
                 type="button"
                 onClick={closeStripeModal}
@@ -1032,9 +1233,9 @@ function PackageEstimator() {
                 </svg>
               </button>
 
-              <div className="flex items-center mb-5">
+              <div className="flex items-center mb-4 sm:mb-5">
                 <svg
-                  className="h-[24px] w-auto"
+                  className="h-[22px] sm:h-[24px] w-auto"
                   viewBox="0 0 468 222.5"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -1075,10 +1276,10 @@ function PackageEstimator() {
 
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-white/80 text-[13.5px] mb-1 font-medium">
+                  <p className="text-white/80 text-[13px] sm:text-[13.5px] mb-1 font-medium">
                     Jasa Backlinks ({totalLinks.toLocaleString()} Links)
                   </p>
-                  <h4 className="text-[34px] font-medium leading-none tracking-tight">
+                  <h4 className="text-[30px] sm:text-[34px] font-medium leading-none tracking-tight">
                     $
                     {finalTotal.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
@@ -1089,7 +1290,7 @@ function PackageEstimator() {
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-5 sm:p-6">
               <form onSubmit={handleStripeSubmit} className="space-y-4">
                 <div>
                   <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
@@ -1098,7 +1299,7 @@ function PackageEstimator() {
                   <input
                     type="email"
                     placeholder="you@company.com"
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[8px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] transition-all text-[14.5px] text-[#202124]"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[8px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] transition-all text-[15px] text-[#202124]"
                     required
                   />
                 </div>
@@ -1109,7 +1310,7 @@ function PackageEstimator() {
                   <div className="border border-[#dadce0] rounded-[8px] overflow-hidden focus-within:border-[#635BFF] focus-within:ring-1 focus-within:ring-[#635BFF] transition-all">
                     <div className="px-3.5 py-2.5 border-b border-[#dadce0] bg-white flex items-center">
                       <svg
-                        className="w-5 h-5 text-[#9aa0a6] mr-2"
+                        className="w-5 h-5 text-[#9aa0a6] mr-2 shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1127,7 +1328,7 @@ function PackageEstimator() {
                       <input
                         type="text"
                         placeholder="1234 5678 9101 1121"
-                        className="w-full bg-transparent border-none outline-none text-[14.5px] text-[#202124] placeholder-[#9aa0a6]"
+                        className="w-full bg-transparent border-none outline-none text-[15px] text-[#202124] placeholder-[#9aa0a6]"
                         required
                       />
                     </div>
@@ -1135,13 +1336,13 @@ function PackageEstimator() {
                       <input
                         type="text"
                         placeholder="MM / YY"
-                        className="w-1/2 px-3.5 py-2.5 border-r border-[#dadce0] bg-transparent outline-none text-[14.5px] text-[#202124] placeholder-[#9aa0a6]"
+                        className="w-1/2 px-3.5 py-2.5 border-r border-[#dadce0] bg-transparent outline-none text-[15px] text-[#202124] placeholder-[#9aa0a6]"
                         required
                       />
                       <input
                         type="text"
                         placeholder="CVC"
-                        className="w-1/2 px-3.5 py-2.5 bg-transparent outline-none text-[14.5px] text-[#202124] placeholder-[#9aa0a6]"
+                        className="w-1/2 px-3.5 py-2.5 bg-transparent outline-none text-[15px] text-[#202124] placeholder-[#9aa0a6]"
                         required
                       />
                     </div>
@@ -1154,14 +1355,14 @@ function PackageEstimator() {
                   <input
                     type="text"
                     placeholder="John Doe"
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[8px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] transition-all text-[14.5px] text-[#202124]"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[8px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] transition-all text-[15px] text-[#202124]"
                     required
                   />
                 </div>
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="w-full h-[46px] bg-[#635BFF] text-white rounded-[8px] font-medium text-[15px] hover:bg-[#5851df] transition-colors shadow-[0_2px_8px_rgba(99,91,255,0.25)] flex items-center justify-center cursor-pointer"
+                    className="w-full h-[48px] bg-[#635BFF] text-white rounded-[8px] font-medium text-[15px] hover:bg-[#5851df] transition-colors shadow-[0_2px_8px_rgba(99,91,255,0.25)] flex items-center justify-center cursor-pointer"
                   >
                     Pay $
                     {finalTotal.toLocaleString("en-US", {
@@ -1179,8 +1380,11 @@ function PackageEstimator() {
   );
 }
 
-// --- ON-THEME GOOGLE WORKSPACE REVIEWS SECTION ---
+// --- REVIEWS SECTION (SMOOTH MOBILE SLIDER + 4-COL DESKTOP) ---
 function ReviewsSection() {
+  const sliderRef = useRef(null);
+  const [activeSlide, setActiveSlide] = useState(0);
+
   const reviews = [
     {
       text: "Super simple and easy to use interface to select what I need — well done! The DA/DR 50+ metrics were exactly as promised.",
@@ -1203,6 +1407,13 @@ function ReviewsSection() {
       time: "35 days ago",
       avatar: "https://i.pravatar.cc/100?img=5",
     },
+    {
+      text: "We ordered 1,000 homepage and EDU placements for a competitive fintech client. Rankings jumped into the top 3 within 4 weeks.",
+      name: "Marcus Vance",
+      role: "Founder, Vance Media",
+      time: "41 days ago",
+      avatar: "https://i.pravatar.cc/100?img=59",
+    },
   ];
 
   const ratingBars = [
@@ -1213,46 +1424,84 @@ function ReviewsSection() {
     { label: "1 Star", width: "w-[0%]" },
   ];
 
+  const handleScroll = () => {
+    if (!sliderRef.current) return;
+    const { scrollLeft, clientWidth } = sliderRef.current;
+    const index = Math.round(scrollLeft / (clientWidth * 0.82));
+    setActiveSlide(Math.min(reviews.length - 1, Math.max(0, index)));
+  };
+
+  const scrollToSlide = (index) => {
+    if (!sliderRef.current) return;
+    const cardWidth = sliderRef.current.clientWidth * 0.85;
+    sliderRef.current.scrollTo({
+      left: index * cardWidth,
+      behavior: "smooth",
+    });
+    setActiveSlide(index);
+  };
+
   return (
-    <section className="relative w-full bg-[#f8f9fa] py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]">
+    <section className="relative w-full bg-[#f8f9fa] py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]">
       <div className="max-w-[1200px] mx-auto">
         {/* Top Header */}
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e8eaed] text-[#5f6368] text-[12.5px] font-medium mb-4">
+        <div className="text-center mb-8 sm:mb-14">
+          <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-white border border-[#e8eaed] text-[#5f6368] text-[11.5px] sm:text-[12.5px] font-medium mb-3 sm:mb-4">
             <span className="w-2 h-2 rounded-full bg-[#fbbc04]" />
             Verified Client Feedback
           </div>
-          <h2 className="gw-font-display text-[34px] md:text-[44px] font-medium text-[#202124] leading-[1.15] tracking-[-0.02em] mb-3">
+          <h2 className="gw-font-display text-[28px] sm:text-[36px] md:text-[44px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-2.5 sm:mb-3">
             What our <span className="text-[#1a73e8]">customers think.</span>
           </h2>
-          <p className="gw-font-text text-[16px] md:text-[17px] text-[#5f6368] leading-[1.6]">
+          <p className="gw-font-text text-[14.5px] sm:text-[16px] md:text-[17px] text-[#5f6368] leading-[1.6]">
             Read verified feedback from Agencies, In-House Marketing Teams & SEO
             Professionals.
           </p>
         </div>
 
         {/* Top Rating Analytics Banner */}
-        <div className="bg-white rounded-[24px] border border-[#e8eaed] shadow-[0_2px_14px_rgba(60,64,67,0.03)] p-7 lg:p-10 mb-8 grid grid-cols-1 lg:grid-cols-3 items-center gap-8">
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-            <div className="flex items-baseline gap-2.5 mb-2">
-              <span className="gw-font-display text-[48px] md:text-[54px] font-medium text-[#202124] leading-none">
-                95%
-              </span>
-              <span className="text-[12px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] px-2.5 py-0.5 rounded-full">
-                satisfaction
-              </span>
+        <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-[#e8eaed] shadow-[0_2px_14px_rgba(60,64,67,0.03)] p-5 sm:p-7 lg:p-10 mb-6 sm:mb-8 grid grid-cols-1 lg:grid-cols-3 items-center gap-5 sm:gap-8">
+          <div className="flex items-center justify-between sm:justify-center lg:justify-start gap-4 border-b lg:border-b-0 pb-4 lg:pb-0 border-[#e8eaed]">
+            <div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="gw-font-display text-[36px] sm:text-[48px] md:text-[54px] font-medium text-[#202124] leading-none">
+                  95%
+                </span>
+                <span className="text-[11px] sm:text-[12px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] px-2.5 py-0.5 rounded-full">
+                  Verified
+                </span>
+              </div>
+              <p className="gw-font-text text-[12.5px] sm:text-[14px] text-[#5f6368] leading-[1.5] max-w-[240px]">
+                of buyers give us a 4 or 5-star rating.
+              </p>
             </div>
-            <p className="gw-font-text text-[14.5px] text-[#5f6368] leading-[1.55] max-w-[260px]">
-              of customers that buy from this merchant give them a 4 or 5-star
-              rating.
-            </p>
+
+            {/* Mobile-only compact 4.8/5 badge so mobile banner stays short */}
+            <div className="lg:hidden text-right">
+              <span className="gw-font-display text-[32px] font-medium text-[#202124] leading-none block">
+                4.8/5
+              </span>
+              <div className="flex justify-end gap-0.5 my-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg
+                    key={star}
+                    className="w-3.5 h-3.5 text-[#fbbc04]"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                ))}
+              </div>
+              <span className="text-[11px] text-[#5f6368]">1,636 reviews</span>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center lg:border-x border-[#e8eaed] py-4 lg:py-0">
-            <span className="gw-font-text text-[14px] font-medium text-[#5f6368] mb-3">
+          <div className="hidden lg:flex flex-col items-center justify-center lg:border-x border-[#e8eaed]">
+            <span className="gw-font-text text-[14px] font-medium text-[#5f6368] mb-2.5">
               Overall Rating
             </span>
-            <div className="flex gap-1.5 mb-2.5">
+            <div className="flex gap-1.5 mb-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <svg
                   key={star}
@@ -1265,21 +1514,21 @@ function ReviewsSection() {
               ))}
             </div>
             <span className="text-[12.5px] text-[#5f6368]">
-              100% Transparent PBN Metrics
+              Shopper Approved • 1,636 Orders
             </span>
           </div>
 
-          <div className="flex items-center justify-center lg:justify-end gap-6">
-            <div className="text-center">
-              <span className="gw-font-display text-[44px] md:text-[50px] font-medium text-[#202124] leading-none block mb-1">
+          <div className="flex items-center justify-center lg:justify-end gap-6 w-full">
+            <div className="hidden lg:block text-center shrink-0">
+              <span className="gw-font-display text-[48px] font-medium text-[#202124] leading-none block mb-1">
                 4.8/5
               </span>
               <span className="text-[12px] text-[#5f6368]">1,636 reviews</span>
             </div>
-            <div className="flex-1 max-w-[210px] space-y-2">
+            <div className="w-full max-w-full lg:max-w-[210px] space-y-1.5 sm:space-y-2">
               {ratingBars.map((bar) => (
                 <div key={bar.label} className="flex items-center gap-2.5">
-                  <span className="text-[12px] text-[#5f6368] w-[44px] shrink-0">
+                  <span className="text-[11.5px] sm:text-[12px] text-[#5f6368] w-[44px] shrink-0">
                     {bar.label}
                   </span>
                   <div className="h-2 flex-1 bg-[#f1f3f4] rounded-full overflow-hidden">
@@ -1293,54 +1542,19 @@ function ReviewsSection() {
           </div>
         </div>
 
-        {/* Bottom 4-Column Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Card 1: Excellent Badge Card */}
-          <div className="bg-white p-7 rounded-[24px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] flex flex-col items-center justify-center text-center">
-            <span className="gw-font-display text-[20px] font-medium text-[#202124] mb-3">
-              Excellent
-            </span>
-            <div className="flex gap-1 mb-3">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  className="w-6 h-6 text-[#fbbc04]"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              ))}
-            </div>
-            <p className="gw-font-text text-[13px] text-[#5f6368] mb-5">
-              Based on 1,636 verified orders
-            </p>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f8f9fa] border border-[#e8eaed]">
-              <svg
-                className="w-4 h-4 text-[#1a73e8]"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-[12.5px] font-medium text-[#202124]">
-                Shopper Approved
-              </span>
-            </div>
-          </div>
-
-          {/* Cards 2-4: Customer Reviews */}
+        {/* Smooth Horizontal Slider on Mobile, 4-Col Grid on Desktop */}
+        <div
+          ref={sliderRef}
+          onScroll={handleScroll}
+          className="flex lg:grid lg:grid-cols-4 gap-4 sm:gap-5 overflow-x-auto lg:overflow-visible snap-x snap-mandatory scroll-smooth no-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
+        >
           {reviews.map((review, i) => (
             <div
               key={i}
-              className="bg-white p-7 rounded-[24px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_12px_32px_rgba(26,115,232,0.06)] hover:border-[#d2e3fc] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+              className="w-[85vw] sm:w-[320px] lg:w-auto shrink-0 snap-center bg-white p-6 sm:p-7 rounded-[20px] sm:rounded-[24px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_12px_32px_rgba(26,115,232,0.06)] hover:border-[#d2e3fc] transition-all duration-300 flex flex-col justify-between"
             >
               <div>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-3.5">
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <svg
@@ -1353,11 +1567,11 @@ function ReviewsSection() {
                       </svg>
                     ))}
                   </div>
-                  <span className="gw-font-text text-[12px] text-[#9aa0a6]">
+                  <span className="gw-font-text text-[11.5px] sm:text-[12px] text-[#9aa0a6]">
                     {review.time}
                   </span>
                 </div>
-                <p className="gw-font-text text-[14.5px] text-[#3c4043] leading-[1.6] mb-6">
+                <p className="gw-font-text text-[14px] sm:text-[14.5px] text-[#3c4043] leading-[1.6] mb-5">
                   "{review.text}"
                 </p>
               </div>
@@ -1369,20 +1583,162 @@ function ReviewsSection() {
                     className="w-8 h-8 rounded-full object-cover border border-[#e8eaed]"
                   />
                   <div>
-                    <span className="gw-font-display text-[14px] font-medium text-[#202124] block leading-tight">
+                    <span className="gw-font-display text-[13.5px] sm:text-[14px] font-medium text-[#202124] block leading-tight">
                       {review.name}
                     </span>
-                    <span className="text-[11.5px] text-[#5f6368]">
+                    <span className="text-[11px] sm:text-[11.5px] text-[#5f6368]">
                       {review.role}
                     </span>
                   </div>
                 </div>
-                <span className="text-[11px] font-medium text-[#1e8e3e] bg-[#e6f4ea] px-2 py-0.5 rounded-full">
+                <span className="text-[10.5px] sm:text-[11px] font-medium text-[#1e8e3e] bg-[#e6f4ea] px-2 py-0.5 rounded-full">
                   Verified
                 </span>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Mobile Slider Controls (Dots + Prev/Next Buttons) */}
+        <div className="flex lg:hidden items-center justify-between mt-4 px-1">
+          <div className="flex items-center gap-1.5">
+            {reviews.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => scrollToSlide(idx)}
+                aria-label={`Slide ${idx + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  activeSlide === idx ? "w-6 bg-[#1a73e8]" : "w-2 bg-[#dadce0]"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollToSlide(Math.max(0, activeSlide - 1))}
+              className="w-8 h-8 rounded-full bg-white border border-[#dadce0] flex items-center justify-center text-[#5f6368] active:bg-[#f1f3f4]"
+              aria-label="Previous review"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                scrollToSlide(Math.min(reviews.length - 1, activeSlide + 1))
+              }
+              className="w-8 h-8 rounded-full bg-white border border-[#dadce0] flex items-center justify-center text-[#5f6368] active:bg-[#f1f3f4]"
+              aria-label="Next review"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- NEW SECTION: GOOGLE WORKSPACE STYLE FAQ ACCORDION ---
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState(0);
+
+  const faqs = [
+    {
+      q: "Are all PBN placements genuinely guaranteed DA/DR 50+?",
+      a: "Yes. Every domain in our standard, .ID regional, and EDU/GOV inventory is vetted for clean backlink profiles, zero spam score, and verified Moz DA 50+ and Ahrefs DR 50+ metrics prior to placement.",
+    },
+    {
+      q: "How do I submit my target URLs and anchor texts after checkout?",
+      a: "Immediately after completing your payment via Stripe, PayPal, or BoomFi Crypto, you are directed to our campaign intake dashboard where you can paste your target URLs, anchor text ratios, and special instructions.",
+    },
+    {
+      q: "Is your network safe from Google footprints?",
+      a: "100%. All domains are hosted across distributed Class-C IP blocks, distinct registrars, unique CMS themes, and human-edited contextual articles so your link profile looks completely natural to search engines and AI crawlers.",
+    },
+    {
+      q: "Can I combine multiple link types for different client websites?",
+      a: "Absolutely. When you combine multiple packages in the calculator, you can split your total backlinks across multiple domains or client campaigns at no extra cost—complete with unbranded white-label reports.",
+    },
+  ];
+
+  return (
+    <section className="w-full bg-white py-12 sm:py-20 px-4 sm:px-6 border-t border-[#e8eaed]">
+      <div className="max-w-[900px] mx-auto">
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f8f9fa] border border-[#e8eaed] text-[#5f6368] text-[11.5px] sm:text-[12px] font-medium mb-3">
+            Common Questions
+          </div>
+          <h2 className="gw-font-display text-[26px] sm:text-[36px] font-medium text-[#202124] leading-[1.15] tracking-[-0.02em]">
+            Frequently asked <span className="text-[#1a73e8]">questions.</span>
+          </h2>
+        </div>
+
+        <div className="space-y-3">
+          {faqs.map((item, idx) => {
+            const isOpen = openIndex === idx;
+            return (
+              <div
+                key={idx}
+                className={`rounded-[18px] border transition-all duration-200 ${
+                  isOpen
+                    ? "bg-[#f8fbff] border-[#d2e3fc]"
+                    : "bg-white border-[#e8eaed] hover:border-[#dadce0]"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(isOpen ? -1 : idx)}
+                  className="w-full px-5 py-4 sm:px-6 sm:py-5 text-left flex items-center justify-between gap-4 cursor-pointer"
+                >
+                  <span className="gw-font-display text-[15px] sm:text-[17px] font-medium text-[#202124]">
+                    {item.q}
+                  </span>
+                  <span
+                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                      isOpen
+                        ? "bg-[#1a73e8] text-white rotate-180"
+                        : "bg-[#f1f3f4] text-[#5f6368]"
+                    }`}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2.2"
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-4 sm:px-6 sm:pb-5 pt-0">
+                    <p className="gw-font-text text-[13.5px] sm:text-[15px] text-[#5f6368] leading-[1.65]">
+                      {item.a}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -1392,54 +1748,50 @@ function ReviewsSection() {
 // --- COMPACT & ON-THEME GOOGLE WORKSPACE CTA SECTION ---
 function CTASection() {
   return (
-    <section className="w-full bg-[#f8f9fa] pb-20 lg:pb-24 px-4 sm:px-6">
-      <div className="max-w-[1200px] mx-auto bg-white rounded-[28px] border border-[#dadce0] shadow-[0_12px_40px_rgba(60,64,67,0.06)] overflow-hidden relative p-8 sm:p-10 lg:px-14 lg:py-12">
-        {/* Subtle Google Blue Radial Accent */}
+    <section className="w-full bg-[#f8f9fa] py-12 sm:py-20 px-4 sm:px-6 border-t border-[#e8eaed]">
+      <div className="max-w-[1200px] mx-auto bg-white rounded-[24px] sm:rounded-[28px] border border-[#dadce0] shadow-[0_12px_40px_rgba(60,64,67,0.06)] overflow-hidden relative p-6 sm:p-10 lg:px-14 lg:py-12">
         <div className="absolute -top-24 -right-24 w-[360px] h-[360px] bg-[#e8f0fe] rounded-full filter blur-[80px] opacity-80 pointer-events-none" />
 
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
-          {/* Left Content Area */}
-          <div className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[12px] font-medium mb-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-7 sm:gap-8 relative z-10">
+          <div className="flex-1 text-center lg:text-left w-full">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] sm:text-[12px] font-medium mb-3.5 sm:mb-4">
               Ready to scale your rankings?
             </div>
-            <h2 className="gw-font-display text-[30px] sm:text-[36px] lg:text-[42px] font-medium text-[#202124] leading-[1.15] tracking-[-0.02em] mb-6 max-w-[540px] mx-auto lg:mx-0">
+            <h2 className="gw-font-display text-[26px] sm:text-[36px] lg:text-[42px] font-medium text-[#202124] leading-[1.15] tracking-[-0.02em] mb-5 sm:mb-6 max-w-[540px] mx-auto lg:mx-0">
               The no-hassle way to{" "}
               <span className="text-[#1a73e8]">get SEO done.</span>
             </h2>
 
-            {/* Compact Inline Metrics */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 sm:gap-10 mb-7">
+            <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-10 mb-6 sm:mb-7 bg-[#f8f9fa] sm:bg-transparent p-3.5 sm:p-0 rounded-2xl border border-[#e8eaed] sm:border-0">
               <div>
-                <h3 className="gw-font-display text-[22px] sm:text-[26px] font-medium text-[#202124] leading-none mb-1">
+                <h3 className="gw-font-display text-[19px] sm:text-[26px] font-medium text-[#202124] leading-none mb-1">
                   2016
                 </h3>
-                <p className="gw-font-text text-[13px] text-[#5f6368]">
+                <p className="gw-font-text text-[11.5px] sm:text-[13px] text-[#5f6368]">
                   Founded In
                 </p>
               </div>
               <div className="w-[1px] h-8 bg-[#dadce0] hidden sm:block" />
-              <div>
-                <h3 className="gw-font-display text-[22px] sm:text-[26px] font-medium text-[#1a73e8] leading-none mb-1">
+              <div className="border-x border-[#e8eaed] sm:border-0 px-2 sm:px-0">
+                <h3 className="gw-font-display text-[19px] sm:text-[26px] font-medium text-[#1a73e8] leading-none mb-1">
                   40k+
                 </h3>
-                <p className="gw-font-text text-[13px] text-[#5f6368]">
-                  Agency Accounts
+                <p className="gw-font-text text-[11.5px] sm:text-[13px] text-[#5f6368]">
+                  Agencies
                 </p>
               </div>
               <div className="w-[1px] h-8 bg-[#dadce0] hidden sm:block" />
               <div>
-                <h3 className="gw-font-display text-[22px] sm:text-[26px] font-medium text-[#202124] leading-none mb-1">
+                <h3 className="gw-font-display text-[19px] sm:text-[26px] font-medium text-[#202124] leading-none mb-1">
                   20+
                 </h3>
-                <p className="gw-font-text text-[13px] text-[#5f6368]">
-                  Services Offered
+                <p className="gw-font-text text-[11.5px] sm:text-[13px] text-[#5f6368]">
+                  Services
                 </p>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
               <button
                 type="button"
                 onClick={() =>
@@ -1460,30 +1812,29 @@ function CTASection() {
             </div>
           </div>
 
-          {/* Right Compact SaaS Graphic Card */}
           <div className="w-full lg:w-[370px] shrink-0">
-            <div className="bg-[#f8f9fa] rounded-[22px] border border-[#e8eaed] p-5 relative">
-              <div className="bg-white rounded-[16px] border border-[#e8eaed] p-4 mb-3 shadow-[0_2px_8px_rgba(60,64,67,0.04)]">
+            <div className="bg-[#f8f9fa] rounded-[20px] sm:rounded-[22px] border border-[#e8eaed] p-4 sm:p-5 relative">
+              <div className="bg-white rounded-[16px] border border-[#e8eaed] p-3.5 sm:p-4 mb-3 shadow-[0_2px_8px_rgba(60,64,67,0.04)]">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#f1f3f4]">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center font-bold text-[13px]">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center font-bold text-[12px] sm:text-[13px]">
                       SEO
                     </div>
-                    <div>
-                      <p className="text-[13.5px] font-medium text-[#202124]">
+                    <div className="text-left">
+                      <p className="text-[13px] sm:text-[13.5px] font-medium text-[#202124]">
                         Authority Campaign
                       </p>
-                      <p className="text-[11.5px] text-[#1e8e3e] font-medium">
+                      <p className="text-[11px] sm:text-[11.5px] text-[#1e8e3e] font-medium">
                         ● Live Indexing Active
                       </p>
                     </div>
                   </div>
-                  <span className="bg-[#fef7e0] text-[#f29900] text-[11.5px] font-bold px-2.5 py-1 rounded-full">
+                  <span className="bg-[#fef7e0] text-[#f29900] text-[11px] sm:text-[11.5px] font-bold px-2.5 py-1 rounded-full">
                     DA 50+
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-[12px] text-[#5f6368]">
+                <div className="flex items-center justify-between text-[11.5px] sm:text-[12px] text-[#5f6368]">
                   <span>Average SERP Velocity</span>
                   <span className="text-[#1e8e3e] font-semibold">
                     +142% Organic Lift
@@ -1491,29 +1842,29 @@ function CTASection() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between bg-white rounded-[16px] p-3.5 border border-[#e8eaed] shadow-[0_2px_8px_rgba(60,64,67,0.04)]">
+              <div className="flex items-center justify-between bg-white rounded-[16px] p-3 sm:p-3.5 border border-[#e8eaed] shadow-[0_2px_8px_rgba(60,64,67,0.04)]">
                 <div className="flex -space-x-2">
                   <img
                     src="https://i.pravatar.cc/100?img=33"
                     alt="Partner"
-                    className="w-8 h-8 rounded-full border-2 border-white"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white"
                   />
                   <img
                     src="https://i.pravatar.cc/100?img=11"
                     alt="Partner"
-                    className="w-8 h-8 rounded-full border-2 border-white"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white"
                   />
                   <img
                     src="https://i.pravatar.cc/100?img=12"
                     alt="Partner"
-                    className="w-8 h-8 rounded-full border-2 border-white"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white"
                   />
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-[#1a73e8] text-white text-[11px] font-bold flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white bg-[#1a73e8] text-white text-[10px] sm:text-[11px] font-bold flex items-center justify-center">
                     5k+
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="gw-font-display font-bold text-[15px] text-[#202124]">
+                  <span className="gw-font-display font-bold text-[14px] sm:text-[15px] text-[#202124]">
                     4.9
                   </span>
                   <div className="flex gap-0.5">
@@ -1541,9 +1892,10 @@ function CTASection() {
 // --- MAIN HOME COMPONENT ---
 export default function Home() {
   return (
-    <main className="w-full bg-[#fcfcfc] relative">
+    /* IMPORTANT: overflow-x-clip prevents horizontal scroll WITHOUT breaking position:sticky on desktop */
+    <main className="w-full bg-[#fcfcfc] relative overflow-x-clip">
       <style>{`
-        .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 32px 32px; }
+        .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 28px 28px; }
         @keyframes floatBlob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.05); } 66% { transform: translate(-20px, 20px) scale(0.95); } 100% { transform: translate(0px, 0px) scale(1); } }
         .animate-blob { animation: floatBlob 18s infinite alternate ease-in-out; }
         .delay-2000 { animation-delay: 2s; } .delay-4000 { animation-delay: 4s; }
@@ -1553,28 +1905,29 @@ export default function Home() {
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f3f4; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Custom Slider Styling for Webkit Browsers */
+        /* Custom Touch-Friendly Slider Styling */
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%;
           background: #ffffff; border: 3px solid #1a73e8; cursor: pointer;
-          box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3); transition: transform 0.15s ease;
+          box-shadow: 0 2px 6px rgba(26, 115, 232, 0.35); transition: transform 0.15s ease;
         }
         input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.12); }
         input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); background: #e8f0fe; }
 
-        /* Custom Slider Styling for Firefox */
         input[type=range]::-moz-range-thumb {
           height: 22px; width: 22px; border-radius: 50%;
           background: #ffffff; border: 3px solid #1a73e8; cursor: pointer;
-          box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3); transition: transform 0.15s ease;
+          box-shadow: 0 2px 6px rgba(26, 115, 232, 0.35); transition: transform 0.15s ease;
         }
         input[type=range]::-moz-range-thumb:hover { transform: scale(1.12); }
         input[type=range]::-moz-range-thumb:active { transform: scale(1.2); background: #e8f0fe; }
       `}</style>
 
       {/* Hero Section */}
-      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-16 md:pb-24 pt-[64px] overflow-hidden">
+      <section className="relative z-10 min-h-[86vh] sm:min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-14 sm:pb-20 md:pb-24 pt-[76px] sm:pt-[64px] overflow-hidden">
         <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-50" />
           <svg
@@ -1642,38 +1995,36 @@ export default function Home() {
             />
             <circle cx="300" cy="380" r="4" fill="#1a73e8" />
           </svg>
-          <div className="absolute top-[10%] md:top-[15%] left-[5%] md:left-[15%] w-[300px] md:w-[450px] h-[300px] md:h-[450px] bg-[#1a73e8] rounded-full mix-blend-multiply filter blur-[100px] md:blur-[140px] opacity-[0.10] animate-blob" />
-          <div className="absolute top-[20%] md:top-[25%] right-[5%] md:right-[10%] w-[250px] md:w-[400px] h-[250px] md:h-[400px] bg-[#34a853] rounded-full mix-blend-multiply filter blur-[90px] md:blur-[130px] opacity-[0.08] animate-blob delay-2000" />
-          <div className="absolute bottom-[5%] left-[20%] md:left-[30%] w-[350px] md:w-[550px] h-[350px] md:h-[550px] bg-[#fbbc04] rounded-full mix-blend-multiply filter blur-[120px] md:blur-[150px] opacity-[0.06] animate-blob delay-4000" />
+          <div className="absolute top-[10%] md:top-[15%] left-[5%] md:left-[15%] w-[220px] sm:w-[300px] md:w-[450px] h-[220px] sm:h-[300px] md:h-[450px] bg-[#1a73e8] rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[100px] md:blur-[140px] opacity-[0.10] animate-blob" />
+          <div className="absolute top-[20%] md:top-[25%] right-[5%] md:right-[10%] w-[200px] sm:w-[250px] md:w-[400px] h-[200px] sm:h-[250px] md:h-[400px] bg-[#34a853] rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[90px] md:blur-[130px] opacity-[0.08] animate-blob delay-2000" />
+          <div className="absolute bottom-[5%] left-[20%] md:left-[30%] w-[240px] sm:w-[350px] md:w-[550px] h-[240px] sm:h-[350px] md:h-[550px] bg-[#fbbc04] rounded-full mix-blend-multiply filter blur-[90px] sm:blur-[120px] md:blur-[150px] opacity-[0.06] animate-blob delay-4000" />
         </div>
 
-        <div className="flex flex-col items-center justify-center w-full max-w-[1300px] mt-8 md:mt-12 relative z-10">
-          {/* Google Workspace Style 4-Colour Eyebrow Pill */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#dadce0] shadow-[0_2px_8px_rgba(60,64,67,0.05)] mb-6">
-            <span className="flex items-center gap-1">
+        <div className="flex flex-col items-center justify-center w-full max-w-[1300px] mt-4 sm:mt-8 md:mt-12 relative z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#dadce0] shadow-[0_2px_8px_rgba(60,64,67,0.05)] mb-5 sm:mb-6 max-w-full">
+            <span className="flex items-center gap-1 shrink-0">
               <span className="w-2 h-2 rounded-full bg-[#4285F4]" />
               <span className="w-2 h-2 rounded-full bg-[#EA4335]" />
               <span className="w-2 h-2 rounded-full bg-[#FBBC04]" />
               <span className="w-2 h-2 rounded-full bg-[#34A853]" />
             </span>
-            <span className="gw-font-text text-[13px] font-medium text-[#3c4043]">
+            <span className="gw-font-text text-[11.5px] sm:text-[13px] font-medium text-[#3c4043] truncate">
               Next-Gen PBN Authority • Verified DA/DR 50+
             </span>
           </div>
 
-          <h2 className="gw-font-display text-[44px] sm:text-[58px] md:text-[74px] lg:text-[88px] font-medium leading-[1.1] md:leading-[1.06] tracking-[-0.025em] md:tracking-[-0.03em] text-[#202124] mb-6 w-full">
+          <h2 className="gw-font-display text-[34px] sm:text-[56px] md:text-[72px] lg:text-[88px] font-medium leading-[1.12] sm:leading-[1.08] md:leading-[1.06] tracking-[-0.025em] md:tracking-[-0.03em] text-[#202124] mb-4 sm:mb-6 w-full px-1">
             Build organic authority <br className="hidden sm:block" />
             <span className="text-[#1a73e8]">with premium PBN backlinks.</span>
           </h2>
 
-          {/* Authentic Google Product Subtitle */}
-          <p className="gw-font-text text-[17px] md:text-[20px] text-[#5f6368] max-w-[720px] leading-[1.6] mb-9 px-2">
+          <p className="gw-font-text text-[15px] sm:text-[17px] md:text-[20px] text-[#5f6368] max-w-[720px] leading-[1.6] mb-7 sm:mb-9 px-2">
             Scale your search rankings and AI Overview visibility with clean,
             high-metric contextual placements across .COM, .ID, .EDU, and .GOV
             domains.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full px-4 sm:px-0 mb-10 md:mb-12 z-20">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-[340px] sm:max-w-none mb-8 sm:mb-12 z-20">
             <button
               type="button"
               onClick={() =>
@@ -1681,47 +2032,47 @@ export default function Home() {
                   .getElementById("estimator")
                   ?.scrollIntoView({ behavior: "smooth" })
               }
-              className="gw-font-display w-full sm:w-[240px] inline-flex h-[52px] md:h-[56px] items-center justify-center rounded-full bg-[#1a73e8] text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-white shadow-[0_6px_20px_rgba(26,115,232,0.25)] hover:bg-[#1557b0] hover:shadow-[0_8px_28px_rgba(26,115,232,0.35)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
+              className="gw-font-display w-full sm:w-[240px] inline-flex h-[50px] sm:h-[54px] md:h-[56px] items-center justify-center rounded-full bg-[#1a73e8] text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-white shadow-[0_6px_20px_rgba(26,115,232,0.25)] hover:bg-[#1557b0] hover:shadow-[0_8px_28px_rgba(26,115,232,0.35)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
             >
               Explore SEO packages
             </button>
             <Link
               to="/contact"
-              className="gw-font-display w-full sm:w-[240px] inline-flex h-[52px] md:h-[56px] items-center justify-center rounded-full border border-[#dadce0] bg-white/85 backdrop-blur-md text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-[#3c4043] shadow-[0_2px_10px_rgba(60,64,67,0.04)] hover:bg-white hover:border-[#bdc1c6] hover:text-[#202124] transition-all duration-300 transform hover:-translate-y-0.5"
+              className="gw-font-display w-full sm:w-[240px] inline-flex h-[50px] sm:h-[54px] md:h-[56px] items-center justify-center rounded-full border border-[#dadce0] bg-white/90 backdrop-blur-md text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-[#3c4043] shadow-[0_2px_10px_rgba(60,64,67,0.04)] hover:bg-white hover:border-[#bdc1c6] hover:text-[#202124] transition-all duration-300 transform hover:-translate-y-0.5"
             >
               Talk to an expert
             </Link>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 px-5 md:px-6 py-3 rounded-[24px] sm:rounded-full bg-white/80 backdrop-blur-xl border border-[#e8eaed] shadow-[0_8px_32px_rgba(32,33,36,0.06)] relative z-20 transition-transform duration-300 hover:scale-105 cursor-default max-w-[90%] sm:max-w-none">
-            <div className="flex -space-x-2 md:-space-x-3">
+          <div className="flex flex-row items-center gap-3 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white/85 backdrop-blur-xl border border-[#e8eaed] shadow-[0_8px_32px_rgba(32,33,36,0.06)] relative z-20 transition-transform duration-300 hover:scale-105 cursor-default max-w-full">
+            <div className="flex -space-x-2 shrink-0">
               <img
                 src="https://i.pravatar.cc/100?img=33"
                 alt="Agency Partner"
-                className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://i.pravatar.cc/100?img=11"
                 alt="Agency Partner"
-                className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://i.pravatar.cc/100?img=12"
                 alt="Agency Partner"
-                className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://i.pravatar.cc/100?img=59"
                 alt="Agency Partner"
-                className="w-[30px] h-[30px] md:w-[34px] md:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
               />
             </div>
-            <div className="flex flex-col items-center sm:items-start">
+            <div className="flex flex-col items-start text-left">
               <div className="flex items-center gap-0.5 mb-0.5">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg
                     key={star}
-                    className="w-3.5 h-3.5 md:w-3.5 md:h-3.5 text-[#fbbc04]"
+                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#fbbc04]"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -1729,7 +2080,7 @@ export default function Home() {
                   </svg>
                 ))}
               </div>
-              <span className="gw-font-text text-[12px] md:text-[13px] font-medium text-[#5f6368] leading-tight text-center sm:text-left">
+              <span className="gw-font-text text-[11.5px] sm:text-[13px] font-medium text-[#5f6368] leading-tight">
                 Trusted by 500+ SEO agencies & brands
               </span>
             </div>
@@ -1743,11 +2094,17 @@ export default function Home() {
       {/* --- BENTO GRID SECTION --- */}
       <AudienceBentoSection />
 
+      {/* --- 3-STEP WORKFLOW SECTION (NEW) --- */}
+      <HowItWorksSection />
+
       {/* --- PACKAGE ESTIMATOR SECTION --- */}
       <PackageEstimator />
 
-      {/* --- REVIEWS SECTION --- */}
+      {/* --- REVIEWS SECTION (WITH SMOOTH MOBILE SLIDER) --- */}
       <ReviewsSection />
+
+      {/* --- FAQ ACCORDION SECTION (NEW) --- */}
+      <FAQSection />
 
       {/* --- COMPACT CTA SECTION --- */}
       <CTASection />
