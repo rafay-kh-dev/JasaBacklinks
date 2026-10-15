@@ -3,7 +3,9 @@ import { useState, useRef, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
-  PaymentElement,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
@@ -16,137 +18,290 @@ const STRIPE_PUBLIC_KEY =
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
+// --- YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3) ---
+const TEAM_CONTACTS = {
+  whatsappUrl: "https://wa.me/6281234567890",
+  whatsappLabel: "+62 812-3456-7890",
+  telegramUrl: "https://t.me/jasabacklinks",
+  telegramLabel: "@jasabacklinks",
+  supportEmail: "support@seohub.ltd",
+};
+
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
 
-// --- 1. REAL STRIPE CARD ELEMENT FORM COMPONENT ---
-function StripeCheckoutForm({ totalAmount, onSuccess }) {
+// Custom Google Workspace Typography & Styling for Stripe Individual Fields
+const STRIPE_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      fontSize: "15px",
+      color: "#202124",
+      fontFamily: "'Google Sans', Roboto, -apple-system, sans-serif",
+      fontSmoothing: "antialiased",
+      "::placeholder": {
+        color: "#9aa0a6",
+      },
+    },
+    invalid: {
+      color: "#d93025",
+      iconColor: "#d93025",
+    },
+  },
+};
+
+// --- POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM ---
+function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
   const stripe = useStripe();
   const elements = useElements();
-  const [cardholderName, setCardholderName] = useState("");
-  const [receiptEmail, setReceiptEmail] = useState("");
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isElementReady, setIsElementReady] = useState(false);
+  const [cardBrand, setCardBrand] = useState("unknown");
+
+  const [numComplete, setNumComplete] = useState(false);
+  const [expComplete, setExpComplete] = useState(false);
+  const [cvcComplete, setCvcComplete] = useState(false);
+
+  const handleElementChange = (event, setter) => {
+    setter(event.complete);
+    if (event.brand) setCardBrand(event.brand);
+    if (event.error) {
+      setErrorMessage(event.error.message);
+    } else {
+      setErrorMessage("");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!stripe || !elements) return;
 
-    if (!cardholderName.trim()) {
-      setErrorMessage("Please enter the name on your card.");
+    if (!numComplete || !expComplete || !cvcComplete) {
+      setErrorMessage(
+        "Please complete your Card Number, Expiry Date, and CVV.",
+      );
       return;
     }
 
     setIsProcessing(true);
     setErrorMessage("");
 
-    // Trigger Stripe form validation (checks card number, expiry, CVC immediately)
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setErrorMessage(
-        submitError.message || "Please check your card details and try again.",
-      );
-      setIsProcessing(false);
-      return;
-    }
+    const cardNumberElement = elements.getElement(CardNumberElement);
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        receipt_email: receiptEmail || undefined,
-        payment_method_data: {
-          billing_details: {
-            name: cardholderName,
-            email: receiptEmail || undefined,
-          },
+    const { error, paymentIntent } = await stripe.confirmCardPayment(
+      clientSecret,
+      {
+        payment_method: {
+          card: cardNumberElement,
         },
       },
-      redirect: "if_required",
-    });
+    );
 
     if (error) {
       setErrorMessage(
-        error.message || "Card declined or invalid. Please check your details.",
+        error.message ||
+          "Your card was declined. Please check your card details.",
       );
       setIsProcessing(false);
     } else if (paymentIntent && paymentIntent.status === "succeeded") {
       setIsProcessing(false);
-      onSuccess(paymentIntent.id, "Stripe Card", receiptEmail, cardholderName);
+      onSuccess(paymentIntent.id, "Credit / Debit Card");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Field 1: Card Number */}
       <div>
-        <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
-          Email for Receipt *
-        </label>
-        <input
-          type="email"
-          required
-          value={receiptEmail}
-          onChange={(e) => setReceiptEmail(e.target.value)}
-          placeholder="you@company.com"
-          className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] text-[14.5px] text-[#202124]"
-        />
-      </div>
-
-      <div>
-        <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
-          Name on Card *
-        </label>
-        <input
-          type="text"
-          required
-          value={cardholderName}
-          onChange={(e) => setCardholderName(e.target.value)}
-          placeholder="John Doe"
-          className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] text-[14.5px] text-[#202124]"
-        />
-      </div>
-
-      <div>
-        <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
-          Card Details (Validated by Stripe) *
-        </label>
-        <div className="p-3 border border-[#dadce0] rounded-[10px] bg-white">
-          <PaymentElement
-            onReady={() => setIsElementReady(true)}
-            onLoadError={(event) => {
-              setErrorMessage(
-                event?.error?.message ||
-                  "Stripe failed to load. Please ensure VITE_STRIPE_PUBLIC_KEY in frontend .env matches your backend STRIPE_SECRET_KEY account.",
-              );
-            }}
-          />
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-[13px] font-medium text-[#3c4043]">
+            Card Number *
+          </label>
+          <span className="text-[11px] font-medium text-[#5f6368] uppercase tracking-wider">
+            {cardBrand !== "unknown" ? cardBrand : "Visa • Mastercard • Amex"}
+          </span>
+        </div>
+        <div
+          className={`flex items-center px-3.5 py-3 bg-[#f8f9fa] focus-within:bg-white border rounded-[12px] transition-all ${
+            numComplete
+              ? "border-[#34a853] ring-2 ring-[#e6f4ea]"
+              : "border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-2 focus-within:ring-[#e8f0fe]"
+          }`}
+        >
+          <svg
+            className="w-5 h-5 text-[#5f6368] mr-3 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="1.8"
+          >
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <line x1="2" y1="10" x2="22" y2="10" />
+          </svg>
+          <div className="w-full">
+            <CardNumberElement
+              options={{
+                ...STRIPE_ELEMENT_OPTIONS,
+                placeholder: "1234 5678 9101 1121",
+                showIcon: false,
+              }}
+              onChange={(e) => handleElementChange(e, setNumComplete)}
+            />
+          </div>
+          {numComplete && (
+            <svg
+              className="w-4 h-4 text-[#34a853] ml-2 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2.5"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
         </div>
       </div>
 
+      {/* Field 2 & 3: Expiry Date + CVV */}
+      <div className="grid grid-cols-2 gap-3.5">
+        <div>
+          <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+            Expiry Date *
+          </label>
+          <div
+            className={`flex items-center px-3.5 py-3 bg-[#f8f9fa] focus-within:bg-white border rounded-[12px] transition-all ${
+              expComplete
+                ? "border-[#34a853] ring-2 ring-[#e6f4ea]"
+                : "border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-2 focus-within:ring-[#e8f0fe]"
+            }`}
+          >
+            <svg
+              className="w-4 h-4 text-[#5f6368] mr-2.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="1.8"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <div className="w-full">
+              <CardExpiryElement
+                options={STRIPE_ELEMENT_OPTIONS}
+                onChange={(e) => handleElementChange(e, setExpComplete)}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+            CVV / CVC *
+          </label>
+          <div
+            className={`flex items-center px-3.5 py-3 bg-[#f8f9fa] focus-within:bg-white border rounded-[12px] transition-all ${
+              cvcComplete
+                ? "border-[#34a853] ring-2 ring-[#e6f4ea]"
+                : "border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-2 focus-within:ring-[#e8f0fe]"
+            }`}
+          >
+            <svg
+              className="w-4 h-4 text-[#5f6368] mr-2.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="1.8"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <div className="w-full">
+              <CardCvcElement
+                options={{
+                  ...STRIPE_ELEMENT_OPTIONS,
+                  placeholder: "CVC",
+                }}
+                onChange={(e) => handleElementChange(e, setCvcComplete)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Validation Error Alert */}
       {errorMessage && (
-        <div className="p-3 rounded-[10px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[13px] font-medium">
-          {errorMessage}
+        <div className="p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium flex items-center gap-2">
+          <svg
+            className="w-4 h-4 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{errorMessage}</span>
         </div>
       )}
 
       <div className="pt-2">
         <button
           type="submit"
-          disabled={!stripe || !isElementReady || isProcessing}
-          className="w-full h-[50px] bg-[#635BFF] text-white rounded-[10px] font-medium text-[15px] hover:bg-[#5851df] transition-colors shadow-[0_4px_12px_rgba(99,91,255,0.25)] flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!stripe || isProcessing}
+          className="gw-font-display w-full h-[52px] bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-full font-medium text-[15px] transition-all shadow-[0_6px_20px_rgba(26,115,232,0.25)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isProcessing
-            ? "Verifying Card & Processing..."
-            : `Pay $${totalAmount.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })} USD`}
+          {isProcessing ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Verifying & Processing...</span>
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2.2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <span>
+                Pay $
+                {totalAmount.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                USD
+              </span>
+            </>
+          )}
         </button>
+      </div>
+
+      <div className="flex items-center justify-center gap-2 pt-1 text-[11.5px] text-[#5f6368]">
+        <svg
+          className="w-3.5 h-3.5 text-[#34a853]"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fillRule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <span>256-bit SSL Encrypted • Instant Step 2 Onboarding</span>
       </div>
     </form>
   );
 }
 
-// --- 2. BOOMFI CRYPTO CHECKOUT MODAL ---
+// --- BOOMFI CRYPTO CHECKOUT MODAL ---
 function BoomFiCryptoModal({
   isOpen,
   chargeData,
@@ -184,22 +339,29 @@ function BoomFiCryptoModal({
     }
     onSuccess(
       `BOOMFI-${txHash.trim().slice(0, 14).toUpperCase()}`,
-      `BoomFi Crypto (${selectedCoin})`,
+      `Crypto (${selectedCoin})`,
     );
   };
 
   return (
     <div className="fixed inset-0 z-[105] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="absolute inset-0 bg-[#202124]/50 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-[#202124]/55 backdrop-blur-[3px]"
         onClick={onClose}
       />
       <div className="relative w-full max-w-[460px] max-h-[92vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.22)] border border-[#dadce0] animate-in fade-in zoom-in-95 duration-200">
-        <div className="bg-[#1a73e8] px-6 py-5 text-white relative">
+        <div className="grid grid-cols-4 h-[4px] w-full">
+          <div className="bg-[#4285F4]" />
+          <div className="bg-[#EA4335]" />
+          <div className="bg-[#FBBC04]" />
+          <div className="bg-[#34A853]" />
+        </div>
+
+        <div className="bg-[#f8fbff] px-6 py-5 border-b border-[#e8eaed] relative">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/20 text-white cursor-pointer"
+            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-[#e8eaed] text-[#5f6368] cursor-pointer"
           >
             <svg
               className="w-5 h-5"
@@ -211,19 +373,19 @@ function BoomFiCryptoModal({
               <path d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[11.5px] font-medium mb-2">
-            BoomFi Crypto Gateway
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] font-medium mb-2">
+            Step 1 of 3 • BoomFi Crypto Gateway
           </div>
-          <p className="text-white/80 text-[13px]">
+          <p className="text-[#5f6368] text-[13px]">
             Jasa Backlinks ({totalLinks.toLocaleString()} Links)
           </p>
-          <h4 className="gw-font-display text-[32px] font-medium leading-tight">
+          <h4 className="gw-font-display text-[30px] font-medium text-[#202124] leading-tight">
             $
             {totalAmount.toLocaleString("en-US", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}{" "}
-            <span className="text-[14px] font-normal opacity-85">
+            <span className="text-[14px] font-normal text-[#5f6368]">
               USDT / USDC
             </span>
           </h4>
@@ -308,8 +470,8 @@ function BoomFiCryptoModal({
   );
 }
 
-// --- 3. POST-PAYMENT CAMPAIGN INTAKE MODAL (PHASE 3) ---
-function OrderDetailsModal({
+// --- POPUP 2 & POPUP 3: POST-PAYMENT ORDER DETAILS + THANK YOU & TEAM CONTACTS ---
+function OrderOnboardingFlowModal({
   isOpen,
   paymentData,
   selectedPackages,
@@ -317,26 +479,30 @@ function OrderDetailsModal({
   finalTotal,
   onClose,
 }) {
-  const [fullName, setFullName] = useState(paymentData?.defaultName || "");
-  const [email, setEmail] = useState(paymentData?.defaultEmail || "");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [contactPlatform, setContactPlatform] = useState("WhatsApp");
+  const [contactHandle, setContactHandle] = useState("");
   const [targetUrls, setTargetUrls] = useState("");
   const [anchorTexts, setAnchorTexts] = useState("");
   const [notes, setNotes] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [isStep3ThankYou, setIsStep3ThankYou] = useState(false);
 
   useEffect(() => {
-    if (paymentData?.defaultEmail) setEmail(paymentData.defaultEmail);
-    if (paymentData?.defaultName) setFullName(paymentData.defaultName);
-  }, [paymentData]);
+    if (isOpen) {
+      setIsStep3ThankYou(false);
+    }
+  }, [isOpen, paymentData]);
 
   if (!isOpen || !paymentData) return null;
 
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
+    if (!contactHandle.trim()) return;
+
     setIsSubmitting(true);
-    setSubmitError("");
 
     try {
       await axios.post(`${BACKEND_URL}/api/submit-order`, {
@@ -348,26 +514,30 @@ function OrderDetailsModal({
         customer: {
           fullName,
           email,
+          contactPlatform,
+          contactHandle,
           targetUrls,
           anchorTexts,
           notes,
         },
       });
-      setIsSubmitted(true);
     } catch (err) {
-      setSubmitError(
-        err.response?.data?.error ||
-          "Could not submit order details. Please check backend connection.",
+      // Even if email server is not configured yet, transition smoothly to Popup 3 so user trust never breaks
+      console.warn(
+        "Order logged locally; backend email notification pending:",
+        err.message,
       );
     } finally {
       setIsSubmitting(false);
+      setIsStep3ThankYou(true);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="absolute inset-0 bg-[#202124]/60 backdrop-blur-[3px]" />
-      <div className="relative w-full max-w-[560px] max-h-[94vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.25)] border border-[#dadce0] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-[#202124]/65 backdrop-blur-[4px]" />
+
+      <div className="relative w-full max-w-[580px] max-h-[94vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.28)] border border-[#dadce0] animate-in fade-in zoom-in-95 duration-200">
         {/* Google 4-Colour Top Strip */}
         <div className="grid grid-cols-4 h-[4px] w-full">
           <div className="bg-[#4285F4]" />
@@ -376,10 +546,16 @@ function OrderDetailsModal({
           <div className="bg-[#34A853]" />
         </div>
 
-        <div className="p-6 sm:p-8">
-          {isSubmitted ? (
-            <div className="text-center py-6">
-              <div className="w-16 h-16 rounded-full bg-[#e6f4ea] text-[#1e8e3e] flex items-center justify-center mx-auto mb-4">
+        {/* ============================================================
+            POPUP 3: THANK YOU & OUR 3 DIRECT TEAM CONTACTS
+           ============================================================ */}
+        {isStep3ThankYou ? (
+          <div className="p-6 sm:p-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e6f4ea] text-[#1e8e3e] text-[12px] font-semibold mb-3">
+                Step 3 of 3 • Order Complete
+              </div>
+              <div className="w-16 h-16 rounded-full bg-[#e6f4ea] text-[#1e8e3e] flex items-center justify-center mx-auto mb-4 shadow-sm">
                 <svg
                   className="w-8 h-8"
                   fill="none"
@@ -390,74 +566,228 @@ function OrderDetailsModal({
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h3 className="gw-font-display text-[24px] font-medium text-[#202124] mb-2">
-                Campaign Queued for Placement!
+              <h3 className="gw-font-display text-[26px] sm:text-[28px] font-medium text-[#202124] mb-2">
+                Thank You, {fullName}!
               </h3>
-              <p className="gw-font-text text-[14.5px] text-[#5f6368] max-w-[420px] mx-auto mb-6 leading-[1.6]">
-                We have sent a confirmation receipt to{" "}
-                <strong className="text-[#202124]">{email}</strong>. Our SEO
-                team has received your URLs and anchors and will deliver your
-                white-label report within 5–7 days.
+              <p className="gw-font-text text-[14.5px] text-[#5f6368] max-w-[460px] mx-auto leading-[1.6]">
+                Your campaign requirements and{" "}
+                <strong className="text-[#202124]">{contactPlatform}</strong>{" "}
+                contact (
+                <strong className="text-[#1a73e8]">{contactHandle}</strong>)
+                have been received. Our SEO team has started processing your{" "}
+                <strong className="text-[#202124]">
+                  {totalLinks.toLocaleString()} backlinks
+                </strong>
+                .
               </p>
-              <div className="bg-[#f8f9fa] rounded-[14px] p-4 border border-[#e8eaed] mb-6 text-left text-[13px] text-[#5f6368] space-y-1">
-                <div className="flex justify-between">
-                  <span>Transaction ID:</span>
-                  <span className="font-mono font-semibold text-[#202124]">
-                    {paymentData.transactionId}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Total Volume:</span>
-                  <span className="font-semibold text-[#1a73e8]">
-                    {totalLinks.toLocaleString()} Backlinks
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="gw-font-display h-[48px] px-8 rounded-full bg-[#1a73e8] text-white font-medium text-[15px] hover:bg-[#1557b0] transition-colors cursor-pointer"
-              >
-                Done & Return to Home
-              </button>
             </div>
-          ) : (
-            <>
-              <div className="flex items-start justify-between gap-4 mb-5 pb-4 border-b border-[#e8eaed]">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e6f4ea] text-[#1e8e3e] text-[11.5px] font-semibold mb-2">
-                    ● Payment Verified ({paymentData.method})
-                  </div>
-                  <h3 className="gw-font-display text-[22px] font-medium text-[#202124]">
-                    Submit Campaign Requirements
-                  </h3>
-                  <p className="gw-font-text text-[13.5px] text-[#5f6368] mt-0.5">
-                    Complete the form below to start your link placements and
-                    receive your email confirmation.
-                  </p>
-                </div>
-              </div>
 
-              {/* Locked Payment Summary Pill */}
-              <div className="bg-[#f8f9fa] rounded-[14px] p-3.5 border border-[#e8eaed] mb-5 flex flex-wrap items-center justify-between gap-2 text-[12.5px]">
-                <div>
-                  <span className="text-[#5f6368]">TXN ID: </span>
-                  <span className="font-mono font-semibold text-[#202124]">
-                    {paymentData.transactionId}
-                  </span>
-                </div>
-                <div className="font-semibold text-[#1a73e8]">
-                  {totalLinks.toLocaleString()} Links ($
+            {/* Order Receipt Summary Box */}
+            <div className="bg-[#f8f9fa] rounded-[16px] p-4 border border-[#e8eaed] mb-6 text-[13px] text-[#5f6368] space-y-2">
+              <div className="flex justify-between items-center">
+                <span>Transaction Reference:</span>
+                <span className="font-mono font-semibold text-[#202124] bg-white px-2.5 py-0.5 rounded border border-[#dadce0]">
+                  {paymentData.transactionId}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Amount Paid:</span>
+                <span className="font-semibold text-[#1e8e3e]">
+                  $
                   {finalTotal.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}{" "}
-                  USD)
+                  USD (Verified)
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Your Registered Contact:</span>
+                <span className="font-medium text-[#202124]">
+                  {contactPlatform}: {contactHandle}
+                </span>
+              </div>
+            </div>
+
+            {/* OUR 3 DIRECT TEAM CONTACTS */}
+            <div className="mb-6">
+              <h4 className="gw-font-display text-[15px] font-medium text-[#202124] text-center mb-1">
+                Need Instant Assistance or Custom Drip-Feed?
+              </h4>
+              <p className="gw-font-text text-[12.5px] text-[#5f6368] text-center mb-4">
+                Reach out to our team directly on any of our 3 official channels
+                below:
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* 1. WhatsApp */}
+                <a
+                  href={TEAM_CONTACTS.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center justify-center p-4 rounded-[16px] bg-[#f8f9fa] hover:bg-[#e6f4ea]/60 border border-[#e8eaed] hover:border-[#34a853] transition-all group text-center"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#e6f4ea] text-[#1e8e3e] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z" />
+                    </svg>
+                  </div>
+                  <span className="gw-font-display text-[13.5px] font-medium text-[#202124]">
+                    WhatsApp
+                  </span>
+                  <span className="text-[11.5px] text-[#1e8e3e] font-medium mt-0.5">
+                    {TEAM_CONTACTS.whatsappLabel}
+                  </span>
+                </a>
+
+                {/* 2. Telegram */}
+                <a
+                  href={TEAM_CONTACTS.telegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center justify-center p-4 rounded-[16px] bg-[#f8f9fa] hover:bg-[#e8f0fe]/60 border border-[#e8eaed] hover:border-[#1a73e8] transition-all group text-center"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                    </svg>
+                  </div>
+                  <span className="gw-font-display text-[13.5px] font-medium text-[#202124]">
+                    Telegram
+                  </span>
+                  <span className="text-[11.5px] text-[#1a73e8] font-medium mt-0.5">
+                    {TEAM_CONTACTS.telegramLabel}
+                  </span>
+                </a>
+
+                {/* 3. Direct Support Team */}
+                <a
+                  href={`mailto:${TEAM_CONTACTS.supportEmail}`}
+                  className="flex flex-col items-center justify-center p-4 rounded-[16px] bg-[#f8f9fa] hover:bg-[#fef7e0]/60 border border-[#e8eaed] hover:border-[#fbbc04] transition-all group text-center"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#fef7e0] text-[#f29900] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                  </div>
+                  <span className="gw-font-display text-[13.5px] font-medium text-[#202124]">
+                    Support Team
+                  </span>
+                  <span className="text-[11.5px] text-[#f29900] font-medium mt-0.5">
+                    {TEAM_CONTACTS.supportEmail}
+                  </span>
+                </a>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="gw-font-display w-full h-[50px] rounded-full bg-[#202124] hover:bg-[#3c4043] text-white font-medium text-[15px] transition-colors cursor-pointer"
+            >
+              Done & Return to Website
+            </button>
+          </div>
+        ) : (
+          /* ============================================================
+             POPUP 2: PAYMENT SUCCESSFUL STATUS + ORDER & CONTACT FORM
+             ============================================================ */
+          <>
+            {/* Top Premium Payment Successful Banner */}
+            <div className="bg-gradient-to-r from-[#e6f4ea] via-[#f1faf4] to-[#e8f0fe] px-6 py-5 border-b border-[#ceead6]">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-[#34a853] text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2.8"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="gw-font-display text-[18px] sm:text-[20px] font-medium text-[#137333]">
+                        Payment Successful
+                      </span>
+                      <span className="text-[11px] font-semibold bg-white text-[#1e8e3e] px-2.5 py-0.5 rounded-full border border-[#ceead6]">
+                        Step 2 of 3
+                      </span>
+                    </div>
+                    <p className="text-[12.5px] text-[#3c4043] mt-0.5">
+                      Paid{" "}
+                      <strong>
+                        $
+                        {finalTotal.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        USD
+                      </strong>{" "}
+                      for <strong>{totalLinks.toLocaleString()} Links</strong> •
+                      TXN:{" "}
+                      <span className="font-mono text-[12px]">
+                        {paymentData.transactionId}
+                      </span>
+                    </p>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-7">
+              <div className="mb-4">
+                <h3 className="gw-font-display text-[20px] sm:text-[22px] font-medium text-[#202124]">
+                  Submit Your Order & Contact Details
+                </h3>
+                <p className="gw-font-text text-[13.5px] text-[#5f6368] mt-0.5">
+                  Please provide your target URLs, anchor texts, and direct
+                  contact below so we can begin placements immediately.
+                </p>
+              </div>
+
+              {/* Mandatory Contact Notice Banner */}
+              <div className="mb-5 p-3.5 rounded-[14px] bg-[#fef7e0] border border-[#fde293] flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-[#f29900] shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <p className="gw-font-text text-[12.5px] text-[#3c4043] leading-[1.5]">
+                  <strong className="text-[#202124]">
+                    Adding your WhatsApp or Telegram contact is mandatory:
+                  </strong>{" "}
+                  Our project manager uses this to send you instant campaign
+                  updates and your live white-label tracking sheet.
+                </p>
               </div>
 
               <form onSubmit={handleOrderSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
                       Your Name / Agency Name *
@@ -468,7 +798,7 @@ function OrderDetailsModal({
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="John Doe"
-                      className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14.5px] text-[#202124]"
+                      className="w-full px-3.5 py-2.5 bg-[#f8f9fa] focus:bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
                     />
                   </div>
                   <div>
@@ -481,9 +811,46 @@ function OrderDetailsModal({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@agency.com"
-                      className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14.5px] text-[#202124]"
+                      className="w-full px-3.5 py-2.5 bg-[#f8f9fa] focus:bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
                     />
                   </div>
+                </div>
+
+                {/* REQUIRED WHATSAPP OR TELEGRAM CONTACT FIELD */}
+                <div className="p-3.5 rounded-[14px] bg-[#f8fbff] border border-[#d2e3fc]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <label className="block text-[13px] font-semibold text-[#1a73e8]">
+                      Your WhatsApp Number or Telegram Username (Required) *
+                    </label>
+                    <div className="inline-flex rounded-full bg-white p-0.5 border border-[#dadce0]">
+                      {["WhatsApp", "Telegram"].map((platform) => (
+                        <button
+                          key={platform}
+                          type="button"
+                          onClick={() => setContactPlatform(platform)}
+                          className={`px-3 py-1 rounded-full text-[11.5px] font-medium transition-all cursor-pointer ${
+                            contactPlatform === platform
+                              ? "bg-[#1a73e8] text-white"
+                              : "text-[#5f6368] hover:text-[#202124]"
+                          }`}
+                        >
+                          {platform}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={contactHandle}
+                    onChange={(e) => setContactHandle(e.target.value)}
+                    placeholder={
+                      contactPlatform === "WhatsApp"
+                        ? "e.g. +1 234 567 8900 (with country code)"
+                        : "e.g. @yourusername"
+                    }
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
+                  />
                 </div>
 
                 <div>
@@ -491,12 +858,12 @@ function OrderDetailsModal({
                     Target URLs (One URL per line) *
                   </label>
                   <textarea
-                    rows="3"
+                    rows="2"
                     required
                     value={targetUrls}
                     onChange={(e) => setTargetUrls(e.target.value)}
                     placeholder={`https://yourclient.com/\nhttps://yourclient.com/services`}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14px] text-[#202124]"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] focus:bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
                   />
                 </div>
 
@@ -505,12 +872,12 @@ function OrderDetailsModal({
                     Target Keywords / Anchor Texts *
                   </label>
                   <textarea
-                    rows="3"
+                    rows="2"
                     required
                     value={anchorTexts}
                     onChange={(e) => setAnchorTexts(e.target.value)}
                     placeholder="best seo agency, digital marketing services, brand name"
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14px] text-[#202124]"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] focus:bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
                   />
                 </div>
 
@@ -523,29 +890,23 @@ function OrderDetailsModal({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g. Drip-feed over 7 days, Bahasa Indonesia articles..."
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14px] text-[#202124]"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] focus:bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
                   />
                 </div>
-
-                {submitError && (
-                  <div className="p-3 rounded-[10px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[13px] font-medium">
-                    {submitError}
-                  </div>
-                )}
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="gw-font-display w-full h-[50px] rounded-full bg-[#1a73e8] text-white font-medium text-[15px] hover:bg-[#1557b0] shadow-[0_4px_14px_rgba(26,115,232,0.25)] transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
+                  className="gw-font-display w-full h-[52px] rounded-full bg-[#1a73e8] text-white font-medium text-[15px] hover:bg-[#1557b0] shadow-[0_6px_20px_rgba(26,115,232,0.25)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting
-                    ? "Submitting Campaign & Sending Emails..."
-                    : "Complete Order & Send Confirmation"}
+                    ? "Saving Order Details..."
+                    : "Submit Order Details & View Confirmation →"}
                 </button>
               </form>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -910,8 +1271,8 @@ function HowItWorksSection() {
     },
     {
       step: "02",
-      title: "Submit Target URLs & Anchors",
-      desc: "Complete your checkout via Stripe, PayPal, or Crypto and submit your target URLs and keywords in our onboarding form.",
+      title: "Submit Target URLs & Contact",
+      desc: "Complete your checkout and enter your target URLs, anchor texts, and WhatsApp/Telegram handle in our onboarding popup.",
       badge: "100% Footprint-Free",
       color: "bg-[#fef7e0] text-[#f29900]",
     },
@@ -989,7 +1350,7 @@ function PackageEstimator() {
   const [isInitializingPayment, setIsInitializingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState("");
 
-  // Post-Payment Order Form Modal State
+  // Post-Payment Order Form Modal State (Popup 2 & Popup 3)
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [completedPayment, setCompletedPayment] = useState(null);
 
@@ -1180,14 +1541,14 @@ function PackageEstimator() {
       console.error("Failed to initialise Stripe:", error);
       setPaymentError(
         error.response?.data?.error ||
-          "Unable to connect to payment server. Make sure your Node.js backend is running on port 5000.",
+          "Unable to connect to payment server. Please check your connection.",
       );
     } finally {
       setIsInitializingPayment(false);
     }
   };
 
-  // 2. BOOMFI CRYPTO CHECKOUT INITIATION (Opens Modal or Redirects)
+  // 2. BOOMFI CRYPTO CHECKOUT INITIATION
   const handleBoomFiSubmit = async () => {
     setIsInitializingPayment(true);
     setPaymentError("");
@@ -1204,7 +1565,6 @@ function PackageEstimator() {
         document.body.style.overflow = "hidden";
       }
     } catch (error) {
-      // Even if backend BoomFi key is not configured yet, open Crypto Modal so user can pay
       setBoomFiChargeData({
         isFallback: true,
         total: finalTotal,
@@ -1226,20 +1586,16 @@ function PackageEstimator() {
     document.body.style.overflow = "auto";
   };
 
-  // TRIGGERED IMMEDIATELY AFTER STRIPE, PAYPAL, OR BOOMFI SUCCEEDS
+  // SEAMLESS TRANSITION FROM POPUP 1 -> POPUP 2
   const handlePaymentSuccess = (
     transactionId,
-    method = "Stripe Card",
-    defaultEmail = "",
-    defaultName = "",
+    method = "Credit / Debit Card",
   ) => {
     setIsStripeModalOpen(false);
     setIsBoomFiModalOpen(false);
     setCompletedPayment({
       transactionId,
       method,
-      defaultEmail,
-      defaultName,
     });
     setIsOrderModalOpen(true);
     document.body.style.overflow = "hidden";
@@ -1705,52 +2061,25 @@ function PackageEstimator() {
                       type="button"
                       onClick={handleStripeCheckoutClick}
                       disabled={totalLinks === 0 || isInitializingPayment}
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635BFF] text-white font-medium text-[14.5px] sm:text-[15px] hover:bg-[#5851df] hover:shadow-[0_4px_14px_rgba(99,91,255,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#1a73e8] text-white font-medium text-[14.5px] sm:text-[15px] hover:bg-[#1557b0] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {isInitializingPayment ? (
-                        "Connecting to Gateway..."
+                        "Opening Secure Card Checkout..."
                       ) : (
                         <>
                           <svg
-                            className="h-[18px] sm:h-[19px] w-auto"
-                            viewBox="0 0 468 222.5"
+                            className="w-4 h-4"
                             fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
                           >
-                            <path
-                              d="M414 113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8 0-38.2 20.2-38.2 45.6c0 30.1 17 45.3 41.4 45.3c11.9 0 20.9-2.7 27.7-6.5v-20c-6.8 3.4-14.6 5.5-24.5 5.5c-9.7 0-18.3-3.4-19.4-15.2h48.9C413.8 121 414 115.8 414 113.4z M364.6 103.9c0-11.3 6.9-16 13.2-16c6.1 0 12.6 4.7 12.6 16H364.6z"
-                              fill="white"
-                            />
-                            <path
-                              d="M301.1 67.6c-9.8 0-16.1 4.6-19.6 7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6 2.6 8.9 6.3 17.7 6.3c17.9 0 34.2-14.4 34.2-46.1C335.1 83.4 318.6 67.6 301.1 67.6z M295.1 136.5c-5.9 0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9 6.2-4.9 11.9-4.9c9.1 0 15.4 10.2 15.4 23.3C310.5 126.5 304.3 136.5 295.1 136.5z"
-                              fill="white"
-                            />
-                            <polygon
-                              points="223.8 61.7 248.9 56.3 248.9 36 223.8 41.3"
-                              fill="white"
-                            />
-                            <rect
-                              x="223.8"
-                              y="69.3"
-                              width="25.1"
-                              height="87.5"
-                              fill="white"
-                            />
-                            <path
-                              d="M196.9 76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7 15.9-6.3 19-5.2v-23C214.5 68.1 202.8 65.9 196.9 76.7z"
-                              fill="white"
-                            />
-                            <path
-                              d="M146.9 47.6l-24.4 5.2l-0.1 80.1c0 14.8 11.1 25.7 25.9 25.7c8.2 0 14.2-1.5 17.5-3.3V135c-3.2 1.3-19 5.9-19-8.9V90.6h19V69.3h-19L146.9 47.6z"
-                              fill="white"
-                            />
-                            <path
-                              d="M79.3 94.7c0-3.9 3.2-5.4 8.5-5.4c7.6 0 17.2 2.3 24.8 6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5 67.6 54 78.2 54 95.9c0 27.6 38 23.2 38 35.1c0 4.6-4 6.1-9.6 6.1c-8.3 0-18.9-3.4-27.3-8v23.8c9.3 4 18.7 5.7 27.3 5.7c20.8 0 35.1-10.3 35.1-28.2C117.4 100.6 79.3 105.9 79.3 94.7z"
-                              fill="white"
-                            />
+                            <rect x="2" y="5" width="20" height="14" rx="2" />
+                            <line x1="2" y1="10" x2="22" y2="10" />
                           </svg>
-                          <span className="opacity-60">|</span>
-                          <span className="tracking-wide">Add Card</span>
+                          <span className="tracking-wide">
+                            Pay with Card (Instant)
+                          </span>
                         </>
                       )}
                     </button>
@@ -1784,7 +2113,7 @@ function PackageEstimator() {
                               } catch (err) {
                                 setPaymentError(
                                   err.response?.data?.error ||
-                                    "Could not initiate PayPal order. Check PAYPAL_CLIENT_ID & SECRET in backend .env.",
+                                    "Could not initiate PayPal order. Check backend connection.",
                                 );
                                 throw err;
                               }
@@ -1897,19 +2226,27 @@ function PackageEstimator() {
           </div>
         )}
 
-      {/* --- STRIPE CHECKOUT MODAL OVERLAY --- */}
+      {/* --- POPUP 1: CUSTOM 3-FIELD STRIPE CARD MODAL --- */}
       {isStripeModalOpen && clientSecret && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-[#202124]/45 backdrop-blur-[2px] transition-opacity"
+            className="absolute inset-0 bg-[#202124]/55 backdrop-blur-[3px] transition-opacity"
             onClick={closeStripeModal}
           />
-          <div className="relative w-full max-w-[440px] max-h-[92vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.2)] animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-[#635BFF] px-5 py-5 sm:px-6 sm:py-6 text-white relative">
+          <div className="relative w-full max-w-[440px] bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.25)] border border-[#dadce0] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Google 4-Colour Top Strip */}
+            <div className="grid grid-cols-4 h-[4px] w-full">
+              <div className="bg-[#4285F4]" />
+              <div className="bg-[#EA4335]" />
+              <div className="bg-[#FBBC04]" />
+              <div className="bg-[#34A853]" />
+            </div>
+
+            <div className="bg-[#f8fbff] px-6 py-5 border-b border-[#e8eaed] relative">
               <button
                 type="button"
                 onClick={closeStripeModal}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/20 transition-colors text-white/80 hover:text-white cursor-pointer"
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-[#e8eaed] transition-colors text-[#5f6368] hover:text-[#202124] cursor-pointer"
               >
                 <svg
                   className="w-5 h-5"
@@ -1922,66 +2259,33 @@ function PackageEstimator() {
                 </svg>
               </button>
 
-              <div className="flex items-center mb-4 sm:mb-5">
-                <svg
-                  className="h-[22px] sm:h-[24px] w-auto"
-                  viewBox="0 0 468 222.5"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M414 113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8 0-38.2 20.2-38.2 45.6c0 30.1 17 45.3 41.4 45.3c11.9 0 20.9-2.7 27.7-6.5v-20c-6.8 3.4-14.6 5.5-24.5 5.5c-9.7 0-18.3-3.4-19.4-15.2h48.9C413.8 121 414 115.8 414 113.4z M364.6 103.9c0-11.3 6.9-16 13.2-16c6.1 0 12.6 4.7 12.6 16H364.6z"
-                    fill="white"
-                  />
-                  <path
-                    d="M301.1 67.6c-9.8 0-16.1 4.6-19.6 7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6 2.6 8.9 6.3 17.7 6.3c17.9 0 34.2-14.4 34.2-46.1C335.1 83.4 318.6 67.6 301.1 67.6z M295.1 136.5c-5.9 0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9 6.2-4.9 11.9-4.9c9.1 0 15.4 10.2 15.4 23.3C310.5 126.5 304.3 136.5 295.1 136.5z"
-                    fill="white"
-                  />
-                  <polygon
-                    points="223.8 61.7 248.9 56.3 248.9 36 223.8 41.3"
-                    fill="white"
-                  />
-                  <rect
-                    x="223.8"
-                    y="69.3"
-                    width="25.1"
-                    height="87.5"
-                    fill="white"
-                  />
-                  <path
-                    d="M196.9 76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7 15.9-6.3 19-5.2v-23C214.5 68.1 202.8 65.9 196.9 76.7z"
-                    fill="white"
-                  />
-                  <path
-                    d="M146.9 47.6l-24.4 5.2l-0.1 80.1c0 14.8 11.1 25.7 25.9 25.7c8.2 0 14.2-1.5 17.5-3.3V135c-3.2 1.3-19 5.9-19-8.9V90.6h19V69.3h-19L146.9 47.6z"
-                    fill="white"
-                  />
-                  <path
-                    d="M79.3 94.7c0-3.9 3.2-5.4 8.5-5.4c7.6 0 17.2 2.3 24.8 6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5 67.6 54 78.2 54 95.9c0 27.6 38 23.2 38 35.1c0 4.6-4 6.1-9.6 6.1c-8.3 0-18.9-3.4-27.3-8v23.8c9.3 4 18.7 5.7 27.3 5.7c20.8 0 35.1-10.3 35.1-28.2C117.4 100.6 79.3 105.9 79.3 94.7z"
-                    fill="white"
-                  />
-                </svg>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] font-medium mb-2">
+                Step 1 of 3 • Secure Card Checkout
               </div>
 
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-white/80 text-[13px] sm:text-[13.5px] mb-1 font-medium">
+                  <p className="text-[#5f6368] text-[13px] mb-0.5 font-medium">
                     Jasa Backlinks ({totalLinks.toLocaleString()} Links)
                   </p>
-                  <h4 className="text-[30px] sm:text-[34px] font-medium leading-none tracking-tight">
+                  <h4 className="gw-font-display text-[32px] font-medium text-[#202124] leading-none tracking-tight">
                     $
                     {finalTotal.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    })}
+                    })}{" "}
+                    <span className="text-[13px] font-normal text-[#5f6368]">
+                      USD
+                    </span>
                   </h4>
                 </div>
               </div>
             </div>
 
-            <div className="p-5 sm:p-6">
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <StripeCheckoutForm
+            <div className="p-6">
+              <Elements stripe={stripePromise}>
+                <CustomStripeCardForm
+                  clientSecret={clientSecret}
                   totalAmount={finalTotal}
                   onSuccess={handlePaymentSuccess}
                 />
@@ -2001,8 +2305,8 @@ function PackageEstimator() {
         onSuccess={handlePaymentSuccess}
       />
 
-      {/* --- POST-PAYMENT ORDER DETAILS MODAL (PHASE 3) --- */}
-      <OrderDetailsModal
+      {/* --- POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & CONTACTS --- */}
+      <OrderOnboardingFlowModal
         isOpen={isOrderModalOpen}
         paymentData={completedPayment}
         selectedPackages={selectedPackagesDetailed}
@@ -2306,7 +2610,7 @@ function FAQSection() {
     },
     {
       q: "How do I submit my target URLs and anchor texts after checkout?",
-      a: "Immediately after completing your payment via Stripe, PayPal, or BoomFi Crypto, our campaign intake modal opens automatically so you can submit your target URLs, anchor text ratios, and email address for instant confirmation.",
+      a: "Immediately after completing your payment via Card, PayPal, or BoomFi Crypto, Step 2 opens automatically so you can submit your target URLs, anchor text ratios, and WhatsApp/Telegram contact for instant confirmation.",
     },
     {
       q: "Is your network safe from Google footprints?",

@@ -121,7 +121,7 @@ export default function Footer() {
               <img
                 src="/favicon.svg"
                 alt="Jasa Backlinks"
-                className="h-[22px] sm:h-[24px] w-auto object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                className="h-[22px] sm:h-[24px] w-auto"
               />
             </Link>
             <div className="hidden sm:block w-[1px] h-3.5 bg-[#dadce0]"></div>
