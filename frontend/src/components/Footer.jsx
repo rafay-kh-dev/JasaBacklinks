@@ -156,7 +156,7 @@ export default function Footer() {
           <div className="gw-font-text text-[12.5px] sm:text-[13px] font-normal text-[#5f6368]">
             Powered by{" "}
             <a
-              href="https://seohub.ltd"
+              href="https://seohubltd.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#1a73e8] font-medium hover:text-[#1557b0] transition-colors"

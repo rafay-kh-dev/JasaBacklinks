@@ -1,5 +1,555 @@
 import { Link } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import axios from "axios";
+
+// --- ENVIRONMENT & API CONFIGURATION ---
+const STRIPE_PUBLIC_KEY =
+  import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
+const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
+
+// --- 1. REAL STRIPE CARD ELEMENT FORM COMPONENT ---
+function StripeCheckoutForm({ totalAmount, onSuccess }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [cardholderName, setCardholderName] = useState("");
+  const [receiptEmail, setReceiptEmail] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isElementReady, setIsElementReady] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    if (!cardholderName.trim()) {
+      setErrorMessage("Please enter the name on your card.");
+      return;
+    }
+
+    setIsProcessing(true);
+    setErrorMessage("");
+
+    // Trigger Stripe form validation (checks card number, expiry, CVC immediately)
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setErrorMessage(
+        submitError.message || "Please check your card details and try again.",
+      );
+      setIsProcessing(false);
+      return;
+    }
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        receipt_email: receiptEmail || undefined,
+        payment_method_data: {
+          billing_details: {
+            name: cardholderName,
+            email: receiptEmail || undefined,
+          },
+        },
+      },
+      redirect: "if_required",
+    });
+
+    if (error) {
+      setErrorMessage(
+        error.message || "Card declined or invalid. Please check your details.",
+      );
+      setIsProcessing(false);
+    } else if (paymentIntent && paymentIntent.status === "succeeded") {
+      setIsProcessing(false);
+      onSuccess(paymentIntent.id, "Stripe Card", receiptEmail, cardholderName);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+          Email for Receipt *
+        </label>
+        <input
+          type="email"
+          required
+          value={receiptEmail}
+          onChange={(e) => setReceiptEmail(e.target.value)}
+          placeholder="you@company.com"
+          className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] text-[14.5px] text-[#202124]"
+        />
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+          Name on Card *
+        </label>
+        <input
+          type="text"
+          required
+          value={cardholderName}
+          onChange={(e) => setCardholderName(e.target.value)}
+          placeholder="John Doe"
+          className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] text-[14.5px] text-[#202124]"
+        />
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+          Card Details (Validated by Stripe) *
+        </label>
+        <div className="p-3 border border-[#dadce0] rounded-[10px] bg-white">
+          <PaymentElement
+            onReady={() => setIsElementReady(true)}
+            onLoadError={(event) => {
+              setErrorMessage(
+                event?.error?.message ||
+                  "Stripe failed to load. Please ensure VITE_STRIPE_PUBLIC_KEY in frontend .env matches your backend STRIPE_SECRET_KEY account.",
+              );
+            }}
+          />
+        </div>
+      </div>
+
+      {errorMessage && (
+        <div className="p-3 rounded-[10px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[13px] font-medium">
+          {errorMessage}
+        </div>
+      )}
+
+      <div className="pt-2">
+        <button
+          type="submit"
+          disabled={!stripe || !isElementReady || isProcessing}
+          className="w-full h-[50px] bg-[#635BFF] text-white rounded-[10px] font-medium text-[15px] hover:bg-[#5851df] transition-colors shadow-[0_4px_12px_rgba(99,91,255,0.25)] flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isProcessing
+            ? "Verifying Card & Processing..."
+            : `Pay $${totalAmount.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })} USD`}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// --- 2. BOOMFI CRYPTO CHECKOUT MODAL ---
+function BoomFiCryptoModal({
+  isOpen,
+  chargeData,
+  totalAmount,
+  totalLinks,
+  onClose,
+  onSuccess,
+}) {
+  const [selectedCoin, setSelectedCoin] = useState("USDT (TRC20)");
+  const [txHash, setTxHash] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  if (!isOpen || !chargeData) return null;
+
+  const walletAddresses = {
+    "USDT (TRC20)":
+      chargeData.walletAddress || "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
+    "USDT (ERC20)": "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+    "USDC (Polygon)": "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+  };
+
+  const currentAddress = walletAddresses[selectedCoin];
+
+  const copyAddress = () => {
+    navigator.clipboard.writeText(currentAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleConfirmCrypto = (e) => {
+    e.preventDefault();
+    if (!txHash.trim() || txHash.trim().length < 8) {
+      alert("Please enter a valid Transaction Hash (TXID) to verify payment.");
+      return;
+    }
+    onSuccess(
+      `BOOMFI-${txHash.trim().slice(0, 14).toUpperCase()}`,
+      `BoomFi Crypto (${selectedCoin})`,
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[105] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div
+        className="absolute inset-0 bg-[#202124]/50 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-[460px] max-h-[92vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.22)] border border-[#dadce0] animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-[#1a73e8] px-6 py-5 text-white relative">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/20 text-white cursor-pointer"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-white text-[11.5px] font-medium mb-2">
+            BoomFi Crypto Gateway
+          </div>
+          <p className="text-white/80 text-[13px]">
+            Jasa Backlinks ({totalLinks.toLocaleString()} Links)
+          </p>
+          <h4 className="gw-font-display text-[32px] font-medium leading-tight">
+            $
+            {totalAmount.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{" "}
+            <span className="text-[14px] font-normal opacity-85">
+              USDT / USDC
+            </span>
+          </h4>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {chargeData.checkoutUrl && !chargeData.isFallback && (
+            <a
+              href={chargeData.checkoutUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full h-[46px] rounded-[10px] bg-[#e8f0fe] text-[#1a73e8] font-medium text-[14px] flex items-center justify-center gap-2 hover:bg-[#d2e3fc] transition-colors"
+            >
+              Open Hosted BoomFi Checkout Page ↗
+            </a>
+          )}
+
+          <div>
+            <label className="block text-[12.5px] font-medium text-[#5f6368] mb-1.5">
+              Select Network & Token
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.keys(walletAddresses).map((coin) => (
+                <button
+                  key={coin}
+                  type="button"
+                  onClick={() => setSelectedCoin(coin)}
+                  className={`py-2 px-2 rounded-[10px] text-[12px] font-medium border transition-all cursor-pointer ${
+                    selectedCoin === coin
+                      ? "bg-[#e8f0fe] border-[#1a73e8] text-[#1a73e8] font-semibold"
+                      : "bg-[#f8f9fa] border-[#e8eaed] text-[#5f6368]"
+                  }`}
+                >
+                  {coin}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[#f8f9fa] p-4 rounded-[14px] border border-[#e8eaed]">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[12px] text-[#5f6368] font-medium">
+                Send Exact Amount To Address:
+              </span>
+              <button
+                type="button"
+                onClick={copyAddress}
+                className="text-[12px] font-semibold text-[#1a73e8] hover:underline cursor-pointer"
+              >
+                {copied ? "✓ Copied" : "Copy Address"}
+              </button>
+            </div>
+            <p className="font-mono text-[12.5px] text-[#202124] break-all bg-white p-2.5 rounded-[8px] border border-[#dadce0]">
+              {currentAddress}
+            </p>
+          </div>
+
+          <form onSubmit={handleConfirmCrypto} className="space-y-3 pt-1">
+            <div>
+              <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+                Paste Transaction Hash (TXID) After Sending *
+              </label>
+              <input
+                type="text"
+                required
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+                placeholder="e.g. 0x8f9c2b... or TRC20 TXID"
+                className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] text-[14px] text-[#202124]"
+              />
+            </div>
+            <button
+              type="submit"
+              className="gw-font-display w-full h-[48px] bg-[#1a73e8] text-white rounded-full font-medium text-[15px] hover:bg-[#1557b0] transition-colors shadow-[0_4px_12px_rgba(26,115,232,0.25)] cursor-pointer"
+            >
+              Verify Crypto Payment & Continue
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- 3. POST-PAYMENT CAMPAIGN INTAKE MODAL (PHASE 3) ---
+function OrderDetailsModal({
+  isOpen,
+  paymentData,
+  selectedPackages,
+  totalLinks,
+  finalTotal,
+  onClose,
+}) {
+  const [fullName, setFullName] = useState(paymentData?.defaultName || "");
+  const [email, setEmail] = useState(paymentData?.defaultEmail || "");
+  const [targetUrls, setTargetUrls] = useState("");
+  const [anchorTexts, setAnchorTexts] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    if (paymentData?.defaultEmail) setEmail(paymentData.defaultEmail);
+    if (paymentData?.defaultName) setFullName(paymentData.defaultName);
+  }, [paymentData]);
+
+  if (!isOpen || !paymentData) return null;
+
+  const handleOrderSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      await axios.post(`${BACKEND_URL}/api/submit-order`, {
+        transactionId: paymentData.transactionId,
+        paymentMethod: paymentData.method,
+        totalAmount: finalTotal,
+        totalLinks,
+        packages: selectedPackages,
+        customer: {
+          fullName,
+          email,
+          targetUrls,
+          anchorTexts,
+          notes,
+        },
+      });
+      setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError(
+        err.response?.data?.error ||
+          "Could not submit order details. Please check backend connection.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-[#202124]/60 backdrop-blur-[3px]" />
+      <div className="relative w-full max-w-[560px] max-h-[94vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.25)] border border-[#dadce0] animate-in fade-in zoom-in-95 duration-200">
+        {/* Google 4-Colour Top Strip */}
+        <div className="grid grid-cols-4 h-[4px] w-full">
+          <div className="bg-[#4285F4]" />
+          <div className="bg-[#EA4335]" />
+          <div className="bg-[#FBBC04]" />
+          <div className="bg-[#34A853]" />
+        </div>
+
+        <div className="p-6 sm:p-8">
+          {isSubmitted ? (
+            <div className="text-center py-6">
+              <div className="w-16 h-16 rounded-full bg-[#e6f4ea] text-[#1e8e3e] flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <h3 className="gw-font-display text-[24px] font-medium text-[#202124] mb-2">
+                Campaign Queued for Placement!
+              </h3>
+              <p className="gw-font-text text-[14.5px] text-[#5f6368] max-w-[420px] mx-auto mb-6 leading-[1.6]">
+                We have sent a confirmation receipt to{" "}
+                <strong className="text-[#202124]">{email}</strong>. Our SEO
+                team has received your URLs and anchors and will deliver your
+                white-label report within 5–7 days.
+              </p>
+              <div className="bg-[#f8f9fa] rounded-[14px] p-4 border border-[#e8eaed] mb-6 text-left text-[13px] text-[#5f6368] space-y-1">
+                <div className="flex justify-between">
+                  <span>Transaction ID:</span>
+                  <span className="font-mono font-semibold text-[#202124]">
+                    {paymentData.transactionId}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Volume:</span>
+                  <span className="font-semibold text-[#1a73e8]">
+                    {totalLinks.toLocaleString()} Backlinks
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="gw-font-display h-[48px] px-8 rounded-full bg-[#1a73e8] text-white font-medium text-[15px] hover:bg-[#1557b0] transition-colors cursor-pointer"
+              >
+                Done & Return to Home
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-start justify-between gap-4 mb-5 pb-4 border-b border-[#e8eaed]">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e6f4ea] text-[#1e8e3e] text-[11.5px] font-semibold mb-2">
+                    ● Payment Verified ({paymentData.method})
+                  </div>
+                  <h3 className="gw-font-display text-[22px] font-medium text-[#202124]">
+                    Submit Campaign Requirements
+                  </h3>
+                  <p className="gw-font-text text-[13.5px] text-[#5f6368] mt-0.5">
+                    Complete the form below to start your link placements and
+                    receive your email confirmation.
+                  </p>
+                </div>
+              </div>
+
+              {/* Locked Payment Summary Pill */}
+              <div className="bg-[#f8f9fa] rounded-[14px] p-3.5 border border-[#e8eaed] mb-5 flex flex-wrap items-center justify-between gap-2 text-[12.5px]">
+                <div>
+                  <span className="text-[#5f6368]">TXN ID: </span>
+                  <span className="font-mono font-semibold text-[#202124]">
+                    {paymentData.transactionId}
+                  </span>
+                </div>
+                <div className="font-semibold text-[#1a73e8]">
+                  {totalLinks.toLocaleString()} Links ($
+                  {finalTotal.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  USD)
+                </div>
+              </div>
+
+              <form onSubmit={handleOrderSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+                      Your Name / Agency Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="John Doe"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14.5px] text-[#202124]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+                      Email for Report & Receipt *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@agency.com"
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14.5px] text-[#202124]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+                    Target URLs (One URL per line) *
+                  </label>
+                  <textarea
+                    rows="3"
+                    required
+                    value={targetUrls}
+                    onChange={(e) => setTargetUrls(e.target.value)}
+                    placeholder={`https://yourclient.com/\nhttps://yourclient.com/services`}
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14px] text-[#202124]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+                    Target Keywords / Anchor Texts *
+                  </label>
+                  <textarea
+                    rows="3"
+                    required
+                    value={anchorTexts}
+                    onChange={(e) => setAnchorTexts(e.target.value)}
+                    placeholder="best seo agency, digital marketing services, brand name"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14px] text-[#202124]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
+                    Special Instructions / Drip-Feed Notes (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Drip-feed over 7 days, Bahasa Indonesia articles..."
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-1 focus:ring-[#1a73e8] text-[14px] text-[#202124]"
+                  />
+                </div>
+
+                {submitError && (
+                  <div className="p-3 rounded-[10px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[13px] font-medium">
+                    {submitError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="gw-font-display w-full h-[50px] rounded-full bg-[#1a73e8] text-white font-medium text-[15px] hover:bg-[#1557b0] shadow-[0_4px_14px_rgba(26,115,232,0.25)] transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmitting
+                    ? "Submitting Campaign & Sending Emails..."
+                    : "Complete Order & Send Confirmation"}
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // --- TRUST METRICS SECTION (2x2 MOBILE GRID, 4-COL DESKTOP) ---
 function TrustMetricsSection() {
@@ -426,11 +976,22 @@ function HowItWorksSection() {
   );
 }
 
-// --- LIVE PACKAGE ESTIMATOR & CHECKOUT MODAL SECTION ---
+// --- LIVE PACKAGE ESTIMATOR & CHECKOUT SECTION ---
 function PackageEstimator() {
   const [cart, setCart] = useState({ hp_post: 50 });
   const [activeCategory, setActiveCategory] = useState("all");
+
+  // Payment & Modal States
   const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
+  const [isBoomFiModalOpen, setIsBoomFiModalOpen] = useState(false);
+  const [boomFiChargeData, setBoomFiChargeData] = useState(null);
+  const [isInitializingPayment, setIsInitializingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+
+  // Post-Payment Order Form Modal State
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [completedPayment, setCompletedPayment] = useState(null);
 
   const services = [
     {
@@ -534,6 +1095,19 @@ function PackageEstimator() {
 
   const stops = [0, 50, 1000, 2000, 3000, 4000, 5000];
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "crypto_success") {
+      const txId = params.get("tx") || `CRYPTO-${Date.now()}`;
+      setCompletedPayment({
+        transactionId: txId,
+        method: "BoomFi Crypto",
+      });
+      setIsOrderModalOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const setServiceQty = (id, rawVal) => {
     let val = parseInt(rawVal, 10);
     if (isNaN(val) || val <= 0) {
@@ -572,31 +1146,108 @@ function PackageEstimator() {
   const selectedEntries = Object.entries(cart).filter(([, qty]) => qty > 0);
   const selectedPackagesCount = selectedEntries.length;
 
-  const finalTotal = selectedEntries.reduce((sum, [id, qty]) => {
-    const service = services.find((s) => s.id === id);
-    return sum + (service ? service.price * qty : 0);
-  }, 0);
+  const selectedPackagesDetailed = selectedEntries.map(([id, qty]) => {
+    const svc = services.find((s) => s.id === id);
+    return {
+      id,
+      name: svc ? svc.name : id,
+      qty,
+      price: svc ? svc.price : 0,
+      subtotal: svc ? svc.price * qty : 0,
+    };
+  });
+
+  const finalTotal = selectedPackagesDetailed.reduce(
+    (sum, item) => sum + item.subtotal,
+    0,
+  );
 
   const totalLinks = selectedEntries.reduce((sum, [, qty]) => sum + qty, 0);
 
-  const handleStripeSubmit = async (e) => {
-    e.preventDefault();
-    alert(
-      `Connecting to Stripe API to process $${finalTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD...`,
-    );
+  // 1. STRIPE CHECKOUT INITIATION
+  const handleStripeCheckoutClick = async () => {
+    setIsInitializingPayment(true);
+    setPaymentError("");
+    try {
+      const { data } = await axios.post(
+        `${BACKEND_URL}/api/create-stripe-intent`,
+        { cart },
+      );
+      setClientSecret(data.clientSecret);
+      setIsStripeModalOpen(true);
+      document.body.style.overflow = "hidden";
+    } catch (error) {
+      console.error("Failed to initialise Stripe:", error);
+      setPaymentError(
+        error.response?.data?.error ||
+          "Unable to connect to payment server. Make sure your Node.js backend is running on port 5000.",
+      );
+    } finally {
+      setIsInitializingPayment(false);
+    }
   };
 
-  const handlePayPalSubmit = async () => {
-    window.open("https://www.paypal.com/checkoutnow", "_blank");
-  };
-
-  const openStripeModal = () => {
-    setIsStripeModalOpen(true);
-    document.body.style.overflow = "hidden";
+  // 2. BOOMFI CRYPTO CHECKOUT INITIATION (Opens Modal or Redirects)
+  const handleBoomFiSubmit = async () => {
+    setIsInitializingPayment(true);
+    setPaymentError("");
+    try {
+      const { data } = await axios.post(
+        `${BACKEND_URL}/api/create-boomfi-charge`,
+        { cart },
+      );
+      if (data.checkoutUrl && !data.isFallback) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        setBoomFiChargeData(data);
+        setIsBoomFiModalOpen(true);
+        document.body.style.overflow = "hidden";
+      }
+    } catch (error) {
+      // Even if backend BoomFi key is not configured yet, open Crypto Modal so user can pay
+      setBoomFiChargeData({
+        isFallback: true,
+        total: finalTotal,
+      });
+      setIsBoomFiModalOpen(true);
+      document.body.style.overflow = "hidden";
+    } finally {
+      setIsInitializingPayment(false);
+    }
   };
 
   const closeStripeModal = () => {
     setIsStripeModalOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  const closeBoomFiModal = () => {
+    setIsBoomFiModalOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  // TRIGGERED IMMEDIATELY AFTER STRIPE, PAYPAL, OR BOOMFI SUCCEEDS
+  const handlePaymentSuccess = (
+    transactionId,
+    method = "Stripe Card",
+    defaultEmail = "",
+    defaultName = "",
+  ) => {
+    setIsStripeModalOpen(false);
+    setIsBoomFiModalOpen(false);
+    setCompletedPayment({
+      transactionId,
+      method,
+      defaultEmail,
+      defaultName,
+    });
+    setIsOrderModalOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeOrderModal = () => {
+    setIsOrderModalOpen(false);
+    setCompletedPayment(null);
     document.body.style.overflow = "auto";
   };
 
@@ -1041,93 +1692,139 @@ function PackageEstimator() {
                     </div>
                   </div>
 
+                  {paymentError && (
+                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
+                      {paymentError}
+                    </div>
+                  )}
+
+                  {/* API Checkout Buttons */}
                   <div className="space-y-2.5">
+                    {/* 1. Stripe Card Checkout Button */}
                     <button
                       type="button"
-                      onClick={openStripeModal}
-                      disabled={totalLinks === 0}
+                      onClick={handleStripeCheckoutClick}
+                      disabled={totalLinks === 0 || isInitializingPayment}
                       className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635BFF] text-white font-medium text-[14.5px] sm:text-[15px] hover:bg-[#5851df] hover:shadow-[0_4px_14px_rgba(99,91,255,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <svg
-                        className="h-[18px] sm:h-[19px] w-auto"
-                        viewBox="0 0 468 222.5"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M414 113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8 0-38.2 20.2-38.2 45.6c0 30.1 17 45.3 41.4 45.3c11.9 0 20.9-2.7 27.7-6.5v-20c-6.8 3.4-14.6 5.5-24.5 5.5c-9.7 0-18.3-3.4-19.4-15.2h48.9C413.8 121 414 115.8 414 113.4z M364.6 103.9c0-11.3 6.9-16 13.2-16c6.1 0 12.6 4.7 12.6 16H364.6z"
-                          fill="white"
-                        />
-                        <path
-                          d="M301.1 67.6c-9.8 0-16.1 4.6-19.6 7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6 2.6 8.9 6.3 17.7 6.3c17.9 0 34.2-14.4 34.2-46.1C335.1 83.4 318.6 67.6 301.1 67.6z M295.1 136.5c-5.9 0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9 6.2-4.9 11.9-4.9c9.1 0 15.4 10.2 15.4 23.3C310.5 126.5 304.3 136.5 295.1 136.5z"
-                          fill="white"
-                        />
-                        <polygon
-                          points="223.8 61.7 248.9 56.3 248.9 36 223.8 41.3"
-                          fill="white"
-                        />
-                        <rect
-                          x="223.8"
-                          y="69.3"
-                          width="25.1"
-                          height="87.5"
-                          fill="white"
-                        />
-                        <path
-                          d="M196.9 76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7 15.9-6.3 19-5.2v-23C214.5 68.1 202.8 65.9 196.9 76.7z"
-                          fill="white"
-                        />
-                        <path
-                          d="M146.9 47.6l-24.4 5.2l-0.1 80.1c0 14.8 11.1 25.7 25.9 25.7c8.2 0 14.2-1.5 17.5-3.3V135c-3.2 1.3-19 5.9-19-8.9V90.6h19V69.3h-19L146.9 47.6z"
-                          fill="white"
-                        />
-                        <path
-                          d="M79.3 94.7c0-3.9 3.2-5.4 8.5-5.4c7.6 0 17.2 2.3 24.8 6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5 67.6 54 78.2 54 95.9c0 27.6 38 23.2 38 35.1c0 4.6-4 6.1-9.6 6.1c-8.3 0-18.9-3.4-27.3-8v23.8c9.3 4 18.7 5.7 27.3 5.7c20.8 0 35.1-10.3 35.1-28.2C117.4 100.6 79.3 105.9 79.3 94.7z"
-                          fill="white"
-                        />
-                      </svg>
-                      <span className="opacity-60">|</span>
-                      <span className="tracking-wide">Add Card</span>
+                      {isInitializingPayment ? (
+                        "Connecting to Gateway..."
+                      ) : (
+                        <>
+                          <svg
+                            className="h-[18px] sm:h-[19px] w-auto"
+                            viewBox="0 0 468 222.5"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M414 113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8 0-38.2 20.2-38.2 45.6c0 30.1 17 45.3 41.4 45.3c11.9 0 20.9-2.7 27.7-6.5v-20c-6.8 3.4-14.6 5.5-24.5 5.5c-9.7 0-18.3-3.4-19.4-15.2h48.9C413.8 121 414 115.8 414 113.4z M364.6 103.9c0-11.3 6.9-16 13.2-16c6.1 0 12.6 4.7 12.6 16H364.6z"
+                              fill="white"
+                            />
+                            <path
+                              d="M301.1 67.6c-9.8 0-16.1 4.6-19.6 7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6 2.6 8.9 6.3 17.7 6.3c17.9 0 34.2-14.4 34.2-46.1C335.1 83.4 318.6 67.6 301.1 67.6z M295.1 136.5c-5.9 0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9 6.2-4.9 11.9-4.9c9.1 0 15.4 10.2 15.4 23.3C310.5 126.5 304.3 136.5 295.1 136.5z"
+                              fill="white"
+                            />
+                            <polygon
+                              points="223.8 61.7 248.9 56.3 248.9 36 223.8 41.3"
+                              fill="white"
+                            />
+                            <rect
+                              x="223.8"
+                              y="69.3"
+                              width="25.1"
+                              height="87.5"
+                              fill="white"
+                            />
+                            <path
+                              d="M196.9 76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7 15.9-6.3 19-5.2v-23C214.5 68.1 202.8 65.9 196.9 76.7z"
+                              fill="white"
+                            />
+                            <path
+                              d="M146.9 47.6l-24.4 5.2l-0.1 80.1c0 14.8 11.1 25.7 25.9 25.7c8.2 0 14.2-1.5 17.5-3.3V135c-3.2 1.3-19 5.9-19-8.9V90.6h19V69.3h-19L146.9 47.6z"
+                              fill="white"
+                            />
+                            <path
+                              d="M79.3 94.7c0-3.9 3.2-5.4 8.5-5.4c7.6 0 17.2 2.3 24.8 6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5 67.6 54 78.2 54 95.9c0 27.6 38 23.2 38 35.1c0 4.6-4 6.1-9.6 6.1c-8.3 0-18.9-3.4-27.3-8v23.8c9.3 4 18.7 5.7 27.3 5.7c20.8 0 35.1-10.3 35.1-28.2C117.4 100.6 79.3 105.9 79.3 94.7z"
+                              fill="white"
+                            />
+                          </svg>
+                          <span className="opacity-60">|</span>
+                          <span className="tracking-wide">Add Card</span>
+                        </>
+                      )}
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={handlePayPalSubmit}
-                      disabled={totalLinks === 0}
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] hover:bg-[#F4BB33] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(255,196,57,0.25)] cursor-pointer"
-                    >
-                      <svg
-                        className="h-[20px] sm:h-[21px] w-auto"
-                        viewBox="0 0 188 49"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M164.01 11.446l-4.012 25.207a.643.643 0 0 0 .642.746h4.748a.701.701 0 0 0 .698-.589l4.012-25.207a.643.643 0 0 0-.642-.746h-4.748a.692.692 0 0 0-.698.589zm-5.07 7.356h-4.505a.699.699 0 0 0-.697.588l-.149.928s-3.499-3.794-9.694-1.23c-3.554 1.468-5.26 4.501-5.986 6.723 0 0-2.304 6.753 2.907 10.47 0 0 4.832 3.575 10.273-.22l-.094.592a.644.644 0 0 0 .37.686c.085.04.178.06.272.06h4.508a.692.692 0 0 0 .698-.589l2.742-17.262a.632.632 0 0 0-.149-.521.643.643 0 0 0-.496-.226zm-6.629 9.54a5.005 5.005 0 0 1-1.715 3.095 5.073 5.073 0 0 1-3.345 1.203 4.602 4.602 0 0 1-1.416-.206c-1.945-.62-3.055-2.474-2.736-4.484a5.01 5.01 0 0 1 1.717-3.093 5.08 5.08 0 0 1 3.343-1.207 4.6 4.6 0 0 1 1.416.208c1.957.616 3.062 2.473 2.741 4.485h-.005zm-24.056.477c2.443 0 4.806-.868 6.662-2.446a10.147 10.147 0 0 0 3.456-6.158c.789-4.993-3.14-9.351-8.71-9.351h-8.973a.699.699 0 0 0-.697.589L115.98 36.66a.644.644 0 0 0 .37.686c.086.04.178.06.272.06h4.751a.699.699 0 0 0 .697-.589l1.178-7.402a.692.692 0 0 1 .698-.59l4.309-.006zm3.974-8.831c-.293 1.846-1.731 3.205-4.482 3.205h-3.517l1.068-6.713h3.454c2.844.005 3.77 1.67 3.477 3.513v-.005z"
-                          fill="#0070E0"
-                        />
-                        <path
-                          d="M110.567 19.23l-5.434 9.105-2.758-9.038a.694.694 0 0 0-.672-.495h-4.904a.526.526 0 0 0-.527.446.515.515 0 0 0 .025.247l4.942 15.224-4.47 7.174a.516.516 0 0 0 .18.728.527.527 0 0 0 .269.07h5.282a.876.876 0 0 0 .751-.42l13.804-22.667a.512.512 0 0 0 .011-.53.524.524 0 0 0-.463-.263h-5.28a.877.877 0 0 0-.756.419zm-16.548-.428H89.51a.7.7 0 0 0-.698.59l-.146.927s-3.502-3.794-9.697-1.23c-3.553 1.468-5.26 4.501-5.983 6.723 0 0-2.306 6.753 2.904 10.47 0 0 4.833 3.575 10.274-.22l-.094.592a.642.642 0 0 0 .37.686c.085.04.178.06.272.06h4.508a.701.701 0 0 0 .697-.589l2.743-17.262a.642.642 0 0 0-.37-.687.655.655 0 0 0-.272-.06zm-6.63 9.542a5.011 5.011 0 0 1-1.716 3.091 5.082 5.082 0 0 1-3.343 1.206 4.605 4.605 0 0 1-1.414-.206c-1.944-.62-3.053-2.474-2.734-4.485a5.011 5.011 0 0 1 1.723-3.098 5.082 5.082 0 0 1 3.353-1.201c.48-.005.959.065 1.417.208 1.937.616 3.04 2.472 2.72 4.485h-.005zm-24.055.476a10.284 10.284 0 0 0 6.656-2.449 10.144 10.144 0 0 0 3.452-6.156c.79-4.992-3.14-9.35-8.708-9.35H55.76a.7.7 0 0 0-.698.588l-4 25.2a.642.642 0 0 0 .37.687c.085.039.178.06.272.06h4.748a.7.7 0 0 0 .698-.59l1.176-7.402a.692.692 0 0 1 .698-.589h4.31zm3.974-8.832c-.293 1.846-1.73 3.205-4.481 3.205H59.31l1.066-6.713h3.454c2.845.005 3.77 1.671 3.478 3.513v-.005z"
-                          fill="#003087"
-                        />
-                        <path
-                          d="M32.639 12.16c.107-5.566-4.484-9.836-10.797-9.836H8.784a1.277 1.277 0 0 0-1.262 1.078L2.29 36.095a1.038 1.038 0 0 0 1.025 1.2h7.736l-1.209 7.57a1.038 1.038 0 0 0 1.025 1.2h6.302c.304 0 .575-.109.807-.306.23-.198.268-.471.316-.772l1.85-10.884c.047-.3.2-.69.431-.888.231-.198.433-.306.738-.306h3.856c6.183 0 11.428-4.395 12.387-10.507.679-4.338-1.181-8.286-4.915-10.243z"
-                          fill="#001C64"
-                        />
-                        <path
-                          d="M12.725 25.238l-1.927 12.218-1.21 7.664a1.038 1.038 0 0 0 1.026 1.199h6.67a1.276 1.276 0 0 0 1.26-1.078l1.758-11.139a1.277 1.277 0 0 1 1.261-1.078h3.926c6.183 0 11.428-4.51 12.388-10.622.68-4.338-1.504-8.286-5.238-10.243-.01.462-.05.923-.121 1.38-.959 6.11-6.206 10.621-12.387 10.621h-6.145a1.278 1.278 0 0 0-1.261 1.079"
-                          fill="#0070E0"
-                        />
-                        <path
-                          d="M10.797 37.456h-7.76a1.037 1.037 0 0 1-1.024-1.2L7.245 3.078A1.277 1.277 0 0 1 8.506 2h13.336c6.313 0 10.904 4.594 10.797 10.159-1.571-.824-3.417-1.295-5.439-1.295H16.082a1.277 1.277 0 0 0-1.262 1.078l-2.094 13.296-1.93 12.218z"
-                          fill="#003087"
-                        />
-                      </svg>
-                    </button>
+                    {/* 2. PayPal Smart Buttons */}
+                    <div className="w-full relative z-0">
+                      {totalLinks > 0 ? (
+                        <PayPalScriptProvider
+                          options={{
+                            "client-id": PAYPAL_CLIENT_ID,
+                            currency: "USD",
+                            intent: "capture",
+                          }}
+                        >
+                          <PayPalButtons
+                            style={{
+                              layout: "horizontal",
+                              height: 48,
+                              color: "gold",
+                              shape: "pill",
+                              tagline: false,
+                            }}
+                            createOrder={async () => {
+                              setPaymentError("");
+                              try {
+                                const { data } = await axios.post(
+                                  `${BACKEND_URL}/api/create-paypal-order`,
+                                  { cart },
+                                );
+                                return data.id;
+                              } catch (err) {
+                                setPaymentError(
+                                  err.response?.data?.error ||
+                                    "Could not initiate PayPal order. Check PAYPAL_CLIENT_ID & SECRET in backend .env.",
+                                );
+                                throw err;
+                              }
+                            }}
+                            onApprove={async (data) => {
+                              try {
+                                const res = await axios.post(
+                                  `${BACKEND_URL}/api/capture-paypal-order`,
+                                  { orderID: data.orderID },
+                                );
+                                handlePaymentSuccess(
+                                  res.data?.captureId || data.orderID,
+                                  "PayPal Checkout",
+                                );
+                              } catch (err) {
+                                setPaymentError(
+                                  "Failed to capture PayPal payment.",
+                                );
+                              }
+                            }}
+                          />
+                        </PayPalScriptProvider>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] opacity-50 cursor-not-allowed flex items-center justify-center"
+                        >
+                          <span className="gw-font-display text-[14.5px] font-semibold text-[#003087]">
+                            PayPal
+                          </span>
+                        </button>
+                      )}
+                    </div>
 
+                    {/* 3. BoomFi Crypto Checkout Button */}
                     <button
                       type="button"
-                      disabled={totalLinks === 0}
+                      onClick={handleBoomFiSubmit}
+                      disabled={totalLinks === 0 || isInitializingPayment}
                       className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-white text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#f8f9fa] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <svg
@@ -1152,53 +1849,56 @@ function PackageEstimator() {
       </section>
 
       {/* --- FLOATING MOBILE QUICK-SUMMARY BAR --- */}
-      {totalLinks > 0 && !isStripeModalOpen && (
-        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
-              <span>
-                {selectedPackagesCount}{" "}
-                {selectedPackagesCount === 1 ? "Service" : "Services"} •{" "}
-                {totalLinks.toLocaleString()} Links
-              </span>
+      {totalLinks > 0 &&
+        !isStripeModalOpen &&
+        !isBoomFiModalOpen &&
+        !isOrderModalOpen && (
+          <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
+                <span>
+                  {selectedPackagesCount}{" "}
+                  {selectedPackagesCount === 1 ? "Service" : "Services"} •{" "}
+                  {totalLinks.toLocaleString()} Links
+                </span>
+              </div>
+              <div className="gw-font-display text-[18px] font-semibold text-white leading-tight">
+                $
+                {finalTotal.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                <span className="text-[11px] font-normal text-[#9aa0a6]">
+                  USD
+                </span>
+              </div>
             </div>
-            <div className="gw-font-display text-[18px] font-semibold text-white leading-tight">
-              $
-              {finalTotal.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              <span className="text-[11px] font-normal text-[#9aa0a6]">
-                USD
-              </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("order-summary-card")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="text-[12px] font-medium text-white/90 bg-white/10 hover:bg-white/15 px-3 py-2 rounded-full transition-colors"
+              >
+                Summary
+              </button>
+              <button
+                type="button"
+                onClick={handleStripeCheckoutClick}
+                className="gw-font-display text-[13px] font-medium bg-[#1a73e8] hover:bg-[#1557b0] text-white px-4 py-2 rounded-full shadow-sm transition-colors"
+              >
+                Checkout
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                document
-                  .getElementById("order-summary-card")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
-              className="text-[12px] font-medium text-white/90 bg-white/10 hover:bg-white/15 px-3 py-2 rounded-full transition-colors"
-            >
-              Summary
-            </button>
-            <button
-              type="button"
-              onClick={openStripeModal}
-              className="gw-font-display text-[13px] font-medium bg-[#1a73e8] hover:bg-[#1557b0] text-white px-4 py-2 rounded-full shadow-sm transition-colors"
-            >
-              Checkout
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
       {/* --- STRIPE CHECKOUT MODAL OVERLAY --- */}
-      {isStripeModalOpen && (
+      {isStripeModalOpen && clientSecret && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
             className="absolute inset-0 bg-[#202124]/45 backdrop-blur-[2px] transition-opacity"
@@ -1280,91 +1980,36 @@ function PackageEstimator() {
             </div>
 
             <div className="p-5 sm:p-6">
-              <form onSubmit={handleStripeSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="you@company.com"
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[8px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] transition-all text-[15px] text-[#202124]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
-                    Card Information
-                  </label>
-                  <div className="border border-[#dadce0] rounded-[8px] overflow-hidden focus-within:border-[#635BFF] focus-within:ring-1 focus-within:ring-[#635BFF] transition-all">
-                    <div className="px-3.5 py-2.5 border-b border-[#dadce0] bg-white flex items-center">
-                      <svg
-                        className="w-5 h-5 text-[#9aa0a6] mr-2 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <rect
-                          x="1"
-                          y="4"
-                          width="22"
-                          height="16"
-                          rx="2"
-                          ry="2"
-                        ></rect>
-                        <line x1="1" y1="10" x2="23" y2="10"></line>
-                      </svg>
-                      <input
-                        type="text"
-                        placeholder="1234 5678 9101 1121"
-                        className="w-full bg-transparent border-none outline-none text-[15px] text-[#202124] placeholder-[#9aa0a6]"
-                        required
-                      />
-                    </div>
-                    <div className="flex bg-white">
-                      <input
-                        type="text"
-                        placeholder="MM / YY"
-                        className="w-1/2 px-3.5 py-2.5 border-r border-[#dadce0] bg-transparent outline-none text-[15px] text-[#202124] placeholder-[#9aa0a6]"
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder="CVC"
-                        className="w-1/2 px-3.5 py-2.5 bg-transparent outline-none text-[15px] text-[#202124] placeholder-[#9aa0a6]"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
-                    Name on card
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[8px] focus:outline-none focus:border-[#635BFF] focus:ring-1 focus:ring-[#635BFF] transition-all text-[15px] text-[#202124]"
-                    required
-                  />
-                </div>
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="w-full h-[48px] bg-[#635BFF] text-white rounded-[8px] font-medium text-[15px] hover:bg-[#5851df] transition-colors shadow-[0_2px_8px_rgba(99,91,255,0.25)] flex items-center justify-center cursor-pointer"
-                  >
-                    Pay $
-                    {finalTotal.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </button>
-                </div>
-              </form>
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <StripeCheckoutForm
+                  totalAmount={finalTotal}
+                  onSuccess={handlePaymentSuccess}
+                />
+              </Elements>
             </div>
           </div>
         </div>
       )}
+
+      {/* --- BOOMFI CRYPTO CHECKOUT MODAL --- */}
+      <BoomFiCryptoModal
+        isOpen={isBoomFiModalOpen}
+        chargeData={boomFiChargeData}
+        totalAmount={finalTotal}
+        totalLinks={totalLinks}
+        onClose={closeBoomFiModal}
+        onSuccess={handlePaymentSuccess}
+      />
+
+      {/* --- POST-PAYMENT ORDER DETAILS MODAL (PHASE 3) --- */}
+      <OrderDetailsModal
+        isOpen={isOrderModalOpen}
+        paymentData={completedPayment}
+        selectedPackages={selectedPackagesDetailed}
+        totalLinks={totalLinks}
+        finalTotal={finalTotal}
+        onClose={closeOrderModal}
+      />
     </>
   );
 }
@@ -1535,11 +2180,15 @@ function ReviewsSection() {
           ref={sliderRef}
           onScroll={handleScroll}
           className="flex lg:grid lg:grid-cols-4 gap-4 sm:gap-5 overflow-x-auto lg:overflow-visible snap-x snap-mandatory scroll-smooth no-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
+          style={{
+            scrollSnapType: "x mandatory",
+            WebkitOverflowScrolling: "touch",
+          }}
         >
           {reviews.map((review, i) => (
             <div
               key={i}
-              className="w-[85vw] sm:w-[320px] lg:w-auto shrink-0 snap-center bg-white p-6 sm:p-7 rounded-[20px] sm:rounded-[24px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_12px_32px_rgba(26,115,232,0.06)] hover:border-[#d2e3fc] transition-all duration-300 flex flex-col justify-between"
+              className="w-[85vw] sm:w-[320px] lg:w-auto shrink-0 snap-center snap-always bg-white p-6 sm:p-7 rounded-[20px] sm:rounded-[24px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] hover:shadow-[0_12px_32px_rgba(26,115,232,0.06)] hover:border-[#d2e3fc] transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                 <div className="flex justify-between items-center mb-3.5">
@@ -1657,7 +2306,7 @@ function FAQSection() {
     },
     {
       q: "How do I submit my target URLs and anchor texts after checkout?",
-      a: "Immediately after completing your payment via Stripe, PayPal, or BoomFi Crypto, you are directed to our campaign intake dashboard where you can paste your target URLs, anchor text ratios, and special instructions.",
+      a: "Immediately after completing your payment via Stripe, PayPal, or BoomFi Crypto, our campaign intake modal opens automatically so you can submit your target URLs, anchor text ratios, and email address for instant confirmation.",
     },
     {
       q: "Is your network safe from Google footprints?",
