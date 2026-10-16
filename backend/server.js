@@ -32,22 +32,6 @@ complete_seo: { name: "Complete SEO Package", price: 5.0 },
   custom_seo: { name: "Custom SEO Solutions", price: 4.0 },
 };
 
-// SECURE SERVER-SIDE PRICING CATALOGUE (ALL 12 SERVICES)
-const SERVICES = {
-  hp_post: { name: "Homepage Post", price: 1.0 },
-  sidebar: { name: "Sidebar Blogroll", price: 2.0 },
-  sticky: { name: "Homepage Sticky Post", price: 2.0 },
-  id_hp_post: { name: ".ID Homepage Post", price: 2.0 },
-  id_sidebar: { name: ".ID Sidebar Blogroll", price: 3.0 },
-  id_sticky: { name: ".ID Sticky Post", price: 2.5 },
-  hidden_links: { name: "EDU & GOV Backlink (AC.ID, SCH.ID, GO.ID)", price: 20.0 },
-  edu_post: { name: "EDU PBN Blogpost", price: 3.0 },
-  edu_sidebar: { name: "EDU PBN Blogroll", price: 5.0 },
-  complete_seo: { name: "Complete SEO Package", price: 5.0 },
-  rank_first_page: { name: "Rank on First Page Campaign", price: 8.0 },
-  custom_seo: { name: "Custom SEO Solutions", price: 4.0 },
-};
-
 const calculateSecureTotal = (cart = {}) => {
   let total = 0;
   for (const [id, qty] of Object.entries(cart)) {
