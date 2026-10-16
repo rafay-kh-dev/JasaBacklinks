@@ -316,6 +316,74 @@ app.post("/api/submit-order", async (req, res) => {
   }
 });
 
+// ==========================================
+// 5. CONTACT US ENQUIRY EMAIL ROUTE
+// ==========================================
+app.post("/api/contact", async (req, res) => {
+  try {
+    const {
+      enquiryType,
+      fullName,
+      email,
+      contactPlatform,
+      contactHandle,
+      volumeTier,
+      websiteUrl,
+      message,
+    } = req.body;
+
+    if (!email || !message) {
+      return res.status(400).json({ error: "Email and message are required." });
+    }
+
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT || 465,
+        secure: true,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+
+      await transporter.sendMail({
+        from: `"Jasa Backlinks Desk" <${process.env.SMTP_USER}>`,
+        to: adminEmail,
+        replyTo: email,
+        subject: `📩 [${enquiryType}] New Enquiry from ${fullName}`,
+        html: `
+          <div style="font-family: 'Google Sans', Roboto, Arial, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #dadce0; border-radius: 18px; overflow: hidden;">
+            <div style="height: 4px; background: linear-gradient(90deg, #4285F4 25%, #EA4335 25% 50%, #FBBC04 50% 75%, #34A853 75%);"></div>
+            <div style="padding: 24px 28px; background: #f8fbff; border-bottom: 1px solid #e8eaed;">
+              <span style="display: inline-block; background: #e8f0fe; color: #1a73e8; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 99px; margin-bottom: 8px;">${enquiryType}</span>
+              <h2 style="margin: 0; font-size: 22px; color: #202124;">New Contact Enquiry Received</h2>
+            </div>
+            <div style="padding: 24px 28px; color: #3c4043; font-size: 14px; line-height: 1.6;">
+              <p><strong>Name / Agency:</strong> ${fullName}</p>
+              <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #1a73e8;">${email}</a></p>
+              <p><strong>Direct Contact (${contactPlatform || "N/A"}):</strong> <span style="color: #1e8e3e; font-weight: 600;">${contactHandle || "Not provided"}</span></p>
+              <p><strong>Estimated Volume:</strong> ${volumeTier || "N/A"}</p>
+              <p><strong>Target Website:</strong> ${websiteUrl || "N/A"}</p>
+              <div style="margin-top: 16px; padding: 16px; background: #f8f9fa; border: 1px solid #e8eaed; border-radius: 12px;">
+                <strong style="display: block; margin-bottom: 6px; color: #202124;">Message / Brief:</strong>
+                <div style="white-space: pre-wrap;">${message}</div>
+              </div>
+            </div>
+          </div>
+        `,
+      });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Contact Form Error:", error);
+    res.status(500).json({ error: "Failed to dispatch contact enquiry." });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Enterprise Backend running on port ${PORT}`);
