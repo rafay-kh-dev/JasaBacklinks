@@ -14,6 +14,9 @@ import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Contact from "./pages/Contact";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import AdminBlog from "./pages/AdminBlog";
 
 const SITE_URL =
   import.meta.env.VITE_SITE_URL ||
@@ -75,6 +78,15 @@ function RouteTitleManager() {
         description:
           "Review our Terms of Service, DA/DR 50+ metric guarantees, 5–7 day turnaround SLAs, and 12-month link replacement policy.",
       },
+      "/blog": {
+  title: "SEO & Authority Link Building Blog | Jasa Backlinks",
+  description:
+    "Read technical SEO guides, DA/DR 50+ PBN case studies, .ID regional ranking strategies, and .EDU/.GOV authority insights from SeoHub Ltd.",
+},
+"/admin": {
+  title: "Admin Blog CMS | Jasa Backlinks",
+  description: "Jasa Backlinks Administrator Content Management Portal.",
+},
     };
 
     let pageTitle = "Jasa Backlinks | Powered by SeoHub Ltd";
@@ -377,6 +389,9 @@ export default function App() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/admin" element={<AdminBlog />} />
           </Routes>
         </main>
         <Footer />

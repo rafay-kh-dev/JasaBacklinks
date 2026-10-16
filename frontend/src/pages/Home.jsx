@@ -1363,26 +1363,26 @@ function PackageEstimator() {
               </div>
             </div>
 
-            {/* Right Column: Sticky Order Summary on Desktop */}
+            {/* Right Column: Sticky Order Summary on Desktop (Viewport-Fit Optimised) */}
             <aside
               id="order-summary-card"
               className="w-full lg:w-[390px] xl:w-[420px] shrink-0 lg:sticky lg:top-[96px] self-start transition-all duration-300 mt-2 lg:mt-0"
             >
-              <div className="bg-white rounded-[22px] sm:rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col">
-                <div className="grid grid-cols-4 h-[4px] w-full">
+              <div className="bg-white rounded-[22px] sm:rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col lg:max-h-[calc(100vh-88px)]">
+                <div className="grid grid-cols-4 h-[4px] w-full shrink-0">
                   <div className="bg-[#4285F4]" />
                   <div className="bg-[#EA4335]" />
                   <div className="bg-[#FBBC04]" />
                   <div className="bg-[#34A853]" />
                 </div>
 
-                <div className="p-5 sm:p-6 lg:p-7 flex flex-col">
-                  <div className="flex items-center justify-between mb-4 sm:mb-5 border-b border-[#e8eaed] pb-3.5 sm:pb-4">
+                <div className="p-4 sm:p-5 flex flex-col flex-1 min-h-0">
+                  <div className="flex items-center justify-between mb-3 border-b border-[#e8eaed] pb-2.5 shrink-0">
                     <div>
-                      <h3 className="gw-font-display text-[19px] sm:text-[20px] font-medium text-[#202124]">
+                      <h3 className="gw-font-display text-[18px] sm:text-[19px] font-medium text-[#202124] leading-tight">
                         Order Summary
                       </h3>
-                      <p className="text-[12px] sm:text-[12.5px] text-[#5f6368] mt-0.5">
+                      <p className="text-[11.5px] sm:text-[12px] text-[#5f6368] mt-0.5">
                         {selectedPackagesCount}{" "}
                         {selectedPackagesCount === 1
                           ? "placement type"
@@ -1401,13 +1401,13 @@ function PackageEstimator() {
                     )}
                   </div>
 
-                  <div className="flex-1 overflow-y-auto max-h-[240px] mb-4 sm:mb-5 pr-1 space-y-2 gw-font-text custom-scrollbar">
+                  <div className="flex-1 overflow-y-auto max-h-[135px] xl:max-h-[175px] mb-3 pr-1 space-y-1.5 gw-font-text custom-scrollbar">
                     {selectedPackagesCount === 0 ? (
-                      <div className="text-center py-7 px-4 bg-[#f8f9fa] rounded-[16px] border border-dashed border-[#dadce0]">
-                        <p className="text-[13.5px] text-[#5f6368] font-medium">
+                      <div className="text-center py-4 px-3 bg-[#f8f9fa] rounded-[14px] border border-dashed border-[#dadce0]">
+                        <p className="text-[13px] text-[#5f6368] font-medium">
                           No placements selected
                         </p>
-                        <p className="text-[12px] text-[#9aa0a6] mt-1">
+                        <p className="text-[11.5px] text-[#9aa0a6] mt-0.5">
                           Tap any placement or preset to start from 50 links.
                         </p>
                       </div>
@@ -1418,23 +1418,23 @@ function PackageEstimator() {
                         return (
                           <div
                             key={id}
-                            className="flex justify-between items-center bg-[#f8f9fa] hover:bg-[#f1f3f4]/70 px-3 py-2.5 rounded-[12px] border border-[#e8eaed] transition-colors"
+                            className="flex justify-between items-center bg-[#f8f9fa] hover:bg-[#f1f3f4]/70 px-3 py-2 rounded-[12px] border border-[#e8eaed] transition-colors"
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="text-[11.5px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full shrink-0">
+                              <span className="text-[11px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full shrink-0">
                                 {qty.toLocaleString()}
                               </span>
                               <div className="min-w-0">
-                                <p className="text-[13px] sm:text-[13.5px] font-medium text-[#202124] truncate">
+                                <p className="text-[12.5px] sm:text-[13px] font-medium text-[#202124] truncate">
                                   {svc.name}
                                 </p>
-                                <p className="text-[11px] text-[#5f6368]">
+                                <p className="text-[10.5px] text-[#5f6368]">
                                   ${svc.price.toFixed(2)} / link
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                              <span className="text-[13px] sm:text-[13.5px] font-semibold text-[#202124]">
+                              <span className="text-[12.5px] sm:text-[13px] font-semibold text-[#202124]">
                                 $
                                 {(svc.price * qty).toLocaleString("en-US", {
                                   minimumFractionDigits: 2,
@@ -1464,38 +1464,38 @@ function PackageEstimator() {
                     )}
                   </div>
 
-                  <div className="bg-[#f8f9fa] rounded-[16px] sm:rounded-[18px] p-4 sm:p-5 mb-4 sm:mb-5 border border-[#e8eaed]">
-                    <div className="flex justify-between items-center mb-2 text-[12.5px] sm:text-[13px] text-[#5f6368]">
+                  <div className="bg-[#f8f9fa] rounded-[14px] sm:rounded-[16px] p-3.5 mb-3 border border-[#e8eaed] shrink-0">
+                    <div className="flex justify-between items-center mb-1.5 text-[12px] sm:text-[12.5px] text-[#5f6368]">
                       <span>Selected Services</span>
                       <span className="font-medium text-[#202124]">
                         {selectedPackagesCount}{" "}
                         {selectedPackagesCount === 1 ? "Service" : "Services"}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#dadce0] text-[12.5px] sm:text-[13px] text-[#5f6368]">
+                    <div className="flex justify-between items-center mb-2 pb-2 border-b border-[#dadce0] text-[12px] sm:text-[12.5px] text-[#5f6368]">
                       <span>Total Volume</span>
                       <span className="font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
                         {totalLinks.toLocaleString()} Backlinks
                       </span>
                     </div>
-                    <div className="flex justify-between items-end pt-1">
+                    <div className="flex justify-between items-end pt-0.5">
                       <div>
-                        <span className="gw-font-display text-[14.5px] sm:text-[15px] font-medium text-[#202124] block">
+                        <span className="gw-font-display text-[14px] sm:text-[14.5px] font-medium text-[#202124] block">
                           Estimated Total
                         </span>
-                        <span className="text-[11px] sm:text-[11.5px] text-[#1e8e3e] font-medium">
+                        <span className="text-[10.5px] sm:text-[11px] text-[#1e8e3e] font-medium">
                           ● Instant Setup Included
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="gw-font-display text-[26px] sm:text-[30px] font-medium text-[#1a73e8] leading-none">
+                        <span className="gw-font-display text-[24px] sm:text-[27px] font-medium text-[#1a73e8] leading-none">
                           $
                           {finalTotal.toLocaleString("en-US", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
                         </span>
-                        <span className="gw-font-text text-[12px] text-[#5f6368] font-medium ml-1">
+                        <span className="gw-font-text text-[11.5px] text-[#5f6368] font-medium ml-1">
                           USD
                         </span>
                       </div>
@@ -1503,13 +1503,13 @@ function PackageEstimator() {
                   </div>
 
                   {paymentError && (
-                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
+                    <div className="mb-2.5 p-2.5 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12px] font-medium shrink-0">
                       {paymentError}
                     </div>
                   )}
 
                   {/* API Checkout Buttons */}
-                  <div className="space-y-2.5">
+                  <div className="space-y-2 shrink-0">
                     {/* 1. Stripe Card Checkout Button */}
                     <button
                       type="button"
@@ -1519,30 +1519,35 @@ function PackageEstimator() {
                         isInitializingPayment ||
                         isRedirectingBoomFi
                       }
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[#635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[44px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {isInitializingPayment ? (
                         "Opening Secure Card Checkout..."
                       ) : (
                         <>
                           <svg
-  className="w-8   h-4"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 468 222.5"
-  fill="white"
-  role="img"
-  aria-label="Stripe"
->
-  <g>
-    <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
-    <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
-    <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
-    <rect x="223.8" y="69.3" width="25.1" height="87.5" />
-    <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
-    <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
-    <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
-  </g>
-</svg>
+                            className="w-8 h-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 468 222.5"
+                            fill="white"
+                            role="img"
+                            aria-label="Stripe"
+                          >
+                            <g>
+                              <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
+                              <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
+                              <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
+                              <rect
+                                x="223.8"
+                                y="69.3"
+                                width="25.1"
+                                height="87.5"
+                              />
+                              <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
+                              <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
+                              <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
+                            </g>
+                          </svg>
                           <span className="tracking-wide">
                             Pay with Card (Instant)
                           </span>
@@ -1563,7 +1568,7 @@ function PackageEstimator() {
                           <PayPalButtons
                             style={{
                               layout: "horizontal",
-                              height: 48,
+                              height: 44,
                               color: "gold",
                               shape: "pill",
                               tagline: false,
@@ -1606,9 +1611,9 @@ function PackageEstimator() {
                         <button
                           type="button"
                           disabled
-                          className="w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] opacity-50 cursor-not-allowed flex items-center justify-center"
+                          className="w-full h-[44px] rounded-full bg-[#FFC439] opacity-50 cursor-not-allowed flex items-center justify-center"
                         >
-                          <span className="gw-font-display text-[14.5px] font-semibold text-[#003087]">
+                          <span className="gw-font-display text-[14px] font-semibold text-[#003087]">
                             PayPal
                           </span>
                         </button>
@@ -1624,7 +1629,7 @@ function PackageEstimator() {
                         isInitializingPayment ||
                         isRedirectingBoomFi
                       }
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-[#d5ff2e] text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#c2ed15] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[44px] rounded-full border border-[#dadce0] bg-[#d5ff2e] text-[#202124] font-medium text-[14px] hover:bg-[#c2ed15] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {isRedirectingBoomFi ? (
                         <>
@@ -1634,26 +1639,26 @@ function PackageEstimator() {
                       ) : (
                         <>
                           <svg
-  className="w-4 h-4 text-black"
-  xmlns="http://www.w3.org/2000/svg"
-  width="100%"
-  height="100%"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth={2}
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
-  <path d="M8 6v12" />
-  <path d="M8 12h6" />
-  <path d="M9 3v3" />
-  <path d="M13 3v3" />
-  <path d="M9 18v3" />
-  <path d="M13 18v3" />
-</svg>
+                            className="w-4 h-4 text-black"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="100%"
+                            height="100%"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+                            <path d="M8 6v12" />
+                            <path d="M8 12h6" />
+                            <path d="M9 3v3" />
+                            <path d="M13 3v3" />
+                            <path d="M9 18v3" />
+                            <path d="M13 18v3" />
+                          </svg>
                           <span>Pay with Crypto (BoomFi)</span>
                         </>
                       )}

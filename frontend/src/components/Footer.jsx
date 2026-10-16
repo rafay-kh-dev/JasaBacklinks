@@ -81,7 +81,7 @@ export default function Footer() {
                 Blog
               </Link>
               <Link
-                to="/pricing"
+                to="/services"
                 className="gw-font-text text-[14px] sm:text-[14.5px] font-normal text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Pricing

@@ -2,7 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const nodemailer = require("nodemailer");
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 require("dotenv").config();
+
 
 // IMPORTING OUR PREMIUM TEMPLATES
 const { getClientEmailHtml, getAdminEmailHtml } = require("./templates/emailTemplates");
@@ -11,7 +15,8 @@ const stripe = process.env.STRIPE_SECRET_KEY ? require("stripe")(process.env.STR
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 
 // Adapting to your .env variable name for PayPal
 const PAYPAL_API_BASE = process.env.PAYPAL_BASE_URL || process.env.PAYPAL_API_BASE || "https://api-m.sandbox.paypal.com";
@@ -366,6 +371,395 @@ app.post("/api/contact", async (req, res) => {
     console.error("Contact Form Error:", error);
     res.status(500).json({ error: "Failed to dispatch contact enquiry." });
   }
+});
+
+// ==========================================
+// 6. BULLETPROOF ADMIN AUTH, BLOGS, CATEGORIES & MEDIA API
+// ==========================================
+const BLOGS_FILE = path.join(__dirname, "blogs.json");
+const CATEGORIES_FILE = path.join(__dirname, "categories.json");
+const MEDIA_FILE = path.join(__dirname, "media.json");
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "SeoHubAdmin2026";
+
+// Brute-Force Rate Limiter & Cryptographic Session Store
+const LOGIN_ATTEMPTS = new Map(); // ip -> { count, lockUntil }
+const ACTIVE_SESSIONS = new Map(); // token -> { createdAt, expiresAt }
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 Minutes Lockout
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 Hours Session
+
+function getClientIp(req) {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    "unknown-ip"
+  );
+}
+
+function timingSafeCompare(a, b) {
+  const bufA = Buffer.from(String(a || ""));
+  const bufB = Buffer.from(String(b || ""));
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function verifyAdminAuth(req, res, next) {
+  const authHeader = req.headers["authorization"] || "";
+  const bearerToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : req.headers["x-admin-token"];
+
+  if (!bearerToken || !ACTIVE_SESSIONS.has(bearerToken)) {
+    return res.status(401).json({
+      error: "Unauthorised: Session expired or invalid security token.",
+    });
+  }
+
+  const session = ACTIVE_SESSIONS.get(bearerToken);
+  if (Date.now() > session.expiresAt) {
+    ACTIVE_SESSIONS.delete(bearerToken);
+    return res.status(401).json({
+      error: "Unauthorised: Admin session has expired. Please log in again.",
+    });
+  }
+
+  next();
+}
+
+const DEFAULT_CATEGORIES = [
+  { id: "cat-1", name: "PBN Strategy", color: "blue" },
+  { id: "cat-2", name: "Regional .ID SEO", color: "red" },
+  { id: "cat-3", name: "EDU & GOV Authority", color: "purple" },
+  { id: "cat-4", name: "Case Studies", color: "green" },
+];
+
+const DEFAULT_MEDIA = [
+  {
+    id: "media-1",
+    name: "SEO Analytics Dashboard",
+    alt: "DA DR 50+ PBN SEO Analytics Dashboard",
+    url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    uploadedAt: "2026-10-12",
+  },
+  {
+    id: "media-2",
+    name: "Regional .ID SERP Growth",
+    alt: "Indonesian Regional .ID Backlink Growth Chart",
+    url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+    uploadedAt: "2026-10-14",
+  },
+  {
+    id: "media-3",
+    name: "Academic EDU Authority",
+    alt: "High Trust EDU and GOV Backlink Infrastructure",
+    url: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1200&q=80",
+    uploadedAt: "2026-10-16",
+  },
+];
+
+const DEFAULT_BLOGS = [
+  {
+    id: "blog-1",
+    title: "How DA/DR 50+ Homepage PBN Backlinks Drive Page-1 Rankings in 2026",
+    seoTitle: "How DA/DR 50+ Homepage PBN Backlinks Drive Page-1 Rankings (2026)",
+    slug: "how-da-dr-50-homepage-pbn-backlinks-drive-rankings",
+    focusKeyword: "homepage pbn backlinks",
+    category: "PBN Strategy",
+    readTime: "6 min read",
+    author: "SeoHub Technical Team",
+    authorRole: "Senior Link Strategist",
+    publishedAt: "2026-10-12",
+    status: "published",
+    featured: true,
+    seoScore: 94,
+    tags: ["DA/DR 50+", "Homepage Links", "Class-C IPs"],
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "homepage pbn backlinks analytics dashboard",
+    excerpt:
+      "Discover why homepage pbn backlinks on aged, footprint-free .COM and .NET domains remain the fastest catalyst for organic SERP and AI Overview visibility.",
+    content: `
+      <h2>Why Homepage PBN Backlinks Matter More Than Ever</h2>
+      <p>Modern search algorithms evaluate both topical relevance and domain-level trust signals. When your target URL receives dofollow <strong>homepage pbn backlinks</strong> directly from the root page of an aged Moz DA 50+ and Ahrefs DR 50+ domain, link equity passes with minimal crawl decay.</p>
+      <blockquote>Root-level homepage placements pass up to 4x more direct PageRank equity compared to unlinked inner archive pages.</blockquote>
+      <h2>Zero-Footprint Network Architecture</h2>
+      <p>At Jasa Backlinks (operated by SeoHub Ltd), every domain in our inventory is isolated across independent Class-C IP blocks, unique WHOIS records, and custom CMS themes. Explore our <a href="/services/homepage-post">Homepage Post service</a> or compare authority tiers on <a href="https://ahrefs.com" target="_blank" rel="noopener noreferrer">Ahrefs</a>.</p>
+      <ul>
+        <li><strong>Contextual Relevance:</strong> Every placement includes a 400–600 word niche-aligned article.</li>
+        <li><strong>Low Outbound Links (OBL):</strong> Strictly capped outbound links preserve maximum PageRank flow.</li>
+        <li><strong>White-Label Reporting:</strong> Unbranded Excel and CSV sheets ready for client delivery.</li>
+      </ul>
+    `,
+  },
+];
+
+function readJsonFile(filePath, defaultData) {
+  try {
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+      return defaultData;
+    }
+    const raw = fs.readFileSync(filePath, "utf8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultData;
+  } catch {
+    return defaultData;
+  }
+}
+
+function writeJsonFile(filePath, data) {
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error(`Error writing ${filePath}:`, err.message);
+  }
+}
+
+// 1. SECURE RATE-LIMITED ADMIN LOGIN
+app.post("/api/admin/login", (req, res) => {
+  const ip = getClientIp(req);
+  const now = Date.now();
+  const record = LOGIN_ATTEMPTS.get(ip) || { count: 0, lockUntil: 0 };
+
+  if (record.lockUntil > now) {
+    const remainingSeconds = Math.ceil((record.lockUntil - now) / 1000);
+    return res.status(429).json({
+      error: `Too many failed login attempts. IP locked for ${Math.ceil(
+        remainingSeconds / 60
+      )} minute(s).`,
+      lockedUntil: record.lockUntil,
+      remainingSeconds,
+    });
+  }
+
+  const { password } = req.body;
+  if (!timingSafeCompare(password, ADMIN_PASSWORD)) {
+    const nextCount = record.count + 1;
+    const isNowLocked = nextCount >= MAX_LOGIN_ATTEMPTS;
+    const lockUntil = isNowLocked ? now + LOCKOUT_DURATION_MS : 0;
+
+    LOGIN_ATTEMPTS.set(ip, {
+      count: isNowLocked ? 0 : nextCount,
+      lockUntil,
+    });
+
+    const attemptsLeft = Math.max(0, MAX_LOGIN_ATTEMPTS - nextCount);
+    return res.status(401).json({
+      error: isNowLocked
+        ? "Maximum 5 failed attempts reached. Your IP is locked for 15 minutes."
+        : `Invalid Admin Password. ${attemptsLeft} attempt(s) remaining before 15-minute lockout.`,
+      attemptsLeft,
+      lockedUntil: lockUntil || null,
+    });
+  }
+
+  // Reset failed attempts on success & issue 256-bit cryptographic session token
+  LOGIN_ATTEMPTS.delete(ip);
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = now + SESSION_TTL_MS;
+  ACTIVE_SESSIONS.set(token, { createdAt: now, expiresAt, ip });
+
+  return res.json({
+    success: true,
+    token,
+    expiresAt,
+  });
+});
+
+app.post("/api/admin/logout", verifyAdminAuth, (req, res) => {
+  const authHeader = req.headers["authorization"] || "";
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : req.headers["x-admin-token"];
+  if (token) ACTIVE_SESSIONS.delete(token);
+  res.json({ success: true });
+});
+
+app.get("/api/admin/verify", verifyAdminAuth, (req, res) => {
+  res.json({ valid: true });
+});
+
+// 2. CATEGORIES API
+app.get("/api/categories", (req, res) => {
+  res.json(readJsonFile(CATEGORIES_FILE, DEFAULT_CATEGORIES));
+});
+
+app.post("/api/categories", verifyAdminAuth, (req, res) => {
+  const { name, color } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: "Category name is required." });
+  }
+  const categories = readJsonFile(CATEGORIES_FILE, DEFAULT_CATEGORIES);
+  const exists = categories.some(
+    (c) => c.name.toLowerCase() === name.trim().toLowerCase()
+  );
+  if (exists) {
+    return res.status(400).json({ error: "Category already exists." });
+  }
+
+  const newCat = {
+    id: `cat-${Date.now()}`,
+    name: name.trim(),
+    color: color || "blue",
+  };
+  categories.push(newCat);
+  writeJsonFile(CATEGORIES_FILE, categories);
+  res.json({ success: true, categories, category: newCat });
+});
+
+app.delete("/api/categories/:id", verifyAdminAuth, (req, res) => {
+  const categories = readJsonFile(CATEGORIES_FILE, DEFAULT_CATEGORIES);
+  const filtered = categories.filter(
+    (c) => c.id !== req.params.id && c.name !== req.params.id
+  );
+  writeJsonFile(CATEGORIES_FILE, filtered);
+  res.json({ success: true, categories: filtered });
+});
+
+// 3. MEDIA LIBRARY API
+app.get("/api/media", verifyAdminAuth, (req, res) => {
+  res.json(readJsonFile(MEDIA_FILE, DEFAULT_MEDIA));
+});
+
+app.post("/api/media", verifyAdminAuth, (req, res) => {
+  const { name, alt, url } = req.body;
+  if (!url) {
+    return res.status(400).json({ error: "Image data or URL is required." });
+  }
+  const mediaList = readJsonFile(MEDIA_FILE, DEFAULT_MEDIA);
+  const newItem = {
+    id: `media-${Date.now()}`,
+    name: name || "Uploaded Image",
+    alt: alt || name || "Jasa Backlinks SEO Image",
+    url,
+    uploadedAt: new Date().toISOString().split("T")[0],
+  };
+  mediaList.unshift(newItem);
+  writeJsonFile(MEDIA_FILE, mediaList);
+  res.json({ success: true, item: newItem, media: mediaList });
+});
+
+app.delete("/api/media/:id", verifyAdminAuth, (req, res) => {
+  const mediaList = readJsonFile(MEDIA_FILE, DEFAULT_MEDIA);
+  const nextMedia = mediaList.filter((m) => m.id !== req.params.id);
+  writeJsonFile(MEDIA_FILE, nextMedia);
+  res.json({ success: true, media: nextMedia });
+});
+
+// 4. BLOG POSTS API
+app.get("/api/blogs", (req, res) => {
+  const allBlogs = readJsonFile(BLOGS_FILE, DEFAULT_BLOGS);
+  const authHeader = req.headers["authorization"] || "";
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : req.headers["x-admin-token"];
+  const isAdmin = token && ACTIVE_SESSIONS.has(token);
+
+  const visible = isAdmin
+    ? allBlogs
+    : allBlogs.filter((b) => b.status !== "draft");
+  res.json(visible);
+});
+
+app.get("/api/blogs/:slug", (req, res) => {
+  const allBlogs = readJsonFile(BLOGS_FILE, DEFAULT_BLOGS);
+  const blog = allBlogs.find(
+    (b) => b.slug.toLowerCase() === req.params.slug.toLowerCase()
+  );
+  if (!blog) return res.status(404).json({ error: "Article not found." });
+  res.json(blog);
+});
+
+app.post("/api/blogs", verifyAdminAuth, (req, res) => {
+  const blogs = readJsonFile(BLOGS_FILE, DEFAULT_BLOGS);
+  const {
+    title,
+    seoTitle,
+    slug,
+    focusKeyword,
+    category,
+    readTime,
+    author,
+    authorRole,
+    image,
+    imageAlt,
+    excerpt,
+    content,
+    tags,
+    status,
+    featured,
+    seoScore,
+  } = req.body;
+
+  if (!title || !content) {
+    return res.status(400).json({ error: "Title and content are required." });
+  }
+
+  const cleanSlug =
+    (slug || title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || `post-${Date.now()}`;
+
+  const newPost = {
+    id: `blog-${Date.now()}`,
+    title,
+    seoTitle: seoTitle || title,
+    slug: cleanSlug,
+    focusKeyword: focusKeyword || "",
+    category: category || "PBN Strategy",
+    readTime: readTime || "5 min read",
+    author: author || "SeoHub Editorial Team",
+    authorRole: authorRole || "Senior SEO Strategist",
+    publishedAt: new Date().toISOString().split("T")[0],
+    status: status || "published",
+    featured: Boolean(featured),
+    seoScore: Number(seoScore) || 85,
+    tags: Array.isArray(tags) ? tags : [],
+    image:
+      image ||
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: imageAlt || focusKeyword || title,
+    excerpt:
+      excerpt || content.replace(/<[^>]+>/g, "").slice(0, 155) + "...",
+    content,
+  };
+
+  if (newPost.featured) {
+    blogs.forEach((b) => (b.featured = false));
+  }
+
+  blogs.unshift(newPost);
+  writeJsonFile(BLOGS_FILE, blogs);
+  res.json({ success: true, post: newPost });
+});
+
+app.put("/api/blogs/:id", verifyAdminAuth, (req, res) => {
+  const blogs = readJsonFile(BLOGS_FILE, DEFAULT_BLOGS);
+  const idx = blogs.findIndex((b) => b.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: "Post not found." });
+
+  const updated = {
+    ...blogs[idx],
+    ...req.body,
+  };
+
+  if (updated.featured) {
+    blogs.forEach((b) => (b.featured = false));
+    updated.featured = true;
+  }
+
+  blogs[idx] = updated;
+  writeJsonFile(BLOGS_FILE, blogs);
+  res.json({ success: true, post: updated });
+});
+
+app.delete("/api/blogs/:id", verifyAdminAuth, (req, res) => {
+  const blogs = readJsonFile(BLOGS_FILE, DEFAULT_BLOGS);
+  const nextBlogs = blogs.filter((b) => b.id !== req.params.id);
+  writeJsonFile(BLOGS_FILE, nextBlogs);
+  res.json({ success: true });
 });
 
 const PORT = process.env.PORT || 5000;
