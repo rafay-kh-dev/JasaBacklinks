@@ -27,6 +27,25 @@ const SERVICES = {
   hidden_links: { name: "Hidden Links (AC.ID, SCH.ID, GO.ID)", price: 20.0 },
   edu_post: { name: "EDU PBN Blogpost", price: 3.0 },
   edu_sidebar: { name: "EDU PBN Blogroll", price: 5.0 },
+complete_seo: { name: "Complete SEO Package", price: 5.0 },
+  rank_first_page: { name: "Rank on First Page Campaign", price: 8.0 },
+  custom_seo: { name: "Custom SEO Solutions", price: 4.0 },
+};
+
+// SECURE SERVER-SIDE PRICING CATALOGUE (ALL 12 SERVICES)
+const SERVICES = {
+  hp_post: { name: "Homepage Post", price: 1.0 },
+  sidebar: { name: "Sidebar Blogroll", price: 2.0 },
+  sticky: { name: "Homepage Sticky Post", price: 2.0 },
+  id_hp_post: { name: ".ID Homepage Post", price: 2.0 },
+  id_sidebar: { name: ".ID Sidebar Blogroll", price: 3.0 },
+  id_sticky: { name: ".ID Sticky Post", price: 2.5 },
+  hidden_links: { name: "EDU & GOV Backlink (AC.ID, SCH.ID, GO.ID)", price: 20.0 },
+  edu_post: { name: "EDU PBN Blogpost", price: 3.0 },
+  edu_sidebar: { name: "EDU PBN Blogroll", price: 5.0 },
+  complete_seo: { name: "Complete SEO Package", price: 5.0 },
+  rank_first_page: { name: "Rank on First Page Campaign", price: 8.0 },
+  custom_seo: { name: "Custom SEO Solutions", price: 4.0 },
 };
 
 const calculateSecureTotal = (cart = {}) => {
@@ -184,26 +203,65 @@ app.post("/api/capture-paypal-order", async (req, res) => {
   }
 });
 
-// ==========================================
-// 3. BOOMFI CRYPTO API
+/// ==========================================
+// 3. BOOMFI CRYPTO API (OFFICIAL GATEWAY)
 // ==========================================
 app.post("/api/create-boomfi-charge", async (req, res) => {
   try {
     const { cart } = req.body;
     const totalAmount = calculateSecureTotal(cart);
-    if (totalAmount <= 0) return res.status(400).json({ error: "Invalid total." });
-
-    if (process.env.BOOMFI_API_KEY) {
-      const response = await axios.post(
-        "https://api.boomfi.xyz/v1/paylinks",
-        { amount: totalAmount.toFixed(2), currency: "USD", name: "Jasa Backlinks Campaign" },
-        { headers: { "x-api-key": process.env.BOOMFI_API_KEY, "Content-Type": "application/json" } }
-      );
-      return res.json({ checkoutUrl: response.data?.data?.url || response.data?.checkout_url, total: totalAmount, isFallback: false });
+    if (totalAmount <= 0) {
+      return res.status(400).json({ error: "Invalid cart total." });
     }
-    res.json({ isFallback: true, walletAddress: process.env.CRYPTO_WALLET_TRC20 || "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE", total: totalAmount });
+
+    if (!process.env.BOOMFI_API_KEY) {
+      return res.status(500).json({ error: "BOOMFI_API_KEY is missing in .env file." });
+    }
+
+    const boomfiBaseUrl = process.env.BOOMFI_API_BASE || "https://mapi.boomfi.xyz/v1";
+
+    const response = await axios.post(
+      `${boomfiBaseUrl}/paylinks`,
+      {
+        name: "Jasa Backlinks SEO Campaign",
+        description: `Bulk Link Placement Order ($${totalAmount.toFixed(2)} USD)`,
+        amount: totalAmount.toFixed(2),
+        currency: "USD",
+        type: "OneTime",
+      },
+      {
+        headers: {
+          "X-API-KEY": process.env.BOOMFI_API_KEY.trim(),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const payload = response.data?.data || response.data || {};
+    const paylinkId = payload.id || payload.paylink_id || payload.link_id;
+    const checkoutUrl =
+      payload.url ||
+      payload.payment_link ||
+      payload.checkout_url ||
+      (paylinkId ? `https://pay.boomfi.xyz/${paylinkId}` : null);
+
+    if (!checkoutUrl) {
+      return res.status(500).json({ error: "BoomFi did not return a valid checkout URL." });
+    }
+
+    return res.json({
+      checkoutUrl,
+      total: totalAmount,
+    });
   } catch (error) {
-    res.json({ isFallback: true, walletAddress: process.env.CRYPTO_WALLET_TRC20 || "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE", total: calculateSecureTotal(req.body.cart) });
+    console.error("BoomFi API Error:", error.response?.data || error.message);
+    return res.status(500).json({
+      error:
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to initialize BoomFi Crypto Gateway.",
+    });
   }
 });
 

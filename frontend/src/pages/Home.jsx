@@ -16,7 +16,8 @@ import axios from "axios";
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 // --- YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3) ---
 const TEAM_CONTACTS = {
@@ -24,7 +25,7 @@ const TEAM_CONTACTS = {
   whatsappLabel: "+62 812-3456-7890",
   telegramUrl: "https://t.me/jasabacklinks",
   telegramLabel: "@jasabacklinks",
-  supportEmail: "support@seohub.ltd",
+  supportEmail: "jasa-backlinks@seohubltd.com",
 };
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
@@ -47,6 +48,43 @@ const STRIPE_ELEMENT_OPTIONS = {
     },
   },
 };
+
+// --- PIECEWISE SLIDER MAPPING HELPERS (LOCKS THUMB TO EXACT VISUAL LABELS) ---
+// Visual stops: 0 -> Pos 0 | 50 -> Pos 100 | 1k -> Pos 200 | 2k -> Pos 300 | 3k -> Pos 400 | 4k -> Pos 500 | 5k -> Pos 600
+const SLIDER_STOPS = [0, 50, 1000, 2000, 3000, 4000, 5000];
+
+function qtyToSliderPos(qty) {
+  if (!qty || qty <= 0) return 0;
+  if (qty <= 50) return 100;
+  if (qty <= 1000) {
+    return 100 + (qty / 1000) * 100;
+  }
+  return Math.min(600, 200 + ((qty - 1000) / 1000) * 100);
+}
+
+function sliderPosToQty(pos) {
+  const numPos = Number(pos) || 0;
+  if (numPos < 50) return 0;
+  if (numPos <= 105) return 50;
+
+  // Snap smoothly when user drags near any major milestone (1k, 2k, 3k, 4k, 5k)
+  for (let i = 2; i <= 6; i++) {
+    const targetPos = i * 100;
+    if (Math.abs(numPos - targetPos) <= 6) {
+      return (i - 1) * 1000;
+    }
+  }
+
+  if (numPos <= 200) {
+    const raw = ((numPos - 100) / 100) * 1000;
+    const snapped = Math.round(raw / 50) * 50;
+    return Math.max(50, Math.min(1000, snapped));
+  }
+
+  const rawAbove1k = 1000 + ((numPos - 200) / 100) * 1000;
+  const snappedAbove1k = Math.round(rawAbove1k / 50) * 50;
+  return Math.max(1000, Math.min(5000, snappedAbove1k));
+}
 
 // --- POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM ---
 function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
@@ -301,175 +339,6 @@ function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
   );
 }
 
-// --- BOOMFI CRYPTO CHECKOUT MODAL ---
-function BoomFiCryptoModal({
-  isOpen,
-  chargeData,
-  totalAmount,
-  totalLinks,
-  onClose,
-  onSuccess,
-}) {
-  const [selectedCoin, setSelectedCoin] = useState("USDT (TRC20)");
-  const [txHash, setTxHash] = useState("");
-  const [copied, setCopied] = useState(false);
-
-  if (!isOpen || !chargeData) return null;
-
-  const walletAddresses = {
-    "USDT (TRC20)":
-      chargeData.walletAddress || "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
-    "USDT (ERC20)": "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-    "USDC (Polygon)": "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-  };
-
-  const currentAddress = walletAddresses[selectedCoin];
-
-  const copyAddress = () => {
-    navigator.clipboard.writeText(currentAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleConfirmCrypto = (e) => {
-    e.preventDefault();
-    if (!txHash.trim() || txHash.trim().length < 8) {
-      alert("Please enter a valid Transaction Hash (TXID) to verify payment.");
-      return;
-    }
-    onSuccess(
-      `BOOMFI-${txHash.trim().slice(0, 14).toUpperCase()}`,
-      `Crypto (${selectedCoin})`,
-    );
-  };
-
-  return (
-    <div className="fixed inset-0 z-[105] flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div
-        className="absolute inset-0 bg-[#202124]/55 backdrop-blur-[3px]"
-        onClick={onClose}
-      />
-      <div className="relative w-full max-w-[460px] max-h-[92vh] overflow-y-auto bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.22)] border border-[#dadce0] animate-in fade-in zoom-in-95 duration-200">
-        <div className="grid grid-cols-4 h-[4px] w-full">
-          <div className="bg-[#4285F4]" />
-          <div className="bg-[#EA4335]" />
-          <div className="bg-[#FBBC04]" />
-          <div className="bg-[#34A853]" />
-        </div>
-
-        <div className="bg-[#f8fbff] px-6 py-5 border-b border-[#e8eaed] relative">
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-[#e8eaed] text-[#5f6368] cursor-pointer"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-            >
-              <path d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] font-medium mb-2">
-            Step 1 of 3 • BoomFi Crypto Gateway
-          </div>
-          <p className="text-[#5f6368] text-[13px]">
-            Jasa Backlinks ({totalLinks.toLocaleString()} Links)
-          </p>
-          <h4 className="gw-font-display text-[30px] font-medium text-[#202124] leading-tight">
-            $
-            {totalAmount.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}{" "}
-            <span className="text-[14px] font-normal text-[#5f6368]">
-              USDT / USDC
-            </span>
-          </h4>
-        </div>
-
-        <div className="p-6 space-y-4">
-          {chargeData.checkoutUrl && !chargeData.isFallback && (
-            <a
-              href={chargeData.checkoutUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full h-[46px] rounded-[10px] bg-[#e8f0fe] text-[#1a73e8] font-medium text-[14px] flex items-center justify-center gap-2 hover:bg-[#d2e3fc] transition-colors"
-            >
-              Open Hosted BoomFi Checkout Page ↗
-            </a>
-          )}
-
-          <div>
-            <label className="block text-[12.5px] font-medium text-[#5f6368] mb-1.5">
-              Select Network & Token
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {Object.keys(walletAddresses).map((coin) => (
-                <button
-                  key={coin}
-                  type="button"
-                  onClick={() => setSelectedCoin(coin)}
-                  className={`py-2 px-2 rounded-[10px] text-[12px] font-medium border transition-all cursor-pointer ${
-                    selectedCoin === coin
-                      ? "bg-[#e8f0fe] border-[#1a73e8] text-[#1a73e8] font-semibold"
-                      : "bg-[#f8f9fa] border-[#e8eaed] text-[#5f6368]"
-                  }`}
-                >
-                  {coin}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-[#f8f9fa] p-4 rounded-[14px] border border-[#e8eaed]">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-[12px] text-[#5f6368] font-medium">
-                Send Exact Amount To Address:
-              </span>
-              <button
-                type="button"
-                onClick={copyAddress}
-                className="text-[12px] font-semibold text-[#1a73e8] hover:underline cursor-pointer"
-              >
-                {copied ? "✓ Copied" : "Copy Address"}
-              </button>
-            </div>
-            <p className="font-mono text-[12.5px] text-[#202124] break-all bg-white p-2.5 rounded-[8px] border border-[#dadce0]">
-              {currentAddress}
-            </p>
-          </div>
-
-          <form onSubmit={handleConfirmCrypto} className="space-y-3 pt-1">
-            <div>
-              <label className="block text-[13px] font-medium text-[#3c4043] mb-1.5">
-                Paste Transaction Hash (TXID) After Sending *
-              </label>
-              <input
-                type="text"
-                required
-                value={txHash}
-                onChange={(e) => setTxHash(e.target.value)}
-                placeholder="e.g. 0x8f9c2b... or TRC20 TXID"
-                className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] text-[14px] text-[#202124]"
-              />
-            </div>
-            <button
-              type="submit"
-              className="gw-font-display w-full h-[48px] bg-[#1a73e8] text-white rounded-full font-medium text-[15px] hover:bg-[#1557b0] transition-colors shadow-[0_4px_12px_rgba(26,115,232,0.25)] cursor-pointer"
-            >
-              Verify Crypto Payment & Continue
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // --- POPUP 2 & POPUP 3: POST-PAYMENT ORDER DETAILS + THANK YOU & TEAM CONTACTS ---
 function OrderOnboardingFlowModal({
   isOpen,
@@ -522,7 +391,6 @@ function OrderOnboardingFlowModal({
         },
       });
     } catch (err) {
-      // Even if email server is not configured yet, transition smoothly to Popup 3 so user trust never breaks
       console.warn(
         "Order logged locally; backend email notification pending:",
         err.message,
@@ -546,9 +414,6 @@ function OrderOnboardingFlowModal({
           <div className="bg-[#34A853]" />
         </div>
 
-        {/* ============================================================
-            POPUP 3: THANK YOU & OUR 3 DIRECT TEAM CONTACTS
-           ============================================================ */}
         {isStep3ThankYou ? (
           <div className="p-6 sm:p-8">
             <div className="text-center mb-6">
@@ -704,9 +569,6 @@ function OrderOnboardingFlowModal({
             </button>
           </div>
         ) : (
-          /* ============================================================
-             POPUP 2: PAYMENT SUCCESSFUL STATUS + ORDER & CONTACT FORM
-             ============================================================ */
           <>
             {/* Top Premium Payment Successful Banner */}
             <div className="bg-gradient-to-r from-[#e6f4ea] via-[#f1faf4] to-[#e8f0fe] px-6 py-5 border-b border-[#ceead6]">
@@ -909,6 +771,1007 @@ function OrderOnboardingFlowModal({
         )}
       </div>
     </div>
+  );
+}
+
+// --- LIVE PACKAGE ESTIMATOR & CHECKOUT SECTION ---
+function PackageEstimator() {
+  const [cart, setCart] = useState({ hp_post: 50 });
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  // Payment & Modal States
+  const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
+  const [isInitializingPayment, setIsInitializingPayment] = useState(false);
+  const [isRedirectingBoomFi, setIsRedirectingBoomFi] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+
+  // Post-Payment Order Form Modal State (Popup 2 & Popup 3)
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [completedPayment, setCompletedPayment] = useState(null);
+
+  const services = [
+    {
+      id: "hp_post",
+      category: "standard",
+      name: "Homepage Post",
+      price: 1.0,
+      desc: "Contextual homepage placement",
+      metric: "DA/DR 50+",
+      tag: "Popular",
+    },
+    {
+      id: "sidebar",
+      category: "standard",
+      name: "Sidebar Blogroll",
+      price: 2.0,
+      desc: "High-authority sitewide sidebar link",
+      metric: "DA/DR 50+",
+    },
+    {
+      id: "sticky",
+      category: "standard",
+      name: "Homepage Sticky Post",
+      price: 2.0,
+      desc: "Pinned on homepage for maximum link juice",
+      metric: "DA/DR 50+",
+    },
+    {
+      id: "id_hp_post",
+      category: "id_net",
+      name: ".ID Homepage Post",
+      price: 2.0,
+      desc: "Indonesian regional contextual homepage link",
+      metric: "DA/DR 50+",
+      tag: "Regional .ID",
+    },
+    {
+      id: "id_sidebar",
+      category: "id_net",
+      name: ".ID Sidebar Blogroll",
+      price: 3.0,
+      desc: "Local .ID sitewide blogroll placement",
+      metric: "DA/DR 50+",
+    },
+    {
+      id: "id_sticky",
+      category: "id_net",
+      name: ".ID Sticky Post",
+      price: 2.5,
+      desc: "Pinned .ID homepage placement",
+      metric: "DA/DR 50+",
+    },
+    {
+      id: "hidden_links",
+      category: "edu_gov",
+      name: "Hidden Links (AC.ID, SCH.ID, GO.ID)",
+      price: 20.0,
+      desc: "Official academic & government domains",
+      metric: "High Trust",
+      tag: "Exclusive",
+    },
+    {
+      id: "edu_post",
+      category: "edu_gov",
+      name: "EDU PBN Blogpost",
+      price: 3.0,
+      desc: "Academic contextual article placement",
+      metric: "DA/DR 50+",
+    },
+    {
+      id: "edu_sidebar",
+      category: "edu_gov",
+      name: "EDU PBN Blogroll",
+      price: 5.0,
+      desc: "University sidebar sitewide placement",
+      metric: "DA/DR 50+",
+    },
+  ];
+
+  const categories = [
+    { id: "all", label: "All Placements (9)" },
+    { id: "standard", label: "Standard PBN (3)" },
+    { id: "id_net", label: ".ID Regional (3)" },
+    { id: "edu_gov", label: "EDU & GOV (3)" },
+  ];
+
+  const presets = [
+    {
+      label: "Starter (100 Links)",
+      config: { hp_post: 50, sidebar: 50 },
+    },
+    {
+      label: "Agency Mix (1,050 Links)",
+      config: { hp_post: 1000, edu_post: 50 },
+    },
+    {
+      label: ".ID Domination (2,000 Links)",
+      config: { id_hp_post: 1000, id_sidebar: 1000 },
+    },
+  ];
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (
+      params.get("payment") === "crypto_success" ||
+      params.get("boomfi_status") === "success"
+    ) {
+      const txId =
+        params.get("tx") ||
+        params.get("payment_id") ||
+        `BOOMFI-${Date.now().toString().slice(-8)}`;
+      setCompletedPayment({
+        transactionId: txId,
+        method: "BoomFi Crypto Gateway",
+      });
+      setIsOrderModalOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const setServiceQty = (id, rawVal) => {
+    let val = parseInt(rawVal, 10);
+    if (isNaN(val) || val <= 0) {
+      setCart((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      return;
+    }
+    if (val > 0 && val < 50) val = 50;
+    if (val > 5000) val = 5000;
+
+    setCart((prev) => ({ ...prev, [id]: val }));
+  };
+
+  // Uses Piecewise Mapping so Slider Thumb Matches Visual Labels 100%
+  const handleSliderPosChange = (id, sliderPosValue) => {
+    const mappedQty = sliderPosToQty(sliderPosValue);
+    setServiceQty(id, mappedQty);
+  };
+
+  const clearCart = () => setCart({});
+
+  const filteredServices =
+    activeCategory === "all"
+      ? services
+      : services.filter((s) => s.category === activeCategory);
+
+  const selectedEntries = Object.entries(cart).filter(([, qty]) => qty > 0);
+  const selectedPackagesCount = selectedEntries.length;
+
+  const selectedPackagesDetailed = selectedEntries.map(([id, qty]) => {
+    const svc = services.find((s) => s.id === id);
+    return {
+      id,
+      name: svc ? svc.name : id,
+      qty,
+      price: svc ? svc.price : 0,
+      subtotal: svc ? svc.price * qty : 0,
+    };
+  });
+
+  const finalTotal = selectedPackagesDetailed.reduce(
+    (sum, item) => sum + item.subtotal,
+    0,
+  );
+
+  const totalLinks = selectedEntries.reduce((sum, [, qty]) => sum + qty, 0);
+
+  // 1. STRIPE CHECKOUT INITIATION
+  const handleStripeCheckoutClick = async () => {
+    setIsInitializingPayment(true);
+    setPaymentError("");
+    try {
+      const { data } = await axios.post(
+        `${BACKEND_URL}/api/create-stripe-intent`,
+        { cart },
+      );
+      setClientSecret(data.clientSecret);
+      setIsStripeModalOpen(true);
+      document.body.style.overflow = "hidden";
+    } catch (error) {
+      console.error("Failed to initialise Stripe:", error);
+      setPaymentError(
+        error.response?.data?.error ||
+          "Unable to connect to payment server. Please check your connection.",
+      );
+    } finally {
+      setIsInitializingPayment(false);
+    }
+  };
+
+  // 2. BOOMFI CRYPTO GATEWAY REDIRECT (LIKE PAYPAL / NOWPAYMENTS - NO CUSTOM POPUP)
+  const handleBoomFiSubmit = async () => {
+    setIsRedirectingBoomFi(true);
+    setPaymentError("");
+    try {
+      const { data } = await axios.post(
+        `${BACKEND_URL}/api/create-boomfi-charge`,
+        { cart },
+      );
+
+      if (data && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        setPaymentError(
+          "BoomFi gateway did not return a payment link. Please verify BOOMFI_API_KEY on backend.",
+        );
+      }
+    } catch (error) {
+      console.error("BoomFi Gateway Error:", error);
+      setPaymentError(
+        error.response?.data?.error ||
+          "Unable to initialize BoomFi Crypto Checkout. Please verify your BoomFi API key in backend .env.",
+      );
+    } finally {
+      setIsRedirectingBoomFi(false);
+    }
+  };
+
+  const closeStripeModal = () => {
+    setIsStripeModalOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  // SEAMLESS TRANSITION FROM POPUP 1 -> POPUP 2
+  const handlePaymentSuccess = (
+    transactionId,
+    method = "Credit / Debit Card",
+  ) => {
+    setIsStripeModalOpen(false);
+    setCompletedPayment({
+      transactionId,
+      method,
+    });
+    setIsOrderModalOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeOrderModal = () => {
+    setIsOrderModalOpen(false);
+    setCompletedPayment(null);
+    document.body.style.overflow = "auto";
+  };
+
+  return (
+    <>
+      <section
+        id="estimator"
+        className="w-full bg-[#fcfcfc] py-10 sm:py-16 lg:py-20 px-4 sm:px-6 border-t border-[#e8eaed]"
+      >
+        <div className="max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="mb-7 sm:mb-10 max-w-[740px] mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] sm:text-[12.5px] font-medium mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
+              Interactive Cost Calculator
+            </div>
+            <h2 className="gw-font-display text-[28px] sm:text-[36px] md:text-[44px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-2.5">
+              Customise your{" "}
+              <span className="text-[#1a73e8]">PBN package.</span>
+            </h2>
+            <p className="gw-font-text text-[14.5px] sm:text-[16px] text-[#5f6368] leading-[1.6]">
+              Tap any placement to start from 50 links or slide up to 5,000
+              links. Combine multiple packages in real-time.
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 sm:gap-8 xl:gap-10 relative">
+            {/* Left Column: Sliders Builder */}
+            <div className="flex-1 w-full min-w-0">
+              {/* Top Filter & Preset Control Box */}
+              <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] mb-4 sm:mb-5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                    {categories.map((cat) => {
+                      const active = activeCategory === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setActiveCategory(cat.id)}
+                          className={`text-[12px] sm:text-[12.5px] font-medium px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+                            active
+                              ? "bg-[#1a73e8] text-white shadow-sm"
+                              : "bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className="hidden sm:inline-block bg-[#e6f4ea] text-[#1e8e3e] text-[11.5px] font-semibold px-3 py-1 rounded-full border border-[#ceead6] shrink-0">
+                    DA/DR 50+
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-[#f1f3f4] overflow-x-auto no-scrollbar">
+                  <span className="text-[11.5px] font-medium text-[#5f6368] shrink-0">
+                    Presets:
+                  </span>
+                  {presets.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setActiveCategory("all");
+                        setCart(preset.config);
+                      }}
+                      className="text-[11.5px] font-medium bg-[#f8f9fa] hover:bg-[#e8f0fe] text-[#3c4043] hover:text-[#1a73e8] border border-[#dadce0] hover:border-[#d2e3fc] px-2.5 py-1 rounded-full transition-all cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Service Rows */}
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                {filteredServices.map((service) => {
+                  const currentQty = cart[service.id] || 0;
+                  const isActive = currentQty > 0;
+                  const sliderPos = qtyToSliderPos(currentQty);
+                  const fillPercent = Math.min(
+                    100,
+                    Math.max(0, (sliderPos / 600) * 100),
+                  );
+
+                  return (
+                    <div
+                      key={service.id}
+                      className={`rounded-[18px] sm:rounded-[20px] border transition-all duration-200 ${
+                        isActive
+                          ? "p-4 sm:p-5 bg-[#f8fbff] border-[#1a73e8] ring-2 ring-[#e8f0fe]/70"
+                          : "p-3.5 sm:p-5 bg-white border-[#e8eaed] hover:border-[#dadce0] hover:shadow-[0_4px_12px_rgba(60,64,67,0.04)]"
+                      }`}
+                    >
+                      <div
+                        onClick={() => {
+                          if (!isActive) setServiceQty(service.id, 50);
+                        }}
+                        className={`flex justify-between items-center gap-2 ${
+                          isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setServiceQty(service.id, isActive ? 0 : 50);
+                            }}
+                            className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
+                              isActive
+                                ? "bg-[#1a73e8] border-[#1a73e8] text-white"
+                                : "bg-white border-[#bdc1c6] hover:border-[#1a73e8]"
+                            }`}
+                          >
+                            {isActive && (
+                              <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                strokeWidth="3"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </button>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                              <h4 className="gw-font-display text-[15px] sm:text-[17px] font-medium text-[#202124] leading-snug">
+                                {service.name}
+                              </h4>
+                              <span className="text-[10px] sm:text-[11px] font-medium bg-[#f1f3f4] text-[#5f6368] px-1.5 sm:px-2 py-0.5 rounded-md">
+                                {service.metric}
+                              </span>
+                              {service.tag && (
+                                <span className="text-[10px] sm:text-[11px] font-medium bg-[#e8f0fe] text-[#1a73e8] px-1.5 sm:px-2 py-0.5 rounded-md">
+                                  {service.tag}
+                                </span>
+                              )}
+                            </div>
+                            <p className="gw-font-text text-[12px] sm:text-[13px] text-[#5f6368] mt-0.5 leading-snug truncate sm:whitespace-normal">
+                              {service.desc}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="gw-font-display text-[13px] sm:text-[14.5px] font-medium text-[#1a73e8] bg-white border border-[#d2e3fc] px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
+                            ${service.price.toFixed(2)}
+                            <span className="text-[10.5px] sm:text-[12px] font-normal text-[#5f6368]">
+                              /link
+                            </span>
+                          </span>
+                          {!isActive && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setServiceQty(service.id, 50);
+                              }}
+                              className="sm:hidden text-[11.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-1 rounded-full"
+                            >
+                              + Add
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`${
+                          isActive ? "flex" : "hidden sm:flex"
+                        } flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-5 mt-2`}
+                      >
+                        <div className="flex-1">
+                          {/* Track + 7 Exact-Aligned Milestone Dots */}
+                          <div className="relative flex items-center h-7">
+                            <div className="absolute inset-x-[10px] flex justify-between items-center pointer-events-none z-10">
+                              {SLIDER_STOPS.map((stopVal, idx) => {
+                                const stopPos = idx * 100;
+                                const isReached =
+                                  sliderPos >= stopPos && currentQty > 0;
+                                return (
+                                  <span
+                                    key={stopVal}
+                                    className={`w-2 h-2 rounded-full transition-colors ${
+                                      isReached
+                                        ? "bg-white ring-2 ring-[#1a73e8]"
+                                        : "bg-[#bdc1c6]"
+                                    }`}
+                                  />
+                                );
+                              })}
+                            </div>
+
+                            <input
+                              type="range"
+                              min="0"
+                              max="600"
+                              step="1"
+                              value={sliderPos}
+                              onChange={(e) =>
+                                handleSliderPosChange(
+                                  service.id,
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer focus:outline-none relative z-20 touch-pan-y"
+                              style={{
+                                background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${fillPercent}%, #e8eaed ${fillPercent}%, #e8eaed 100%)`,
+                              }}
+                            />
+                          </div>
+
+                          {/* 7 Exact Percentage-Aligned Milestone Labels */}
+                          <div className="relative h-6 mt-1">
+                            {SLIDER_STOPS.map((stopVal, idx) => {
+                              const leftPct = (idx / 6) * 100;
+                              const isCurrentStop =
+                                currentQty === stopVal &&
+                                (stopVal > 0 || currentQty === 0);
+                              const alignClass =
+                                idx === 0
+                                  ? "left-0 translate-x-0"
+                                  : idx === 6
+                                    ? "right-0 translate-x-0"
+                                    : "-translate-x-1/2";
+
+                              return (
+                                <button
+                                  key={stopVal}
+                                  type="button"
+                                  onClick={() =>
+                                    setServiceQty(service.id, stopVal)
+                                  }
+                                  style={
+                                    idx > 0 && idx < 6
+                                      ? { left: `${leftPct}%` }
+                                      : undefined
+                                  }
+                                  className={`absolute top-0 ${alignClass} text-[10.5px] sm:text-[11px] font-medium px-1.5 py-0.5 rounded-full transition-colors cursor-pointer whitespace-nowrap ${
+                                    isCurrentStop && stopVal > 0
+                                      ? "bg-[#1a73e8] text-white font-semibold"
+                                      : "text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe]/70"
+                                  }`}
+                                >
+                                  {stopVal === 0 ? (
+                                    "Off"
+                                  ) : stopVal === 50 ? (
+                                    <>
+                                      50
+                                      <span className="hidden sm:inline">
+                                        {" "}
+                                        (Min)
+                                      </span>
+                                    </>
+                                  ) : (
+                                    `${stopVal / 1000}k`
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e8eaed]/80">
+                          <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 sm:p-1 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setServiceQty(
+                                  service.id,
+                                  currentQty === 50 ? 0 : currentQty - 50,
+                                )
+                              }
+                              className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] active:bg-[#e8eaed] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              min="0"
+                              max="5000"
+                              step="50"
+                              value={currentQty}
+                              onChange={(e) =>
+                                setServiceQty(service.id, e.target.value)
+                              }
+                              className="w-[54px] sm:w-[60px] text-center bg-transparent text-[13.5px] sm:text-[14px] font-semibold text-[#202124] focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setServiceQty(
+                                  service.id,
+                                  currentQty === 0 ? 50 : currentQty + 50,
+                                )
+                              }
+                              className="w-7 h-7 rounded-full text-[#1a73e8] active:bg-[#d2e3fc] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <div className="min-w-[82px] text-right">
+                            <span className="block text-[10px] sm:text-[11px] text-[#5f6368]">
+                              Subtotal
+                            </span>
+                            <span
+                              className={`gw-font-display text-[14px] sm:text-[15px] font-semibold ${isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"}`}
+                            >
+                              $
+                              {(currentQty * service.price).toLocaleString(
+                                "en-US",
+                                {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                },
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Column: Sticky Order Summary on Desktop */}
+            <aside
+              id="order-summary-card"
+              className="w-full lg:w-[390px] xl:w-[420px] shrink-0 lg:sticky lg:top-[96px] self-start transition-all duration-300 mt-2 lg:mt-0"
+            >
+              <div className="bg-white rounded-[22px] sm:rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col">
+                <div className="grid grid-cols-4 h-[4px] w-full">
+                  <div className="bg-[#4285F4]" />
+                  <div className="bg-[#EA4335]" />
+                  <div className="bg-[#FBBC04]" />
+                  <div className="bg-[#34A853]" />
+                </div>
+
+                <div className="p-5 sm:p-6 lg:p-7 flex flex-col">
+                  <div className="flex items-center justify-between mb-4 sm:mb-5 border-b border-[#e8eaed] pb-3.5 sm:pb-4">
+                    <div>
+                      <h3 className="gw-font-display text-[19px] sm:text-[20px] font-medium text-[#202124]">
+                        Order Summary
+                      </h3>
+                      <p className="text-[12px] sm:text-[12.5px] text-[#5f6368] mt-0.5">
+                        {selectedPackagesCount}{" "}
+                        {selectedPackagesCount === 1
+                          ? "placement type"
+                          : "placement types"}{" "}
+                        active
+                      </p>
+                    </div>
+                    {selectedPackagesCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearCart}
+                        className="text-[12px] font-medium text-[#d93025] hover:bg-[#fce8e6] px-3 py-1 rounded-full transition-colors cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto max-h-[240px] mb-4 sm:mb-5 pr-1 space-y-2 gw-font-text custom-scrollbar">
+                    {selectedPackagesCount === 0 ? (
+                      <div className="text-center py-7 px-4 bg-[#f8f9fa] rounded-[16px] border border-dashed border-[#dadce0]">
+                        <p className="text-[13.5px] text-[#5f6368] font-medium">
+                          No placements selected
+                        </p>
+                        <p className="text-[12px] text-[#9aa0a6] mt-1">
+                          Tap any placement or preset to start from 50 links.
+                        </p>
+                      </div>
+                    ) : (
+                      selectedEntries.map(([id, qty]) => {
+                        const svc = services.find((s) => s.id === id);
+                        if (!svc) return null;
+                        return (
+                          <div
+                            key={id}
+                            className="flex justify-between items-center bg-[#f8f9fa] hover:bg-[#f1f3f4]/70 px-3 py-2.5 rounded-[12px] border border-[#e8eaed] transition-colors"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="text-[11.5px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full shrink-0">
+                                {qty.toLocaleString()}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-[13px] sm:text-[13.5px] font-medium text-[#202124] truncate">
+                                  {svc.name}
+                                </p>
+                                <p className="text-[11px] text-[#5f6368]">
+                                  ${svc.price.toFixed(2)} / link
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                              <span className="text-[13px] sm:text-[13.5px] font-semibold text-[#202124]">
+                                $
+                                {(svc.price * qty).toLocaleString("en-US", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setServiceQty(id, 0)}
+                                className="text-[#9aa0a6] hover:text-[#d93025] p-1 rounded-full hover:bg-white transition-colors cursor-pointer"
+                                title="Remove package"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth="2.2"
+                                >
+                                  <path d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <div className="bg-[#f8f9fa] rounded-[16px] sm:rounded-[18px] p-4 sm:p-5 mb-4 sm:mb-5 border border-[#e8eaed]">
+                    <div className="flex justify-between items-center mb-2 text-[12.5px] sm:text-[13px] text-[#5f6368]">
+                      <span>Selected Services</span>
+                      <span className="font-medium text-[#202124]">
+                        {selectedPackagesCount}{" "}
+                        {selectedPackagesCount === 1 ? "Service" : "Services"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#dadce0] text-[12.5px] sm:text-[13px] text-[#5f6368]">
+                      <span>Total Volume</span>
+                      <span className="font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
+                        {totalLinks.toLocaleString()} Backlinks
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-end pt-1">
+                      <div>
+                        <span className="gw-font-display text-[14.5px] sm:text-[15px] font-medium text-[#202124] block">
+                          Estimated Total
+                        </span>
+                        <span className="text-[11px] sm:text-[11.5px] text-[#1e8e3e] font-medium">
+                          ● Instant Setup Included
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="gw-font-display text-[26px] sm:text-[30px] font-medium text-[#1a73e8] leading-none">
+                          $
+                          {finalTotal.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                        <span className="gw-font-text text-[12px] text-[#5f6368] font-medium ml-1">
+                          USD
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {paymentError && (
+                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
+                      {paymentError}
+                    </div>
+                  )}
+
+                  {/* API Checkout Buttons */}
+                  <div className="space-y-2.5">
+                    {/* 1. Stripe Card Checkout Button */}
+                    <button
+                      type="button"
+                      onClick={handleStripeCheckoutClick}
+                      disabled={
+                        totalLinks === 0 ||
+                        isInitializingPayment ||
+                        isRedirectingBoomFi
+                      }
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#1a73e8] text-white font-medium text-[14.5px] sm:text-[15px] hover:bg-[#1557b0] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {isInitializingPayment ? (
+                        "Opening Secure Card Checkout..."
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                          >
+                            <rect x="2" y="5" width="20" height="14" rx="2" />
+                            <line x1="2" y1="10" x2="22" y2="10" />
+                          </svg>
+                          <span className="tracking-wide">
+                            Pay with Card (Instant)
+                          </span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* 2. PayPal Smart Buttons */}
+                    <div className="w-full relative z-0">
+                      {totalLinks > 0 ? (
+                        <PayPalScriptProvider
+                          options={{
+                            "client-id": PAYPAL_CLIENT_ID,
+                            currency: "USD",
+                            intent: "capture",
+                          }}
+                        >
+                          <PayPalButtons
+                            style={{
+                              layout: "horizontal",
+                              height: 48,
+                              color: "gold",
+                              shape: "pill",
+                              tagline: false,
+                            }}
+                            createOrder={async () => {
+                              setPaymentError("");
+                              try {
+                                const { data } = await axios.post(
+                                  `${BACKEND_URL}/api/create-paypal-order`,
+                                  { cart },
+                                );
+                                return data.id;
+                              } catch (err) {
+                                setPaymentError(
+                                  err.response?.data?.error ||
+                                    "Could not initiate PayPal order. Check backend connection.",
+                                );
+                                throw err;
+                              }
+                            }}
+                            onApprove={async (data) => {
+                              try {
+                                const res = await axios.post(
+                                  `${BACKEND_URL}/api/capture-paypal-order`,
+                                  { orderID: data.orderID },
+                                );
+                                handlePaymentSuccess(
+                                  res.data?.captureId || data.orderID,
+                                  "PayPal Checkout",
+                                );
+                              } catch (err) {
+                                setPaymentError(
+                                  "Failed to capture PayPal payment.",
+                                );
+                              }
+                            }}
+                          />
+                        </PayPalScriptProvider>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] opacity-50 cursor-not-allowed flex items-center justify-center"
+                        >
+                          <span className="gw-font-display text-[14.5px] font-semibold text-[#003087]">
+                            PayPal
+                          </span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 3. BoomFi Crypto Gateway Button (Direct Gateway Redirect) */}
+                    <button
+                      type="button"
+                      onClick={handleBoomFiSubmit}
+                      disabled={
+                        totalLinks === 0 ||
+                        isInitializingPayment ||
+                        isRedirectingBoomFi
+                      }
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-[#d5ff2e] text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#c2ed15] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {isRedirectingBoomFi ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin" />
+                          <span>Redirecting to BoomFi Gateway...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4 text-[#1a73e8]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                          </svg>
+                          <span>Pay with Crypto (BoomFi)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      {/* --- FLOATING MOBILE QUICK-SUMMARY BAR --- */}
+      {totalLinks > 0 && !isStripeModalOpen && !isOrderModalOpen && (
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
+              <span>
+                {selectedPackagesCount}{" "}
+                {selectedPackagesCount === 1 ? "Service" : "Services"} •{" "}
+                {totalLinks.toLocaleString()} Links
+              </span>
+            </div>
+            <div className="gw-font-display text-[18px] font-semibold text-white leading-tight">
+              $
+              {finalTotal.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{" "}
+              <span className="text-[11px] font-normal text-[#9aa0a6]">
+                USD
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById("order-summary-card")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="text-[12px] font-medium text-white/90 bg-white/10 hover:bg-white/15 px-3 py-2 rounded-full transition-colors"
+            >
+              Summary
+            </button>
+            <button
+              type="button"
+              onClick={handleStripeCheckoutClick}
+              className="gw-font-display text-[13px] font-medium bg-[#1a73e8] hover:bg-[#1557b0] text-white px-4 py-2 rounded-full shadow-sm transition-colors"
+            >
+              Checkout
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- POPUP 1: CUSTOM 3-FIELD STRIPE CARD MODAL --- */}
+      {isStripeModalOpen && clientSecret && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div
+            className="absolute inset-0 bg-[#202124]/55 backdrop-blur-[3px] transition-opacity"
+            onClick={closeStripeModal}
+          />
+          <div className="relative w-full max-w-[440px] bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.25)] border border-[#dadce0] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="grid grid-cols-4 h-[4px] w-full">
+              <div className="bg-[#4285F4]" />
+              <div className="bg-[#EA4335]" />
+              <div className="bg-[#FBBC04]" />
+              <div className="bg-[#34A853]" />
+            </div>
+
+            <div className="bg-[#f8fbff] px-6 py-5 border-b border-[#e8eaed] relative">
+              <button
+                type="button"
+                onClick={closeStripeModal}
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-[#e8eaed] transition-colors text-[#5f6368] hover:text-[#202124] cursor-pointer"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] font-medium mb-2">
+                Step 1 of 3 • Secure Card Checkout
+              </div>
+
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-[#5f6368] text-[13px] mb-0.5 font-medium">
+                    Jasa Backlinks ({totalLinks.toLocaleString()} Links)
+                  </p>
+                  <h4 className="gw-font-display text-[32px] font-medium text-[#202124] leading-none tracking-tight">
+                    $
+                    {finalTotal.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    <span className="text-[13px] font-normal text-[#5f6368]">
+                      USD
+                    </span>
+                  </h4>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <Elements stripe={stripePromise}>
+                <CustomStripeCardForm
+                  clientSecret={clientSecret}
+                  totalAmount={finalTotal}
+                  onSuccess={handlePaymentSuccess}
+                />
+              </Elements>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & CONTACTS --- */}
+      <OrderOnboardingFlowModal
+        isOpen={isOrderModalOpen}
+        paymentData={completedPayment}
+        selectedPackages={selectedPackagesDetailed}
+        totalLinks={totalLinks}
+        finalTotal={finalTotal}
+        onClose={closeOrderModal}
+      />
+    </>
   );
 }
 
@@ -1265,7 +2128,7 @@ function HowItWorksSection() {
     {
       step: "01",
       title: "Select Placements & Volume",
-      desc: "Use our live estimator below to mix Homepage, Blogroll, .ID regional, or EDU/GOV links starting from 50 placements.",
+      desc: "Use our live estimator above to mix Homepage, Blogroll, .ID regional, or EDU/GOV links starting from 50 placements.",
       badge: "Instant Pricing",
       color: "bg-[#e8f0fe] text-[#1a73e8]",
     },
@@ -1334,987 +2197,6 @@ function HowItWorksSection() {
         </div>
       </div>
     </section>
-  );
-}
-
-// --- LIVE PACKAGE ESTIMATOR & CHECKOUT SECTION ---
-function PackageEstimator() {
-  const [cart, setCart] = useState({ hp_post: 50 });
-  const [activeCategory, setActiveCategory] = useState("all");
-
-  // Payment & Modal States
-  const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
-  const [clientSecret, setClientSecret] = useState("");
-  const [isBoomFiModalOpen, setIsBoomFiModalOpen] = useState(false);
-  const [boomFiChargeData, setBoomFiChargeData] = useState(null);
-  const [isInitializingPayment, setIsInitializingPayment] = useState(false);
-  const [paymentError, setPaymentError] = useState("");
-
-  // Post-Payment Order Form Modal State (Popup 2 & Popup 3)
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [completedPayment, setCompletedPayment] = useState(null);
-
-  const services = [
-    {
-      id: "hp_post",
-      category: "standard",
-      name: "Homepage Post",
-      price: 1.0,
-      desc: "Contextual homepage placement",
-      metric: "DA/DR 50+",
-      tag: "Popular",
-    },
-    {
-      id: "sidebar",
-      category: "standard",
-      name: "Sidebar Blogroll",
-      price: 2.0,
-      desc: "High-authority sitewide sidebar link",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "sticky",
-      category: "standard",
-      name: "Homepage Sticky Post",
-      price: 2.0,
-      desc: "Pinned on homepage for maximum link juice",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "id_hp_post",
-      category: "id_net",
-      name: ".ID Homepage Post",
-      price: 2.0,
-      desc: "Indonesian regional contextual homepage link",
-      metric: "DA/DR 50+",
-      tag: "Regional .ID",
-    },
-    {
-      id: "id_sidebar",
-      category: "id_net",
-      name: ".ID Sidebar Blogroll",
-      price: 3.0,
-      desc: "Local .ID sitewide blogroll placement",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "id_sticky",
-      category: "id_net",
-      name: ".ID Sticky Post",
-      price: 2.5,
-      desc: "Pinned .ID homepage placement",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "hidden_links",
-      category: "edu_gov",
-      name: "Hidden Links (AC.ID, SCH.ID, GO.ID)",
-      price: 20.0,
-      desc: "Official academic & government domains",
-      metric: "High Trust",
-      tag: "Exclusive",
-    },
-    {
-      id: "edu_post",
-      category: "edu_gov",
-      name: "EDU PBN Blogpost",
-      price: 3.0,
-      desc: "Academic contextual article placement",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "edu_sidebar",
-      category: "edu_gov",
-      name: "EDU PBN Blogroll",
-      price: 5.0,
-      desc: "University sidebar sitewide placement",
-      metric: "DA/DR 50+",
-    },
-  ];
-
-  const categories = [
-    { id: "all", label: "All Placements (9)" },
-    { id: "standard", label: "Standard PBN (3)" },
-    { id: "id_net", label: ".ID Regional (3)" },
-    { id: "edu_gov", label: "EDU & GOV (3)" },
-  ];
-
-  const presets = [
-    {
-      label: "Starter (100 Links)",
-      config: { hp_post: 50, sidebar: 50 },
-    },
-    {
-      label: "Agency Mix (1,050 Links)",
-      config: { hp_post: 1000, edu_post: 50 },
-    },
-    {
-      label: ".ID Domination (2,000 Links)",
-      config: { id_hp_post: 1000, id_sidebar: 1000 },
-    },
-  ];
-
-  const stops = [0, 50, 1000, 2000, 3000, 4000, 5000];
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("payment") === "crypto_success") {
-      const txId = params.get("tx") || `CRYPTO-${Date.now()}`;
-      setCompletedPayment({
-        transactionId: txId,
-        method: "BoomFi Crypto",
-      });
-      setIsOrderModalOpen(true);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
-
-  const setServiceQty = (id, rawVal) => {
-    let val = parseInt(rawVal, 10);
-    if (isNaN(val) || val <= 0) {
-      setCart((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-      return;
-    }
-    if (val > 0 && val < 50) val = 50;
-    if (val > 5000) val = 5000;
-
-    setCart((prev) => ({ ...prev, [id]: val }));
-  };
-
-  const handleSliderChange = (id, rawVal) => {
-    let val = parseInt(rawVal, 10) || 0;
-    const milestoneStops = [1000, 2000, 3000, 4000, 5000];
-    for (const stop of milestoneStops) {
-      if (Math.abs(val - stop) <= 80) {
-        val = stop;
-        break;
-      }
-    }
-    setServiceQty(id, val);
-  };
-
-  const clearCart = () => setCart({});
-
-  const filteredServices =
-    activeCategory === "all"
-      ? services
-      : services.filter((s) => s.category === activeCategory);
-
-  const selectedEntries = Object.entries(cart).filter(([, qty]) => qty > 0);
-  const selectedPackagesCount = selectedEntries.length;
-
-  const selectedPackagesDetailed = selectedEntries.map(([id, qty]) => {
-    const svc = services.find((s) => s.id === id);
-    return {
-      id,
-      name: svc ? svc.name : id,
-      qty,
-      price: svc ? svc.price : 0,
-      subtotal: svc ? svc.price * qty : 0,
-    };
-  });
-
-  const finalTotal = selectedPackagesDetailed.reduce(
-    (sum, item) => sum + item.subtotal,
-    0,
-  );
-
-  const totalLinks = selectedEntries.reduce((sum, [, qty]) => sum + qty, 0);
-
-  // 1. STRIPE CHECKOUT INITIATION
-  const handleStripeCheckoutClick = async () => {
-    setIsInitializingPayment(true);
-    setPaymentError("");
-    try {
-      const { data } = await axios.post(
-        `${BACKEND_URL}/api/create-stripe-intent`,
-        { cart },
-      );
-      setClientSecret(data.clientSecret);
-      setIsStripeModalOpen(true);
-      document.body.style.overflow = "hidden";
-    } catch (error) {
-      console.error("Failed to initialise Stripe:", error);
-      setPaymentError(
-        error.response?.data?.error ||
-          "Unable to connect to payment server. Please check your connection.",
-      );
-    } finally {
-      setIsInitializingPayment(false);
-    }
-  };
-
-  // 2. BOOMFI CRYPTO CHECKOUT INITIATION
-  const handleBoomFiSubmit = async () => {
-    setIsInitializingPayment(true);
-    setPaymentError("");
-    try {
-      const { data } = await axios.post(
-        `${BACKEND_URL}/api/create-boomfi-charge`,
-        { cart },
-      );
-      if (data.checkoutUrl && !data.isFallback) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        setBoomFiChargeData(data);
-        setIsBoomFiModalOpen(true);
-        document.body.style.overflow = "hidden";
-      }
-    } catch (error) {
-      setBoomFiChargeData({
-        isFallback: true,
-        total: finalTotal,
-      });
-      setIsBoomFiModalOpen(true);
-      document.body.style.overflow = "hidden";
-    } finally {
-      setIsInitializingPayment(false);
-    }
-  };
-
-  const closeStripeModal = () => {
-    setIsStripeModalOpen(false);
-    document.body.style.overflow = "auto";
-  };
-
-  const closeBoomFiModal = () => {
-    setIsBoomFiModalOpen(false);
-    document.body.style.overflow = "auto";
-  };
-
-  // SEAMLESS TRANSITION FROM POPUP 1 -> POPUP 2
-  const handlePaymentSuccess = (
-    transactionId,
-    method = "Credit / Debit Card",
-  ) => {
-    setIsStripeModalOpen(false);
-    setIsBoomFiModalOpen(false);
-    setCompletedPayment({
-      transactionId,
-      method,
-    });
-    setIsOrderModalOpen(true);
-    document.body.style.overflow = "hidden";
-  };
-
-  const closeOrderModal = () => {
-    setIsOrderModalOpen(false);
-    setCompletedPayment(null);
-    document.body.style.overflow = "auto";
-  };
-
-  return (
-    <>
-      <section
-        id="estimator"
-        className="w-full bg-[#fcfcfc] py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]"
-      >
-        <div className="max-w-[1200px] mx-auto">
-          {/* Header */}
-          <div className="mb-8 sm:mb-12 max-w-[740px] mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] sm:text-[12.5px] font-medium mb-3 sm:mb-4">
-              <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
-              Interactive Cost Calculator
-            </div>
-            <h2 className="gw-font-display text-[28px] sm:text-[36px] md:text-[46px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-3">
-              Customise your{" "}
-              <span className="text-[#1a73e8]">PBN package.</span>
-            </h2>
-            <p className="gw-font-text text-[14.5px] sm:text-[16px] md:text-[17px] text-[#5f6368] leading-[1.6]">
-              Tap any placement to start from 50 links or slide up to 5,000
-              links. Combine multiple packages in real-time.
-            </p>
-          </div>
-
-          <div className="flex flex-col lg:flex-row lg:items-start gap-6 sm:gap-8 xl:gap-10 relative">
-            {/* Left Column: Sliders Builder */}
-            <div className="flex-1 w-full min-w-0">
-              {/* Top Filter & Preset Control Box */}
-              <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] mb-4 sm:mb-5 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-                    {categories.map((cat) => {
-                      const active = activeCategory === cat.id;
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => setActiveCategory(cat.id)}
-                          className={`text-[12px] sm:text-[12.5px] font-medium px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
-                            active
-                              ? "bg-[#1a73e8] text-white shadow-sm"
-                              : "bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
-                          }`}
-                        >
-                          {cat.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <span className="hidden sm:inline-block bg-[#e6f4ea] text-[#1e8e3e] text-[11.5px] font-semibold px-3 py-1 rounded-full border border-[#ceead6] shrink-0">
-                    DA/DR 50+
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 pt-2 border-t border-[#f1f3f4] overflow-x-auto no-scrollbar">
-                  <span className="text-[11.5px] font-medium text-[#5f6368] shrink-0">
-                    Presets:
-                  </span>
-                  {presets.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => {
-                        setActiveCategory("all");
-                        setCart(preset.config);
-                      }}
-                      className="text-[11.5px] font-medium bg-[#f8f9fa] hover:bg-[#e8f0fe] text-[#3c4043] hover:text-[#1a73e8] border border-[#dadce0] hover:border-[#d2e3fc] px-2.5 py-1 rounded-full transition-all cursor-pointer whitespace-nowrap shrink-0"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Service Rows */}
-              <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                {filteredServices.map((service) => {
-                  const currentQty = cart[service.id] || 0;
-                  const isActive = currentQty > 0;
-                  const fillPercent = Math.min(100, (currentQty / 5000) * 100);
-
-                  return (
-                    <div
-                      key={service.id}
-                      className={`rounded-[18px] sm:rounded-[20px] border transition-all duration-200 ${
-                        isActive
-                          ? "p-4 sm:p-5 bg-[#f8fbff] border-[#1a73e8] ring-2 ring-[#e8f0fe]/70"
-                          : "p-3.5 sm:p-5 bg-white border-[#e8eaed] hover:border-[#dadce0] hover:shadow-[0_4px_12px_rgba(60,64,67,0.04)]"
-                      }`}
-                    >
-                      <div
-                        onClick={() => {
-                          if (!isActive) setServiceQty(service.id, 50);
-                        }}
-                        className={`flex justify-between items-center gap-2 ${
-                          isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
-                        }`}
-                      >
-                        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setServiceQty(service.id, isActive ? 0 : 50);
-                            }}
-                            className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
-                              isActive
-                                ? "bg-[#1a73e8] border-[#1a73e8] text-white"
-                                : "bg-white border-[#bdc1c6] hover:border-[#1a73e8]"
-                            }`}
-                          >
-                            {isActive && (
-                              <svg
-                                className="w-3.5 h-3.5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                strokeWidth="3"
-                              >
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            )}
-                          </button>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                              <h4 className="gw-font-display text-[15px] sm:text-[17px] font-medium text-[#202124] leading-snug">
-                                {service.name}
-                              </h4>
-                              <span className="text-[10px] sm:text-[11px] font-medium bg-[#f1f3f4] text-[#5f6368] px-1.5 sm:px-2 py-0.5 rounded-md">
-                                {service.metric}
-                              </span>
-                              {service.tag && (
-                                <span className="text-[10px] sm:text-[11px] font-medium bg-[#e8f0fe] text-[#1a73e8] px-1.5 sm:px-2 py-0.5 rounded-md">
-                                  {service.tag}
-                                </span>
-                              )}
-                            </div>
-                            <p className="gw-font-text text-[12px] sm:text-[13px] text-[#5f6368] mt-0.5 leading-snug truncate sm:whitespace-normal">
-                              {service.desc}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="gw-font-display text-[13px] sm:text-[14.5px] font-medium text-[#1a73e8] bg-white border border-[#d2e3fc] px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
-                            ${service.price.toFixed(2)}
-                            <span className="text-[10.5px] sm:text-[12px] font-normal text-[#5f6368]">
-                              /link
-                            </span>
-                          </span>
-                          {!isActive && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setServiceQty(service.id, 50);
-                              }}
-                              className="sm:hidden text-[11.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-1 rounded-full"
-                            >
-                              + Add
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div
-                        className={`${
-                          isActive ? "flex" : "hidden sm:flex"
-                        } flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-4 mt-2`}
-                      >
-                        <div className="flex-1">
-                          <div className="relative flex items-center h-7">
-                            <div className="absolute inset-x-0 flex justify-between items-center pointer-events-none px-[6px] z-10">
-                              {[0, 1000, 2000, 3000, 4000, 5000].map(
-                                (milestone) => (
-                                  <span
-                                    key={milestone}
-                                    className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
-                                      currentQty >= milestone && currentQty > 0
-                                        ? "bg-white ring-2 ring-[#1a73e8]"
-                                        : "bg-[#bdc1c6]"
-                                    }`}
-                                  />
-                                ),
-                              )}
-                            </div>
-
-                            <input
-                              type="range"
-                              min="0"
-                              max="5000"
-                              step="50"
-                              value={currentQty}
-                              onChange={(e) =>
-                                handleSliderChange(service.id, e.target.value)
-                              }
-                              className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer focus:outline-none relative z-20 touch-pan-y"
-                              style={{
-                                background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${fillPercent}%, #e8eaed ${fillPercent}%, #e8eaed 100%)`,
-                              }}
-                            />
-                          </div>
-
-                          <div className="flex justify-between items-center mt-1 px-0.5">
-                            {stops.map((stopVal) => {
-                              const isCurrentStop =
-                                currentQty === stopVal && stopVal > 0;
-                              return (
-                                <button
-                                  key={stopVal}
-                                  type="button"
-                                  onClick={() =>
-                                    setServiceQty(service.id, stopVal)
-                                  }
-                                  className={`text-[10.5px] sm:text-[11px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full transition-colors cursor-pointer ${
-                                    isCurrentStop
-                                      ? "bg-[#1a73e8] text-white font-semibold"
-                                      : "text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe]/70"
-                                  }`}
-                                >
-                                  {stopVal === 0 ? (
-                                    "Off"
-                                  ) : stopVal === 50 ? (
-                                    <>
-                                      50
-                                      <span className="hidden sm:inline">
-                                        {" "}
-                                        (Min)
-                                      </span>
-                                    </>
-                                  ) : (
-                                    `${stopVal / 1000}k`
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e8eaed]/80">
-                          <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 sm:p-1 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setServiceQty(
-                                  service.id,
-                                  currentQty === 50 ? 0 : currentQty - 50,
-                                )
-                              }
-                              className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] active:bg-[#e8eaed] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
-                            >
-                              −
-                            </button>
-                            <input
-                              type="number"
-                              min="0"
-                              max="5000"
-                              step="50"
-                              value={currentQty}
-                              onChange={(e) =>
-                                setServiceQty(service.id, e.target.value)
-                              }
-                              className="w-[54px] sm:w-[60px] text-center bg-transparent text-[13.5px] sm:text-[14px] font-semibold text-[#202124] focus:outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setServiceQty(
-                                  service.id,
-                                  currentQty === 0 ? 50 : currentQty + 50,
-                                )
-                              }
-                              className="w-7 h-7 rounded-full text-[#1a73e8] active:bg-[#d2e3fc] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"
-                            >
-                              +
-                            </button>
-                          </div>
-
-                          <div className="min-w-[78px] text-right">
-                            <span className="block text-[10px] sm:text-[11px] text-[#5f6368]">
-                              Subtotal
-                            </span>
-                            <span
-                              className={`gw-font-display text-[14px] sm:text-[15px] font-semibold ${isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"}`}
-                            >
-                              $
-                              {(currentQty * service.price).toLocaleString(
-                                "en-US",
-                                {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                },
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Column: Sticky Order Summary on Desktop */}
-            <aside
-              id="order-summary-card"
-              className="w-full lg:w-[390px] xl:w-[420px] shrink-0 lg:sticky lg:top-[96px] self-start transition-all duration-300 mt-2 lg:mt-0"
-            >
-              <div className="bg-white rounded-[22px] sm:rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col">
-                <div className="grid grid-cols-4 h-[4px] w-full">
-                  <div className="bg-[#4285F4]" />
-                  <div className="bg-[#EA4335]" />
-                  <div className="bg-[#FBBC04]" />
-                  <div className="bg-[#34A853]" />
-                </div>
-
-                <div className="p-5 sm:p-6 lg:p-7 flex flex-col">
-                  <div className="flex items-center justify-between mb-4 sm:mb-5 border-b border-[#e8eaed] pb-3.5 sm:pb-4">
-                    <div>
-                      <h3 className="gw-font-display text-[19px] sm:text-[20px] font-medium text-[#202124]">
-                        Order Summary
-                      </h3>
-                      <p className="text-[12px] sm:text-[12.5px] text-[#5f6368] mt-0.5">
-                        {selectedPackagesCount}{" "}
-                        {selectedPackagesCount === 1
-                          ? "placement type"
-                          : "placement types"}{" "}
-                        active
-                      </p>
-                    </div>
-                    {selectedPackagesCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={clearCart}
-                        className="text-[12px] font-medium text-[#d93025] hover:bg-[#fce8e6] px-3 py-1 rounded-full transition-colors cursor-pointer"
-                      >
-                        Reset
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto max-h-[240px] mb-4 sm:mb-5 pr-1 space-y-2 gw-font-text custom-scrollbar">
-                    {selectedPackagesCount === 0 ? (
-                      <div className="text-center py-7 px-4 bg-[#f8f9fa] rounded-[16px] border border-dashed border-[#dadce0]">
-                        <p className="text-[13.5px] text-[#5f6368] font-medium">
-                          No placements selected
-                        </p>
-                        <p className="text-[12px] text-[#9aa0a6] mt-1">
-                          Tap any placement or preset to start from 50 links.
-                        </p>
-                      </div>
-                    ) : (
-                      selectedEntries.map(([id, qty]) => {
-                        const svc = services.find((s) => s.id === id);
-                        if (!svc) return null;
-                        return (
-                          <div
-                            key={id}
-                            className="flex justify-between items-center bg-[#f8f9fa] hover:bg-[#f1f3f4]/70 px-3 py-2.5 rounded-[12px] border border-[#e8eaed] transition-colors"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="text-[11.5px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full shrink-0">
-                                {qty.toLocaleString()}
-                              </span>
-                              <div className="min-w-0">
-                                <p className="text-[13px] sm:text-[13.5px] font-medium text-[#202124] truncate">
-                                  {svc.name}
-                                </p>
-                                <p className="text-[11px] text-[#5f6368]">
-                                  ${svc.price.toFixed(2)} / link
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                              <span className="text-[13px] sm:text-[13.5px] font-semibold text-[#202124]">
-                                $
-                                {(svc.price * qty).toLocaleString("en-US", {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => setServiceQty(id, 0)}
-                                className="text-[#9aa0a6] hover:text-[#d93025] p-1 rounded-full hover:bg-white transition-colors cursor-pointer"
-                                title="Remove package"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth="2.2"
-                                >
-                                  <path d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  <div className="bg-[#f8f9fa] rounded-[16px] sm:rounded-[18px] p-4 sm:p-5 mb-4 sm:mb-5 border border-[#e8eaed]">
-                    <div className="flex justify-between items-center mb-2 text-[12.5px] sm:text-[13px] text-[#5f6368]">
-                      <span>Selected Services</span>
-                      <span className="font-medium text-[#202124]">
-                        {selectedPackagesCount}{" "}
-                        {selectedPackagesCount === 1 ? "Service" : "Services"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#dadce0] text-[12.5px] sm:text-[13px] text-[#5f6368]">
-                      <span>Total Volume</span>
-                      <span className="font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
-                        {totalLinks.toLocaleString()} Backlinks
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-end pt-1">
-                      <div>
-                        <span className="gw-font-display text-[14.5px] sm:text-[15px] font-medium text-[#202124] block">
-                          Estimated Total
-                        </span>
-                        <span className="text-[11px] sm:text-[11.5px] text-[#1e8e3e] font-medium">
-                          ● Instant Setup Included
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="gw-font-display text-[26px] sm:text-[30px] font-medium text-[#1a73e8] leading-none">
-                          $
-                          {finalTotal.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </span>
-                        <span className="gw-font-text text-[12px] text-[#5f6368] font-medium ml-1">
-                          USD
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {paymentError && (
-                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
-                      {paymentError}
-                    </div>
-                  )}
-
-                  {/* API Checkout Buttons */}
-                  <div className="space-y-2.5">
-                    {/* 1. Stripe Card Checkout Button */}
-                    <button
-                      type="button"
-                      onClick={handleStripeCheckoutClick}
-                      disabled={totalLinks === 0 || isInitializingPayment}
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#1a73e8] text-white font-medium text-[14.5px] sm:text-[15px] hover:bg-[#1557b0] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      {isInitializingPayment ? (
-                        "Opening Secure Card Checkout..."
-                      ) : (
-                        <>
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                          >
-                            <rect x="2" y="5" width="20" height="14" rx="2" />
-                            <line x1="2" y1="10" x2="22" y2="10" />
-                          </svg>
-                          <span className="tracking-wide">
-                            Pay with Card (Instant)
-                          </span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* 2. PayPal Smart Buttons */}
-                    <div className="w-full relative z-0">
-                      {totalLinks > 0 ? (
-                        <PayPalScriptProvider
-                          options={{
-                            "client-id": PAYPAL_CLIENT_ID,
-                            currency: "USD",
-                            intent: "capture",
-                          }}
-                        >
-                          <PayPalButtons
-                            style={{
-                              layout: "horizontal",
-                              height: 48,
-                              color: "gold",
-                              shape: "pill",
-                              tagline: false,
-                            }}
-                            createOrder={async () => {
-                              setPaymentError("");
-                              try {
-                                const { data } = await axios.post(
-                                  `${BACKEND_URL}/api/create-paypal-order`,
-                                  { cart },
-                                );
-                                return data.id;
-                              } catch (err) {
-                                setPaymentError(
-                                  err.response?.data?.error ||
-                                    "Could not initiate PayPal order. Check backend connection.",
-                                );
-                                throw err;
-                              }
-                            }}
-                            onApprove={async (data) => {
-                              try {
-                                const res = await axios.post(
-                                  `${BACKEND_URL}/api/capture-paypal-order`,
-                                  { orderID: data.orderID },
-                                );
-                                handlePaymentSuccess(
-                                  res.data?.captureId || data.orderID,
-                                  "PayPal Checkout",
-                                );
-                              } catch (err) {
-                                setPaymentError(
-                                  "Failed to capture PayPal payment.",
-                                );
-                              }
-                            }}
-                          />
-                        </PayPalScriptProvider>
-                      ) : (
-                        <button
-                          type="button"
-                          disabled
-                          className="w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] opacity-50 cursor-not-allowed flex items-center justify-center"
-                        >
-                          <span className="gw-font-display text-[14.5px] font-semibold text-[#003087]">
-                            PayPal
-                          </span>
-                        </button>
-                      )}
-                    </div>
-
-                    {/* 3. BoomFi Crypto Checkout Button */}
-                    <button
-                      type="button"
-                      onClick={handleBoomFiSubmit}
-                      disabled={totalLinks === 0 || isInitializingPayment}
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-white text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#f8f9fa] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <svg
-                        className="w-4 h-4 text-[#1a73e8]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                      </svg>
-                      Pay with Crypto (BoomFi)
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      {/* --- FLOATING MOBILE QUICK-SUMMARY BAR --- */}
-      {totalLinks > 0 &&
-        !isStripeModalOpen &&
-        !isBoomFiModalOpen &&
-        !isOrderModalOpen && (
-          <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
-                <span>
-                  {selectedPackagesCount}{" "}
-                  {selectedPackagesCount === 1 ? "Service" : "Services"} •{" "}
-                  {totalLinks.toLocaleString()} Links
-                </span>
-              </div>
-              <div className="gw-font-display text-[18px] font-semibold text-white leading-tight">
-                $
-                {finalTotal.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                <span className="text-[11px] font-normal text-[#9aa0a6]">
-                  USD
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("order-summary-card")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="text-[12px] font-medium text-white/90 bg-white/10 hover:bg-white/15 px-3 py-2 rounded-full transition-colors"
-              >
-                Summary
-              </button>
-              <button
-                type="button"
-                onClick={handleStripeCheckoutClick}
-                className="gw-font-display text-[13px] font-medium bg-[#1a73e8] hover:bg-[#1557b0] text-white px-4 py-2 rounded-full shadow-sm transition-colors"
-              >
-                Checkout
-              </button>
-            </div>
-          </div>
-        )}
-
-      {/* --- POPUP 1: CUSTOM 3-FIELD STRIPE CARD MODAL --- */}
-      {isStripeModalOpen && clientSecret && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div
-            className="absolute inset-0 bg-[#202124]/55 backdrop-blur-[3px] transition-opacity"
-            onClick={closeStripeModal}
-          />
-          <div className="relative w-full max-w-[440px] bg-white rounded-t-[24px] sm:rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.25)] border border-[#dadce0] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            {/* Google 4-Colour Top Strip */}
-            <div className="grid grid-cols-4 h-[4px] w-full">
-              <div className="bg-[#4285F4]" />
-              <div className="bg-[#EA4335]" />
-              <div className="bg-[#FBBC04]" />
-              <div className="bg-[#34A853]" />
-            </div>
-
-            <div className="bg-[#f8fbff] px-6 py-5 border-b border-[#e8eaed] relative">
-              <button
-                type="button"
-                onClick={closeStripeModal}
-                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-[#e8eaed] transition-colors text-[#5f6368] hover:text-[#202124] cursor-pointer"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                >
-                  <path d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] font-medium mb-2">
-                Step 1 of 3 • Secure Card Checkout
-              </div>
-
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[#5f6368] text-[13px] mb-0.5 font-medium">
-                    Jasa Backlinks ({totalLinks.toLocaleString()} Links)
-                  </p>
-                  <h4 className="gw-font-display text-[32px] font-medium text-[#202124] leading-none tracking-tight">
-                    $
-                    {finalTotal.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{" "}
-                    <span className="text-[13px] font-normal text-[#5f6368]">
-                      USD
-                    </span>
-                  </h4>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <Elements stripe={stripePromise}>
-                <CustomStripeCardForm
-                  clientSecret={clientSecret}
-                  totalAmount={finalTotal}
-                  onSuccess={handlePaymentSuccess}
-                />
-              </Elements>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- BOOMFI CRYPTO CHECKOUT MODAL --- */}
-      <BoomFiCryptoModal
-        isOpen={isBoomFiModalOpen}
-        chargeData={boomFiChargeData}
-        totalAmount={finalTotal}
-        totalLinks={totalLinks}
-        onClose={closeBoomFiModal}
-        onSuccess={handlePaymentSuccess}
-      />
-
-      {/* --- POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & CONTACTS --- */}
-      <OrderOnboardingFlowModal
-        isOpen={isOrderModalOpen}
-        paymentData={completedPayment}
-        selectedPackages={selectedPackagesDetailed}
-        totalLinks={totalLinks}
-        finalTotal={finalTotal}
-        onClose={closeOrderModal}
-      />
-    </>
   );
 }
 
@@ -2875,8 +2757,8 @@ export default function Home() {
         input[type=range]::-moz-range-thumb:active { transform: scale(1.2); background: #e8f0fe; }
       `}</style>
 
-      {/* Hero Section */}
-      <section className="relative z-10 min-h-[86vh] sm:min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-14 sm:pb-20 md:pb-24 pt-[76px] sm:pt-[64px] overflow-hidden">
+      {/* Hero Section (Compact Height so Calculator is Reached Immediately) */}
+      <section className="relative z-10 min-h-[70vh] sm:min-h-[76vh] flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-10 sm:pb-14 pt-[76px] sm:pt-[84px] overflow-hidden">
         <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-50" />
           <svg
@@ -2949,8 +2831,8 @@ export default function Home() {
           <div className="absolute bottom-[5%] left-[20%] md:left-[30%] w-[240px] sm:w-[350px] md:w-[550px] h-[240px] sm:h-[350px] md:h-[550px] bg-[#fbbc04] rounded-full mix-blend-multiply filter blur-[90px] sm:blur-[120px] md:blur-[150px] opacity-[0.06] animate-blob delay-4000" />
         </div>
 
-        <div className="flex flex-col items-center justify-center w-full max-w-[1300px] mt-4 sm:mt-8 md:mt-12 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#dadce0] shadow-[0_2px_8px_rgba(60,64,67,0.05)] mb-5 sm:mb-6 max-w-full">
+        <div className="flex flex-col items-center justify-center w-full max-w-[1300px] mt-2 sm:mt-6 relative z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#dadce0] shadow-[0_2px_8px_rgba(60,64,67,0.05)] mb-4 sm:mb-5 max-w-full">
             <span className="flex items-center gap-1 shrink-0">
               <span className="w-2 h-2 rounded-full bg-[#4285F4]" />
               <span className="w-2 h-2 rounded-full bg-[#EA4335]" />
@@ -2962,18 +2844,18 @@ export default function Home() {
             </span>
           </div>
 
-          <h2 className="gw-font-display text-[34px] sm:text-[56px] md:text-[72px] lg:text-[88px] font-medium leading-[1.12] sm:leading-[1.08] md:leading-[1.06] tracking-[-0.025em] md:tracking-[-0.03em] text-[#202124] mb-4 sm:mb-6 w-full px-1">
+          <h2 className="gw-font-display text-[32px] sm:text-[52px] md:text-[68px] lg:text-[80px] font-medium leading-[1.12] sm:leading-[1.08] md:leading-[1.06] tracking-[-0.025em] md:tracking-[-0.03em] text-[#202124] mb-4 sm:mb-5 w-full px-1">
             Build organic authority <br className="hidden sm:block" />
             <span className="text-[#1a73e8]">with premium PBN backlinks.</span>
           </h2>
 
-          <p className="gw-font-text text-[15px] sm:text-[17px] md:text-[20px] text-[#5f6368] max-w-[720px] leading-[1.6] mb-7 sm:mb-9 px-2">
+          <p className="gw-font-text text-[15px] sm:text-[17px] md:text-[19px] text-[#5f6368] max-w-[700px] leading-[1.6] mb-6 sm:mb-8 px-2">
             Scale your search rankings and AI Overview visibility with clean,
             high-metric contextual placements across .COM, .ID, .EDU, and .GOV
             domains.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-[340px] sm:max-w-none mb-8 sm:mb-12 z-20">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-[340px] sm:max-w-none mb-6 sm:mb-9 z-20">
             <button
               type="button"
               onClick={() =>
@@ -2981,43 +2863,43 @@ export default function Home() {
                   .getElementById("estimator")
                   ?.scrollIntoView({ behavior: "smooth" })
               }
-              className="gw-font-display w-full sm:w-[240px] inline-flex h-[50px] sm:h-[54px] md:h-[56px] items-center justify-center rounded-full bg-[#1a73e8] text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-white shadow-[0_6px_20px_rgba(26,115,232,0.25)] hover:bg-[#1557b0] hover:shadow-[0_8px_28px_rgba(26,115,232,0.35)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
+              className="gw-font-display w-full sm:w-[240px] inline-flex h-[50px] sm:h-[54px] items-center justify-center rounded-full bg-[#1a73e8] text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-white shadow-[0_6px_20px_rgba(26,115,232,0.25)] hover:bg-[#1557b0] hover:shadow-[0_8px_28px_rgba(26,115,232,0.35)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
             >
-              Explore SEO packages
+              Calculate Price Now
             </button>
             <Link
               to="/contact"
-              className="gw-font-display w-full sm:w-[240px] inline-flex h-[50px] sm:h-[54px] md:h-[56px] items-center justify-center rounded-full border border-[#dadce0] bg-white/90 backdrop-blur-md text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-[#3c4043] shadow-[0_2px_10px_rgba(60,64,67,0.04)] hover:bg-white hover:border-[#bdc1c6] hover:text-[#202124] transition-all duration-300 transform hover:-translate-y-0.5"
+              className="gw-font-display w-full sm:w-[240px] inline-flex h-[50px] sm:h-[54px] items-center justify-center rounded-full border border-[#dadce0] bg-white/90 backdrop-blur-md text-[15px] md:text-[16px] font-medium tracking-[0.2px] text-[#3c4043] shadow-[0_2px_10px_rgba(60,64,67,0.04)] hover:bg-white hover:border-[#bdc1c6] hover:text-[#202124] transition-all duration-300 transform hover:-translate-y-0.5"
             >
               Talk to an expert
             </Link>
           </div>
 
-          <div className="flex flex-row items-center gap-3 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white/85 backdrop-blur-xl border border-[#e8eaed] shadow-[0_8px_32px_rgba(32,33,36,0.06)] relative z-20 transition-transform duration-300 hover:scale-105 cursor-default max-w-full">
+          <div className="flex flex-row items-center gap-3 px-4 sm:px-6 py-2.5 rounded-full bg-white/85 backdrop-blur-xl border border-[#e8eaed] shadow-[0_8px_32px_rgba(32,33,36,0.06)] relative z-20 transition-transform duration-300 hover:scale-105 cursor-default max-w-full">
             <div className="flex -space-x-2 shrink-0">
               <img
                 src="https://randomuser.me/api/portraits/men/32.jpg"
                 alt="Agency Partner"
                 referrerPolicy="no-referrer"
-                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://randomuser.me/api/portraits/men/46.jpg"
                 alt="Agency Partner"
                 referrerPolicy="no-referrer"
-                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://randomuser.me/api/portraits/women/68.jpg"
                 alt="Agency Partner"
                 referrerPolicy="no-referrer"
-                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://randomuser.me/api/portraits/men/85.jpg"
                 alt="Agency Partner"
                 referrerPolicy="no-referrer"
-                className="w-[28px] h-[28px] sm:w-[34px] sm:h-[34px] rounded-full border-2 border-white shadow-sm object-cover"
+                className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />
             </div>
             <div className="flex flex-col items-start text-left">
@@ -3041,25 +2923,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- TRUST METRICS SECTION --- */}
+      {/* --- 1. PACKAGE ESTIMATOR SECTION (MOVED DIRECTLY BELOW HERO FOR IMMEDIATE ACCESS) --- */}
       <TrustMetricsSection />
 
-      {/* --- BENTO GRID SECTION --- */}
-      <AudienceBentoSection />
-
-      {/* --- 3-STEP WORKFLOW SECTION --- */}
-      <HowItWorksSection />
-
-      {/* --- PACKAGE ESTIMATOR SECTION --- */}
+      {/* --- 2. 3-STEP WORKFLOW SECTION --- */}
       <PackageEstimator />
 
-      {/* --- REVIEWS SECTION --- */}
+      {/* --- 3. TRUST METRICS SECTION --- */}
+      <HowItWorksSection />
+
+      {/* --- 4. BENTO GRID SECTION --- */}
+      <AudienceBentoSection />
+
+      {/* --- 5. REVIEWS SECTION --- */}
       <ReviewsSection />
 
-      {/* --- FAQ ACCORDION SECTION --- */}
+      {/* --- 6. FAQ ACCORDION SECTION --- */}
       <FAQSection />
 
-      {/* --- COMPACT CTA SECTION --- */}
+      {/* --- 7. COMPACT CTA SECTION --- */}
       <CTASection />
     </main>
   );

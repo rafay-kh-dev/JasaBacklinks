@@ -8,19 +8,19 @@ const serviceRows = [
     {
       label: "Homepage Post",
       description: "Contextual homepage links",
-      to: "/pbn/homepage-post",
+      to: "/services/homepage-post",
       icon: "file-text",
     },
     {
       label: ".ID Homepage Post",
       description: "Indonesian contextual links",
-      to: "/pbn-id/homepage-post",
+      to: "/services/id-homepage-post",
       icon: "globe",
     },
     {
       label: "EDU PBN Blogpost",
       description: "Academic contextual articles",
-      to: "/edu-gov/pbn-blogpost",
+      to: "/services/edu-pbn-blogpost",
       icon: "graduation",
     },
   ],
@@ -29,19 +29,19 @@ const serviceRows = [
     {
       label: "Sidebar Blogroll",
       description: "High-authority sidebar links",
-      to: "/pbn/sidebar-blogroll",
+      to: "/services/sidebar-blogroll",
       icon: "layout",
     },
     {
       label: ".ID Sidebar Blogroll",
       description: "Local .ID blogroll placement",
-      to: "/pbn-id/sidebar-blogroll",
+      to: "/services/id-sidebar-blogroll",
       icon: "map",
     },
     {
       label: "EDU PBN Blogroll",
       description: "University sidebar placements",
-      to: "/edu-gov/pbn-blogroll",
+      to: "/services/edu-pbn-blogroll",
       icon: "book",
     },
   ],
@@ -50,28 +50,28 @@ const serviceRows = [
     {
       label: "Homepage Sticky Post",
       description: "Pinned homepage placement",
-      to: "/pbn/sticky-post",
+      to: "/services/homepage-sticky-post",
       icon: "pin",
     },
     {
       label: ".ID Sticky Post",
       description: "Pinned .ID homepage post",
-      to: "/pbn-id/sticky-post",
+      to: "/services/id-sticky-post",
       icon: "target",
     },
     {
       label: "EDU & GOV Backlink",
       description: "Official authority backlinks",
-      to: "/edu-gov/backlink",
+      to: "/services/edu-gov-backlink",
       icon: "building",
     },
   ],
 ];
 
 const sidebarLinks = [
-  { label: "Complete SEO Package", to: "/seo-packages/complete" },
-  { label: "Rank on First Page", to: "/seo-packages/first-page" },
-  { label: "Custom SEO Solutions", to: "/contact" },
+  { label: "Complete SEO Package", to: "/services/complete-seo-package" },
+  { label: "Rank on First Page", to: "/services/rank-on-first-page" },
+  { label: "Custom SEO Solutions", to: "/services/custom-seo-solutions" },
   { label: "Talk to our team", to: "/contact" },
   { label: "See all packages", to: "/services" },
 ];

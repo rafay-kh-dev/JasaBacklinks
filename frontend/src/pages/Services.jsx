@@ -16,7 +16,8 @@ import axios from "axios";
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 // --- YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3) ---
 const TEAM_CONTACTS = {
@@ -47,7 +48,42 @@ const STRIPE_ELEMENT_OPTIONS = {
   },
 };
 
-// --- COMPLETE 9 SERVICES CATALOGUE ---
+// --- PIECEWISE SLIDER MAPPING HELPERS (LOCKS THUMB TO EXACT VISUAL LABELS) ---
+const SLIDER_STOPS = [0, 50, 1000, 2000, 3000, 4000, 5000];
+
+function qtyToSliderPos(qty) {
+  if (!qty || qty <= 0) return 0;
+  if (qty <= 50) return 100;
+  if (qty <= 1000) {
+    return 100 + (qty / 1000) * 100;
+  }
+  return Math.min(600, 200 + ((qty - 1000) / 1000) * 100);
+}
+
+function sliderPosToQty(pos) {
+  const numPos = Number(pos) || 0;
+  if (numPos < 50) return 0;
+  if (numPos <= 105) return 50;
+
+  for (let i = 2; i <= 6; i++) {
+    const targetPos = i * 100;
+    if (Math.abs(numPos - targetPos) <= 6) {
+      return (i - 1) * 1000;
+    }
+  }
+
+  if (numPos <= 200) {
+    const raw = ((numPos - 100) / 100) * 1000;
+    const snapped = Math.round(raw / 50) * 50;
+    return Math.max(50, Math.min(1000, snapped));
+  }
+
+  const rawAbove1k = 1000 + ((numPos - 200) / 100) * 1000;
+  const snappedAbove1k = Math.round(rawAbove1k / 50) * 50;
+  return Math.max(1000, Math.min(5000, snappedAbove1k));
+}
+
+// --- COMPLETE 9 SERVICES CATALOGUE (ENHANCED WITH TLDS & SPECS) ---
 const ALL_SERVICES = [
   {
     id: "hp_post",
@@ -56,6 +92,9 @@ const ALL_SERVICES = [
     name: "Homepage Post",
     price: 1.0,
     metric: "DA/DR 50+",
+    tlds: ".COM • .NET • .ORG",
+    bestFor: "Global Organic Rankings",
+    placementType: "Contextual Article",
     badge: "Most Popular",
     badgeColor: "bg-[#e8f0fe] text-[#1a73e8]",
     topAccent: "bg-[#1a73e8]",
@@ -75,6 +114,9 @@ const ALL_SERVICES = [
     name: "Sidebar Blogroll",
     price: 2.0,
     metric: "DA/DR 50+",
+    tlds: ".COM • .NET • .ORG",
+    bestFor: "Domain Rating & Crawl Power",
+    placementType: "Sitewide Widget",
     badge: "High Link Juice",
     badgeColor: "bg-[#e6f4ea] text-[#1e8e3e]",
     topAccent: "bg-[#34a853]",
@@ -94,6 +136,9 @@ const ALL_SERVICES = [
     name: "Homepage Sticky Post",
     price: 2.0,
     metric: "DA/DR 50+",
+    tlds: ".COM • .NET • .ORG",
+    bestFor: "Competitive Tier-1 Keywords",
+    placementType: "Pinned Homepage Slot",
     badge: "Pinned Top",
     badgeColor: "bg-[#fef7e0] text-[#f29900]",
     topAccent: "bg-[#fbbc04]",
@@ -113,6 +158,9 @@ const ALL_SERVICES = [
     name: ".ID Homepage Post",
     price: 2.0,
     metric: "DA/DR 50+",
+    tlds: ".ID • .CO.ID • .WEB.ID",
+    bestFor: "Indonesian & SEA SERPs",
+    placementType: "Regional Contextual",
     badge: "Regional .ID",
     badgeColor: "bg-[#fce8e6] text-[#d93025]",
     topAccent: "bg-[#ea4335]",
@@ -132,6 +180,9 @@ const ALL_SERVICES = [
     name: ".ID Sidebar Blogroll",
     price: 3.0,
     metric: "DA/DR 50+",
+    tlds: ".ID • .CO.ID • .OR.ID",
+    bestFor: "Google.co.id Top 3 Push",
+    placementType: "Regional Sitewide",
     badge: "Local Power",
     badgeColor: "bg-[#fce8e6] text-[#d93025]",
     topAccent: "bg-[#ea4335]",
@@ -151,6 +202,9 @@ const ALL_SERVICES = [
     name: ".ID Sticky Post",
     price: 2.5,
     metric: "DA/DR 50+",
+    tlds: ".ID • .CO.ID • .WEB.ID",
+    bestFor: "Locked Local Authority",
+    placementType: "Pinned .ID Homepage",
     badge: "Pinned .ID",
     badgeColor: "bg-[#fef7e0] text-[#f29900]",
     topAccent: "bg-[#fbbc04]",
@@ -170,6 +224,9 @@ const ALL_SERVICES = [
     name: "Hidden Links (AC.ID, SCH.ID, GO.ID)",
     price: 20.0,
     metric: "High Trust",
+    tlds: ".AC.ID • .SCH.ID • .GO.ID",
+    bestFor: "Stealth Enterprise Authority",
+    placementType: "Stealth Institutional",
     badge: "Exclusive Tier",
     badgeColor: "bg-[#f3e8fd] text-[#9334e6]",
     topAccent: "bg-[#9334e6]",
@@ -189,6 +246,9 @@ const ALL_SERVICES = [
     name: "EDU PBN Blogpost",
     price: 3.0,
     metric: "DA/DR 50+",
+    tlds: ".EDU • .AC.ID",
+    bestFor: "E-E-A-T & AI Overviews",
+    placementType: "Academic Article",
     badge: "Academic Trust",
     badgeColor: "bg-[#f3e8fd] text-[#9334e6]",
     topAccent: "bg-[#9334e6]",
@@ -208,6 +268,9 @@ const ALL_SERVICES = [
     name: "EDU PBN Blogroll",
     price: 5.0,
     metric: "DA/DR 50+",
+    tlds: ".EDU • .AC.ID",
+    bestFor: "Finance, SaaS & iGaming",
+    placementType: "University Sitewide",
     badge: "Max Authority",
     badgeColor: "bg-[#f3e8fd] text-[#9334e6]",
     topAccent: "bg-[#9334e6]",
@@ -729,9 +792,11 @@ function OrderOnboardingFlowModal({
 // --- MAIN SERVICES PAGE COMPONENT ---
 export default function Services() {
   const [activeCategory, setActiveCategory] = useState("all");
+  const [calcCategory, setCalcCategory] = useState("all");
   const [expandedSpecs, setExpandedSpecs] = useState({});
   const [mobileCompareTab, setMobileCompareTab] = useState("standard");
 
+  // Individual Service Card Quick Quantities
   const [selectedQtys, setSelectedQtys] = useState({
     hp_post: 50,
     sidebar: 50,
@@ -744,11 +809,14 @@ export default function Services() {
     edu_sidebar: 50,
   });
 
-  // Active Checkout Cart
-  const [checkoutCart, setCheckoutCart] = useState({});
+  // Master Calculator & Bundle Cart State (Synced between Cards & Calculator)
+  const [checkoutCart, setCheckoutCart] = useState({ hp_post: 50 });
+
+  // Checkout Modal & Gateway States
   const [isCheckoutGatewayOpen, setIsCheckoutGatewayOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
   const [isInitializing, setIsInitializing] = useState(false);
+  const [isRedirectingBoomFi, setIsRedirectingBoomFi] = useState(false);
   const [paymentError, setPaymentError] = useState("");
 
   // Post-Payment Onboarding Flow (Popup 2 & 3)
@@ -777,12 +845,51 @@ export default function Services() {
     },
   ];
 
+  const presets = [
+    {
+      label: "Starter (100 Links)",
+      config: { hp_post: 50, sidebar: 50 },
+    },
+    {
+      label: "Agency Mix (1,050 Links)",
+      config: { hp_post: 1000, edu_post: 50 },
+    },
+    {
+      label: ".ID Domination (2,000 Links)",
+      config: { id_hp_post: 1000, id_sidebar: 1000 },
+    },
+  ];
+
   const volumePresets = [50, 100, 250, 500, 1000];
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (
+      params.get("payment") === "crypto_success" ||
+      params.get("boomfi_status") === "success"
+    ) {
+      const txId =
+        params.get("tx") ||
+        params.get("payment_id") ||
+        `BOOMFI-${Date.now().toString().slice(-8)}`;
+      setCompletedPayment({
+        transactionId: txId,
+        method: "BoomFi Crypto Gateway",
+      });
+      setIsOrderModalOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const filteredServices =
     activeCategory === "all"
       ? ALL_SERVICES
       : ALL_SERVICES.filter((s) => s.category === activeCategory);
+
+  const filteredCalcServices =
+    calcCategory === "all"
+      ? ALL_SERVICES
+      : ALL_SERVICES.filter((s) => s.category === calcCategory);
 
   const updateCardQty = (id, val) => {
     let parsed = parseInt(val, 10);
@@ -792,6 +899,29 @@ export default function Services() {
     if (checkoutCart[id]) {
       setCheckoutCart((prev) => ({ ...prev, [id]: parsed }));
     }
+  };
+
+  // Master Calculator Quantity Setter
+  const setCalcServiceQty = (id, rawVal) => {
+    let val = parseInt(rawVal, 10);
+    if (isNaN(val) || val <= 0) {
+      setCheckoutCart((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      return;
+    }
+    if (val > 0 && val < 50) val = 50;
+    if (val > 5000) val = 5000;
+
+    setCheckoutCart((prev) => ({ ...prev, [id]: val }));
+    setSelectedQtys((prev) => ({ ...prev, [id]: val }));
+  };
+
+  const handleSliderPosChange = (id, sliderPosValue) => {
+    const mappedQty = sliderPosToQty(sliderPosValue);
+    setCalcServiceQty(id, mappedQty);
   };
 
   const toggleMobileSpecs = (id) => {
@@ -806,7 +936,7 @@ export default function Services() {
     await openCheckoutModalWithCart(newCart);
   };
 
-  // Add/Toggle Service in Multi-Service Bundle
+  // Add/Toggle Service in Calculator Bundle
   const toggleBundleItem = (serviceId) => {
     const qty = selectedQtys[serviceId] || 50;
     setCheckoutCart((prev) => {
@@ -860,6 +990,7 @@ export default function Services() {
       };
     });
 
+  const selectedPackagesCount = selectedPackagesDetailed.length;
   const finalTotal = selectedPackagesDetailed.reduce(
     (sum, item) => sum + item.subtotal,
     0,
@@ -876,17 +1007,29 @@ export default function Services() {
     document.body.style.overflow = "hidden";
   };
 
+  // Direct BoomFi Hosted Redirect (No Manual Crypto Wallet Popup)
   const handleBoomFiCheckout = async () => {
+    setIsRedirectingBoomFi(true);
+    setPaymentError("");
     try {
       const { data } = await axios.post(
         `${BACKEND_URL}/api/create-boomfi-charge`,
         { cart: checkoutCart },
       );
-      if (data.checkoutUrl) {
+      if (data && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
+      } else {
+        setPaymentError(
+          "BoomFi gateway did not return a payment link. Please verify BOOMFI_API_KEY on backend.",
+        );
       }
     } catch (err) {
-      setPaymentError("Unable to open BoomFi Crypto link.");
+      setPaymentError(
+        err.response?.data?.error ||
+          "Unable to initialise BoomFi Crypto Checkout.",
+      );
+    } finally {
+      setIsRedirectingBoomFi(false);
     }
   };
 
@@ -936,12 +1079,33 @@ export default function Services() {
     <main className="w-full bg-[#fcfcfc] relative overflow-x-clip pt-[68px] sm:pt-[80px] pb-20 sm:pb-0">
       <style>{`
         .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 28px 28px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f3f4; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Touch-Friendly Slider Styling */
+        input[type=range]::-webkit-slider-thumb {
+          -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%;
+          background: #ffffff; border: 3px solid #1a73e8; cursor: pointer;
+          box-shadow: 0 2px 6px rgba(26, 115, 232, 0.35); transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.12); }
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); background: #e8f0fe; }
+
+        input[type=range]::-moz-range-thumb {
+          height: 22px; width: 22px; border-radius: 50%;
+          background: #ffffff; border: 3px solid #1a73e8; cursor: pointer;
+          box-shadow: 0 2px 6px rgba(26, 115, 232, 0.35); transition: transform 0.15s ease;
+        }
+        input[type=range]::-moz-range-thumb:hover { transform: scale(1.12); }
+        input[type=range]::-moz-range-thumb:active { transform: scale(1.2); background: #e8f0fe; }
       `}</style>
 
-      {/* --- HERO HEADER SECTION (COMPACT ON MOBILE) --- */}
-      <section className="relative w-full bg-white py-8 sm:py-16 lg:py-20 px-4 sm:px-6 border-b border-[#e8eaed] overflow-hidden">
+      {/* --- HERO HEADER SECTION --- */}
+      <section className="relative w-full bg-white py-8 sm:py-14 lg:py-18 px-4 sm:px-6 border-b border-[#e8eaed] overflow-hidden">
         <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-45 pointer-events-none" />
         <div className="max-w-[1200px] mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#f8f9fa] border border-[#dadce0] shadow-[0_2px_6px_rgba(60,64,67,0.04)] mb-3.5 sm:mb-5 max-w-full">
@@ -956,14 +1120,15 @@ export default function Services() {
             </span>
           </div>
 
-          <h2 className="gw-font-display text-[26px] sm:text-[44px] md:text-[56px] font-medium text-[#202124] leading-[1.15] sm:leading-[1.12] tracking-[-0.025em] max-w-[860px] mx-auto mb-3 sm:mb-5 px-1">
+          <h2 className="gw-font-display text-[26px] sm:text-[44px] md:text-[54px] font-medium text-[#202124] leading-[1.15] sm:leading-[1.12] tracking-[-0.025em] max-w-[860px] mx-auto mb-3 sm:mb-5 px-1">
             Enterprise PBN & Authority <br className="hidden sm:block" />
             <span className="text-[#1a73e8]">Link Building Services.</span>
           </h2>
 
-          <p className="gw-font-text text-[14px] sm:text-[16.5px] md:text-[18px] text-[#5f6368] max-w-[680px] mx-auto leading-[1.55] sm:leading-[1.6] mb-5 sm:mb-8 px-1">
+          <p className="gw-font-text text-[14px] sm:text-[16.5px] md:text-[18px] text-[#5f6368] max-w-[680px] mx-auto leading-[1.55] sm:leading-[1.6] mb-5 sm:mb-7 px-1">
             Explore our 9 specialised backlink placements across global .COM,
-            regional Indonesian .ID, and high-trust .EDU / .GOV networks.
+            regional Indonesian .ID, and high-trust .EDU / .GOV networks. Order
+            any package directly or build a custom bundle in the calculator below.
           </p>
 
           {/* Horizontal Scrollable Trust Pills on Mobile */}
@@ -985,11 +1150,11 @@ export default function Services() {
         </div>
       </section>
 
-      {/* --- STICKY CATEGORY BAR & SERVICES GRID --- */}
-      <section className="w-full py-6 sm:py-14 lg:py-18 px-3.5 sm:px-6">
+      {/* --- 1. ENHANCED SERVICES CATALOGUE SECTION --- */}
+      <section className="w-full py-8 sm:py-14 lg:py-18 px-3.5 sm:px-6">
         <div className="max-w-[1200px] mx-auto">
           {/* Sticky Mobile & Desktop Filter Bar */}
-          <div className="sticky top-[62px] sm:top-[74px] z-30 bg-white/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-[16px] sm:rounded-[20px] border border-[#e8eaed] shadow-[0_6px_20px_rgba(60,64,67,0.06)] mb-5 sm:mb-9 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <div className="sticky top-[62px] sm:top-[74px] z-30 bg-white/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-[16px] sm:rounded-[20px] border border-[#e8eaed] shadow-[0_6px_20px_rgba(60,64,67,0.06)] mb-6 sm:mb-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto">
               {categories.map((cat) => {
                 const active = activeCategory === cat.id;
@@ -1020,16 +1185,21 @@ export default function Services() {
               })}
             </div>
 
-            <Link
-              to="/#estimator"
-              className="hidden sm:inline-flex items-center justify-center text-[12.5px] sm:text-[13px] font-medium text-[#1a73e8] hover:bg-[#e8f0fe] px-3.5 py-2 rounded-full transition-colors shrink-0"
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById("estimator")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="hidden sm:inline-flex items-center justify-center text-[12.5px] sm:text-[13px] font-medium text-[#1a73e8] bg-[#e8f0fe]/70 hover:bg-[#e8f0fe] px-4 py-2 rounded-full transition-colors shrink-0 cursor-pointer"
             >
-              Open Bulk Slider Calculator →
-            </Link>
+              Jump to Bulk Slider Calculator ↓
+            </button>
           </div>
 
-          {/* 9 Service Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* 9 Enhanced Service Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {filteredServices.map((service) => {
               const currentQty = selectedQtys[service.id] || 50;
               const subtotal = currentQty * service.price;
@@ -1039,26 +1209,26 @@ export default function Services() {
               return (
                 <div
                   key={service.id}
-                  className={`relative bg-white rounded-[20px] sm:rounded-[24px] border transition-all duration-300 flex flex-col justify-between overflow-hidden ${
+                  className={`relative bg-white rounded-[22px] sm:rounded-[26px] border transition-all duration-300 flex flex-col justify-between overflow-hidden group ${
                     inBundle
-                      ? "border-[#1a73e8] ring-2 ring-[#e8f0fe] shadow-[0_12px_32px_rgba(26,115,232,0.10)]"
-                      : "border-[#e8eaed] shadow-[0_2px_10px_rgba(60,64,67,0.04)] hover:shadow-[0_14px_36px_rgba(26,115,232,0.08)] hover:border-[#d2e3fc]"
+                      ? "border-[#1a73e8] ring-2 ring-[#e8f0fe] shadow-[0_14px_38px_rgba(26,115,232,0.12)]"
+                      : "border-[#e8eaed] shadow-[0_2px_12px_rgba(60,64,67,0.04)] hover:shadow-[0_16px_40px_rgba(26,115,232,0.09)] hover:border-[#d2e3fc] hover:-translate-y-1"
                   }`}
                 >
                   {/* Top Accent Strip */}
                   <div className={`h-[4px] w-full ${service.topAccent}`} />
 
-                  <div className="p-4 sm:p-6 lg:p-7 flex-1 flex flex-col justify-between">
+                  <div className="p-5 sm:p-6 lg:p-7 flex-1 flex flex-col justify-between">
                     <div>
-                      {/* Top Badges */}
-                      <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+                      {/* Top Badges & Turnaround */}
+                      <div className="flex items-center justify-between gap-2 mb-3.5">
                         <span
-                          className={`text-[11px] sm:text-[11.5px] font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full ${service.badgeColor}`}
+                          className={`text-[11px] sm:text-[11.5px] font-semibold px-3 py-1 rounded-full ${service.badgeColor}`}
                         >
                           {service.badge}
                         </span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] text-[#5f6368] bg-[#f8f9fa] px-2 py-0.5 rounded-full border border-[#e8eaed]">
+                          <span className="text-[11px] text-[#5f6368] bg-[#f8f9fa] px-2.5 py-0.5 rounded-full border border-[#e8eaed]">
                             ⏱ {service.turnaround}
                           </span>
                           <span className="text-[11px] sm:text-[11.5px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] border border-[#ceead6] px-2.5 py-0.5 rounded-full">
@@ -1067,22 +1237,47 @@ export default function Services() {
                         </div>
                       </div>
 
-                      {/* Title & Price Header Row on Mobile */}
+                      {/* Title & Price Header */}
                       <div className="flex items-start justify-between gap-3 mb-2">
-                        <h2 className="gw-font-display text-[18px] sm:text-[21px] font-medium text-[#202124] leading-snug">
-                          {service.name}
-                        </h2>
-                        <div className="text-right shrink-0">
-                          <span className="gw-font-display text-[20px] sm:text-[24px] font-semibold text-[#1a73e8] leading-none">
+                        <div>
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#5f6368] block mb-0.5">
+                            {service.categoryLabel} • {service.placementType}
+                          </span>
+                          <h2 className="gw-font-display text-[19px] sm:text-[22px] font-medium text-[#202124] leading-snug">
+                            {service.name}
+                          </h2>
+                        </div>
+                        <div className="text-right shrink-0 bg-[#f8fbff] border border-[#d2e3fc] px-3 py-1.5 rounded-[14px]">
+                          <span className="gw-font-display text-[20px] sm:text-[23px] font-semibold text-[#1a73e8] leading-none block">
                             ${service.price.toFixed(2)}
                           </span>
-                          <span className="block text-[10.5px] text-[#5f6368]">
-                            per link
+                          <span className="block text-[10px] font-medium text-[#5f6368] mt-0.5">
+                            USD / link
                           </span>
                         </div>
                       </div>
 
-                      <p className="gw-font-text text-[13px] sm:text-[13.5px] text-[#5f6368] leading-[1.55] mb-3.5 sm:mb-5">
+                      {/* Domain TLD & Use-Case Micro Strip */}
+                      <div className="grid grid-cols-2 gap-2 my-3.5 p-2.5 rounded-[14px] bg-[#f8f9fa] border border-[#e8eaed]">
+                        <div>
+                          <span className="block text-[10px] uppercase tracking-wider text-[#5f6368] font-medium">
+                            Supported TLDs
+                          </span>
+                          <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#202124]">
+                            {service.tlds}
+                          </span>
+                        </div>
+                        <div className="border-l border-[#dadce0] pl-2.5">
+                          <span className="block text-[10px] uppercase tracking-wider text-[#5f6368] font-medium">
+                            Ideal For
+                          </span>
+                          <span className="text-[11.5px] sm:text-[12px] font-semibold text-[#1a73e8] truncate block">
+                            {service.bestFor}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="gw-font-text text-[13px] sm:text-[13.5px] text-[#5f6368] leading-[1.55] mb-3.5 sm:mb-4">
                         {service.desc}
                       </p>
 
@@ -1095,7 +1290,7 @@ export default function Services() {
                         <span>
                           {isSpecsOpen
                             ? "Hide Technical Specs"
-                            : "View 4 Included Features"}
+                            : "View 4 Included Deliverables"}
                         </span>
                         <svg
                           className={`w-4 h-4 text-[#5f6368] transition-transform duration-200 ${
@@ -1110,11 +1305,11 @@ export default function Services() {
                         </svg>
                       </button>
 
-                      {/* Feature Checklist (Collapsible on Mobile, Always Open on Desktop) */}
+                      {/* Feature Checklist */}
                       <ul
                         className={`${
                           isSpecsOpen ? "block" : "hidden sm:block"
-                        } space-y-2 mb-4 sm:mb-6 bg-[#f8f9fa] sm:bg-transparent p-3 sm:p-0 rounded-[12px] border border-[#e8eaed] sm:border-0`}
+                        } space-y-2 mb-4 sm:mb-5 bg-[#f8f9fa] sm:bg-transparent p-3 sm:p-0 rounded-[12px] border border-[#e8eaed] sm:border-0`}
                       >
                         {service.features.map((feat, idx) => (
                           <li
@@ -1138,7 +1333,6 @@ export default function Services() {
 
                     {/* Interactive Volume Selector & Order Controls */}
                     <div className="pt-3.5 sm:pt-4 border-t border-[#e8eaed]">
-                      {/* Quantity Stepper + Live Subtotal Row */}
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center bg-[#f8f9fa] border border-[#dadce0] rounded-full p-0.5">
                           <button
@@ -1204,7 +1398,7 @@ export default function Services() {
                         ))}
                       </div>
 
-                      {/* Responsive Action Buttons (Never Overflows on 320px Mobile) */}
+                      {/* Action Buttons */}
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -1226,7 +1420,7 @@ export default function Services() {
                               : "bg-white border-[#dadce0] text-[#3c4043] hover:bg-[#f8f9fa]"
                           }`}
                         >
-                          {inBundle ? "✓ Added" : "+ Bundle"}
+                          {inBundle ? "✓ In Bundle" : "+ Bundle"}
                         </button>
                       </div>
                     </div>
@@ -1238,7 +1432,595 @@ export default function Services() {
         </div>
       </section>
 
-      {/* --- NETWORK SPECIFICATIONS COMPARISON (MOBILE TABS + DESKTOP TABLE) --- */}
+      {/* --- 2. INTERACTIVE BULK COST CALCULATOR SECTION (ADDED DIRECTLY BELOW SERVICES) --- */}
+      <section
+        id="estimator"
+        className="w-full bg-[#f8f9fa] py-12 sm:py-20 px-4 sm:px-6 border-t border-[#e8eaed]"
+      >
+        <div className="max-w-[1200px] mx-auto">
+          <div className="mb-8 sm:mb-12 max-w-[740px] mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] sm:text-[12.5px] font-medium mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
+              Interactive Bulk Cost Calculator
+            </div>
+            <h2 className="gw-font-display text-[26px] sm:text-[36px] md:text-[44px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-2.5">
+              Build a custom{" "}
+              <span className="text-[#1a73e8]">multi-service bundle.</span>
+            </h2>
+            <p className="gw-font-text text-[14px] sm:text-[16px] text-[#5f6368] leading-[1.6]">
+              Combine multiple placements from 50 up to 5,000 links per service
+              with real-time agency pricing and instant multi-gateway checkout.
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 sm:gap-8 xl:gap-10 relative">
+            {/* Left Column: Sliders Builder */}
+            <div className="flex-1 w-full min-w-0">
+              {/* Top Filter & Preset Control Box */}
+              <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] mb-4 sm:mb-5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                    {categories.map((cat) => {
+                      const active = calcCategory === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setCalcCategory(cat.id)}
+                          className={`text-[12px] sm:text-[12.5px] font-medium px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+                            active
+                              ? "bg-[#1a73e8] text-white shadow-sm"
+                              : "bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                          }`}
+                        >
+                          {cat.shortLabel} ({cat.count})
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className="hidden sm:inline-block bg-[#e6f4ea] text-[#1e8e3e] text-[11.5px] font-semibold px-3 py-1 rounded-full border border-[#ceead6] shrink-0">
+                    DA/DR 50+
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-[#f1f3f4] overflow-x-auto no-scrollbar">
+                  <span className="text-[11.5px] font-medium text-[#5f6368] shrink-0">
+                    Quick Bundles:
+                  </span>
+                  {presets.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setCalcCategory("all");
+                        setCheckoutCart(preset.config);
+                      }}
+                      className="text-[11.5px] font-medium bg-[#f8f9fa] hover:bg-[#e8f0fe] text-[#3c4043] hover:text-[#1a73e8] border border-[#dadce0] hover:border-[#d2e3fc] px-2.5 py-1 rounded-full transition-all cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Calculator Slider Rows */}
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                {filteredCalcServices.map((service) => {
+                  const currentQty = checkoutCart[service.id] || 0;
+                  const isActive = currentQty > 0;
+                  const sliderPos = qtyToSliderPos(currentQty);
+                  const fillPercent = Math.min(
+                    100,
+                    Math.max(0, (sliderPos / 600) * 100),
+                  );
+
+                  return (
+                    <div
+                      key={service.id}
+                      className={`rounded-[18px] sm:rounded-[20px] border transition-all duration-200 ${
+                        isActive
+                          ? "p-4 sm:p-5 bg-[#f8fbff] border-[#1a73e8] ring-2 ring-[#e8f0fe]/70"
+                          : "p-3.5 sm:p-5 bg-white border-[#e8eaed] hover:border-[#dadce0] hover:shadow-[0_4px_12px_rgba(60,64,67,0.04)]"
+                      }`}
+                    >
+                      <div
+                        onClick={() => {
+                          if (!isActive) setCalcServiceQty(service.id, 50);
+                        }}
+                        className={`flex justify-between items-center gap-2 ${
+                          isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCalcServiceQty(service.id, isActive ? 0 : 50);
+                            }}
+                            className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
+                              isActive
+                                ? "bg-[#1a73e8] border-[#1a73e8] text-white"
+                                : "bg-white border-[#bdc1c6] hover:border-[#1a73e8]"
+                            }`}
+                          >
+                            {isActive && (
+                              <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                strokeWidth="3"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </button>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                              <h4 className="gw-font-display text-[15px] sm:text-[17px] font-medium text-[#202124] leading-snug">
+                                {service.name}
+                              </h4>
+                              <span className="text-[10px] sm:text-[11px] font-medium bg-[#f1f3f4] text-[#5f6368] px-1.5 sm:px-2 py-0.5 rounded-md">
+                                {service.metric}
+                              </span>
+                              <span className="text-[10px] sm:text-[11px] font-medium bg-[#e8f0fe] text-[#1a73e8] px-1.5 sm:px-2 py-0.5 rounded-md">
+                                {service.tlds}
+                              </span>
+                            </div>
+                            <p className="gw-font-text text-[12px] sm:text-[13px] text-[#5f6368] mt-0.5 leading-snug truncate sm:whitespace-normal">
+                              {service.desc}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="gw-font-display text-[13px] sm:text-[14.5px] font-medium text-[#1a73e8] bg-white border border-[#d2e3fc] px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
+                            ${service.price.toFixed(2)}
+                            <span className="text-[10.5px] sm:text-[12px] font-normal text-[#5f6368]">
+                              /link
+                            </span>
+                          </span>
+                          {!isActive && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCalcServiceQty(service.id, 50);
+                              }}
+                              className="sm:hidden text-[11.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-1 rounded-full"
+                            >
+                              + Add
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`${
+                          isActive ? "flex" : "hidden sm:flex"
+                        } flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-5 mt-2`}
+                      >
+                        <div className="flex-1">
+                          {/* Track + 7 Exact-Aligned Milestone Dots */}
+                          <div className="relative flex items-center h-7">
+                            <div className="absolute inset-x-[10px] flex justify-between items-center pointer-events-none z-10">
+                              {SLIDER_STOPS.map((stopVal, idx) => {
+                                const stopPos = idx * 100;
+                                const isReached =
+                                  sliderPos >= stopPos && currentQty > 0;
+                                return (
+                                  <span
+                                    key={stopVal}
+                                    className={`w-2 h-2 rounded-full transition-colors ${
+                                      isReached
+                                        ? "bg-white ring-2 ring-[#1a73e8]"
+                                        : "bg-[#bdc1c6]"
+                                    }`}
+                                  />
+                                );
+                              })}
+                            </div>
+
+                            <input
+                              type="range"
+                              min="0"
+                              max="600"
+                              step="1"
+                              value={sliderPos}
+                              onChange={(e) =>
+                                handleSliderPosChange(
+                                  service.id,
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer focus:outline-none relative z-20 touch-pan-y"
+                              style={{
+                                background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${fillPercent}%, #e8eaed ${fillPercent}%, #e8eaed 100%)`,
+                              }}
+                            />
+                          </div>
+
+                          {/* 7 Exact Percentage-Aligned Milestone Labels */}
+                          <div className="relative h-6 mt-1">
+                            {SLIDER_STOPS.map((stopVal, idx) => {
+                              const leftPct = (idx / 6) * 100;
+                              const isCurrentStop =
+                                currentQty === stopVal &&
+                                (stopVal > 0 || currentQty === 0);
+                              const alignClass =
+                                idx === 0
+                                  ? "left-0 translate-x-0"
+                                  : idx === 6
+                                    ? "right-0 translate-x-0"
+                                    : "-translate-x-1/2";
+
+                              return (
+                                <button
+                                  key={stopVal}
+                                  type="button"
+                                  onClick={() =>
+                                    setCalcServiceQty(service.id, stopVal)
+                                  }
+                                  style={
+                                    idx > 0 && idx < 6
+                                      ? { left: `${leftPct}%` }
+                                      : undefined
+                                  }
+                                  className={`absolute top-0 ${alignClass} text-[10.5px] sm:text-[11px] font-medium px-1.5 py-0.5 rounded-full transition-colors cursor-pointer whitespace-nowrap ${
+                                    isCurrentStop && stopVal > 0
+                                      ? "bg-[#1a73e8] text-white font-semibold"
+                                      : "text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe]/70"
+                                  }`}
+                                >
+                                  {stopVal === 0 ? (
+                                    "Off"
+                                  ) : stopVal === 50 ? (
+                                    <>
+                                      50
+                                      <span className="hidden sm:inline">
+                                        {" "}
+                                        (Min)
+                                      </span>
+                                    </>
+                                  ) : (
+                                    `${stopVal / 1000}k`
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e8eaed]/80">
+                          <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 sm:p-1 shadow-[0_1px_2px_rgba(60,64,67,0.04)]">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCalcServiceQty(
+                                  service.id,
+                                  currentQty === 50 ? 0 : currentQty - 50,
+                                )
+                              }
+                              className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] active:bg-[#e8eaed] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              min="0"
+                              max="5000"
+                              step="50"
+                              value={currentQty}
+                              onChange={(e) =>
+                                setCalcServiceQty(service.id, e.target.value)
+                              }
+                              className="w-[54px] sm:w-[60px] text-center bg-transparent text-[13.5px] sm:text-[14px] font-semibold text-[#202124] focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCalcServiceQty(
+                                  service.id,
+                                  currentQty === 0 ? 50 : currentQty + 50,
+                                )
+                              }
+                              className="w-7 h-7 rounded-full text-[#1a73e8] active:bg-[#d2e3fc] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <div className="min-w-[82px] text-right">
+                            <span className="block text-[10px] sm:text-[11px] text-[#5f6368]">
+                              Subtotal
+                            </span>
+                            <span
+                              className={`gw-font-display text-[14px] sm:text-[15px] font-semibold ${isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"}`}
+                            >
+                              $
+                              {(currentQty * service.price).toLocaleString(
+                                "en-US",
+                                {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                },
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Column: Sticky Order Summary on Desktop */}
+            <aside
+              id="order-summary-card"
+              className="w-full lg:w-[390px] xl:w-[420px] shrink-0 lg:sticky lg:top-[96px] self-start transition-all duration-300 mt-2 lg:mt-0"
+            >
+              <div className="bg-white rounded-[22px] sm:rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col">
+                <div className="grid grid-cols-4 h-[4px] w-full">
+                  <div className="bg-[#4285F4]" />
+                  <div className="bg-[#EA4335]" />
+                  <div className="bg-[#FBBC04]" />
+                  <div className="bg-[#34A853]" />
+                </div>
+
+                <div className="p-5 sm:p-6 lg:p-7 flex flex-col">
+                  <div className="flex items-center justify-between mb-4 sm:mb-5 border-b border-[#e8eaed] pb-3.5 sm:pb-4">
+                    <div>
+                      <h3 className="gw-font-display text-[19px] sm:text-[20px] font-medium text-[#202124]">
+                        Order Summary
+                      </h3>
+                      <p className="text-[12px] sm:text-[12.5px] text-[#5f6368] mt-0.5">
+                        {selectedPackagesCount}{" "}
+                        {selectedPackagesCount === 1
+                          ? "placement type"
+                          : "placement types"}{" "}
+                        active
+                      </p>
+                    </div>
+                    {selectedPackagesCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setCheckoutCart({})}
+                        className="text-[12px] font-medium text-[#d93025] hover:bg-[#fce8e6] px-3 py-1 rounded-full transition-colors cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto max-h-[240px] mb-4 sm:mb-5 pr-1 space-y-2 gw-font-text custom-scrollbar">
+                    {selectedPackagesCount === 0 ? (
+                      <div className="text-center py-7 px-4 bg-[#f8f9fa] rounded-[16px] border border-dashed border-[#dadce0]">
+                        <p className="text-[13.5px] text-[#5f6368] font-medium">
+                          No placements selected
+                        </p>
+                        <p className="text-[12px] text-[#9aa0a6] mt-1">
+                          Tap any placement or preset to start from 50 links.
+                        </p>
+                      </div>
+                    ) : (
+                      selectedPackagesDetailed.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex justify-between items-center bg-[#f8f9fa] hover:bg-[#f1f3f4]/70 px-3 py-2.5 rounded-[12px] border border-[#e8eaed] transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="text-[11.5px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full shrink-0">
+                              {item.qty.toLocaleString()}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-[13px] sm:text-[13.5px] font-medium text-[#202124] truncate">
+                                {item.name}
+                              </p>
+                              <p className="text-[11px] text-[#5f6368]">
+                                ${item.price.toFixed(2)} / link
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                            <span className="text-[13px] sm:text-[13.5px] font-semibold text-[#202124]">
+                              $
+                              {item.subtotal.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setCalcServiceQty(item.id, 0)}
+                              className="text-[#9aa0a6] hover:text-[#d93025] p-1 rounded-full hover:bg-white transition-colors cursor-pointer"
+                              title="Remove package"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                strokeWidth="2.2"
+                              >
+                                <path d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="bg-[#f8f9fa] rounded-[16px] sm:rounded-[18px] p-4 sm:p-5 mb-4 sm:mb-5 border border-[#e8eaed]">
+                    <div className="flex justify-between items-center mb-2 text-[12.5px] sm:text-[13px] text-[#5f6368]">
+                      <span>Selected Services</span>
+                      <span className="font-medium text-[#202124]">
+                        {selectedPackagesCount}{" "}
+                        {selectedPackagesCount === 1 ? "Service" : "Services"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#dadce0] text-[12.5px] sm:text-[13px] text-[#5f6368]">
+                      <span>Total Volume</span>
+                      <span className="font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
+                        {totalLinks.toLocaleString()} Backlinks
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-end pt-1">
+                      <div>
+                        <span className="gw-font-display text-[14.5px] sm:text-[15px] font-medium text-[#202124] block">
+                          Estimated Total
+                        </span>
+                        <span className="text-[11px] sm:text-[11.5px] text-[#1e8e3e] font-medium">
+                          ● Instant Setup Included
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="gw-font-display text-[26px] sm:text-[30px] font-medium text-[#1a73e8] leading-none">
+                          $
+                          {finalTotal.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                        <span className="gw-font-text text-[12px] text-[#5f6368] font-medium ml-1">
+                          USD
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {paymentError && (
+                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
+                      {paymentError}
+                    </div>
+                  )}
+
+                  {/* API Checkout Buttons */}
+                  <div className="space-y-2.5">
+                    <button
+                      type="button"
+                      onClick={() => openCheckoutModalWithCart(checkoutCart)}
+                      disabled={
+                        totalLinks === 0 ||
+                        isInitializing ||
+                        isRedirectingBoomFi
+                      }
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#1a73e8] text-white font-medium text-[14.5px] sm:text-[15px] hover:bg-[#1557b0] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {isInitializing ? (
+                        "Opening Secure Card Checkout..."
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                          >
+                            <rect x="2" y="5" width="20" height="14" rx="2" />
+                            <line x1="2" y1="10" x2="22" y2="10" />
+                          </svg>
+                          <span className="tracking-wide">
+                            Pay with Card (Instant)
+                          </span>
+                        </>
+                      )}
+                    </button>
+
+                    <div className="w-full relative z-0">
+                      {totalLinks > 0 ? (
+                        <PayPalScriptProvider
+                          options={{
+                            "client-id": PAYPAL_CLIENT_ID,
+                            currency: "USD",
+                            intent: "capture",
+                          }}
+                        >
+                          <PayPalButtons
+                            style={{
+                              layout: "horizontal",
+                              height: 48,
+                              color: "gold",
+                              shape: "pill",
+                              tagline: false,
+                            }}
+                            createOrder={async () => {
+                              setPaymentError("");
+                              const { data } = await axios.post(
+                                `${BACKEND_URL}/api/create-paypal-order`,
+                                { cart: checkoutCart },
+                              );
+                              return data.id;
+                            }}
+                            onApprove={async (data) => {
+                              const res = await axios.post(
+                                `${BACKEND_URL}/api/capture-paypal-order`,
+                                { orderID: data.orderID },
+                              );
+                              handlePaymentSuccess(
+                                res.data?.captureId || data.orderID,
+                                "PayPal Checkout",
+                              );
+                            }}
+                          />
+                        </PayPalScriptProvider>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] opacity-50 cursor-not-allowed flex items-center justify-center"
+                        >
+                          <span className="gw-font-display text-[14.5px] font-semibold text-[#003087]">
+                            PayPal
+                          </span>
+                        </button>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleBoomFiCheckout}
+                      disabled={
+                        totalLinks === 0 ||
+                        isInitializing ||
+                        isRedirectingBoomFi
+                      }
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-white text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#f8f9fa] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {isRedirectingBoomFi ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin" />
+                          <span>Redirecting to BoomFi Gateway...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4 text-[#1a73e8]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                          </svg>
+                          <span>Pay with Crypto (BoomFi)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      {/* --- 3. NETWORK SPECIFICATIONS COMPARISON (MOBILE TABS + DESKTOP TABLE) --- */}
       <section className="w-full bg-white py-10 sm:py-20 px-4 sm:px-6 border-t border-[#e8eaed]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center max-w-[700px] mx-auto mb-7 sm:mb-12">
@@ -1254,7 +2036,7 @@ export default function Services() {
             </p>
           </div>
 
-          {/* MOBILE INTERACTIVE COMPARISON CARD (VISIBLE ON < MD SCREENS) */}
+          {/* MOBILE INTERACTIVE COMPARISON CARD */}
           <div className="md:hidden">
             <div className="grid grid-cols-3 gap-1.5 p-1.5 bg-[#f8f9fa] rounded-[14px] border border-[#e8eaed] mb-4">
               {[
@@ -1306,7 +2088,7 @@ export default function Services() {
             </div>
           </div>
 
-          {/* DESKTOP 4-COLUMN COMPARISON TABLE (VISIBLE ON >= MD SCREENS) */}
+          {/* DESKTOP 4-COLUMN COMPARISON TABLE */}
           <div className="hidden md:block overflow-x-auto bg-white rounded-[24px] border border-[#dadce0] shadow-[0_8px_28px_rgba(60,64,67,0.05)]">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -1370,13 +2152,15 @@ export default function Services() {
 
       {/* --- FLOATING BUNDLE BAR (OPTIMISED FOR MOBILE & DESKTOP) --- */}
       {totalLinks > 0 && !isCheckoutGatewayOpen && !isOrderModalOpen && (
-        <div className="fixed bottom-3 inset-x-3 sm:inset-x-4 max-w-[680px] mx-auto z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
+        <div className="lg:hidden fixed bottom-3 inset-x-3 sm:inset-x-4 max-w-[680px] mx-auto z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 text-[11px] sm:text-[12px] text-[#9aa0a6]">
               <span className="w-2 h-2 rounded-full bg-[#34a853] shrink-0" />
               <span className="truncate">
                 {selectedPackagesDetailed.length}{" "}
-                {selectedPackagesDetailed.length === 1 ? "Service" : "Services"}{" "}
+                {selectedPackagesDetailed.length === 1
+                  ? "Service"
+                  : "Services"}{" "}
                 • {totalLinks.toLocaleString()} Links
               </span>
             </div>
@@ -1395,10 +2179,14 @@ export default function Services() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => setCheckoutCart({})}
-              className="text-[12px] font-medium text-white/80 hover:text-white px-2.5 py-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+              onClick={() =>
+                document
+                  .getElementById("estimator")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="text-[12px] font-medium text-white/90 bg-white/10 hover:bg-white/15 px-3 py-2 rounded-full transition-colors cursor-pointer"
             >
-              Clear
+              Bundle
             </button>
             <button
               type="button"
@@ -1526,9 +2314,12 @@ export default function Services() {
                 <button
                   type="button"
                   onClick={handleBoomFiCheckout}
-                  className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-white hover:bg-[#f8f9fa] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={isRedirectingBoomFi}
+                  className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-white hover:bg-[#f8f9fa] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  Pay with Crypto (BoomFi)
+                  {isRedirectingBoomFi
+                    ? "Redirecting to BoomFi Gateway..."
+                    : "Pay with Crypto (BoomFi)"}
                 </button>
               </div>
             </div>
