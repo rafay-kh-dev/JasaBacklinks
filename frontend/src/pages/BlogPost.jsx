@@ -34,15 +34,6 @@ function getCategoryStyle(category) {
   );
 }
 
-function getAuthorInitials(name = "SeoHub Team") {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 export default function BlogPost() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
@@ -317,19 +308,18 @@ export default function BlogPost() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Premium Editorial Article Typography */
         .article-body {
           font-family: 'Google Sans Text', Roboto, -apple-system, sans-serif;
           color: #3c4043;
-          font-size: 16px;
-          line-height: 1.8;
+          font-size: 16.5px;
+          line-height: 1.85;
         }
         .article-body h2 {
           font-family: 'Google Sans', Roboto, sans-serif;
           font-size: 24px;
           font-weight: 500;
           color: #202124;
-          margin-top: 36px;
+          margin-top: 38px;
           margin-bottom: 14px;
           line-height: 1.25;
           letter-spacing: -0.015em;
@@ -341,20 +331,20 @@ export default function BlogPost() {
           font-size: 19px;
           font-weight: 500;
           color: #202124;
-          margin-top: 26px;
+          margin-top: 28px;
           margin-bottom: 10px;
           line-height: 1.3;
         }
         .article-body p {
-          margin-bottom: 18px;
+          margin-bottom: 20px;
         }
         .article-body strong {
           color: #202124;
           font-weight: 600;
         }
         .article-body ul, .article-body ol {
-          margin-top: 12px;
-          margin-bottom: 22px;
+          margin-top: 14px;
+          margin-bottom: 24px;
           padding-left: 22px;
           background: #f8f9fa;
           border: 1px solid #e8eaed;
@@ -380,7 +370,7 @@ export default function BlogPost() {
           color: #202124;
           font-weight: 500;
           font-size: 15.5px;
-          margin: 24px 0;
+          margin: 26px 0;
           box-shadow: 0 2px 10px rgba(26, 115, 232, 0.04);
         }
         .article-body a {
@@ -390,19 +380,18 @@ export default function BlogPost() {
           text-underline-offset: 3px;
         }
         .article-body a:hover { color: #1557b0; }
-        .article-body figure {
-          margin: 26px 0;
-        }
+        .article-body figure { margin: 28px 0; }
         .article-body img {
-          border-radius: 16px;
+          border-radius: 18px;
           border: 1px solid #e8eaed;
           max-width: 100%;
           height: auto;
+          box-shadow: 0 4px 16px rgba(60,64,67,0.06);
         }
       `}</style>
 
-      {/* --- 1. EDITORIAL ARTICLE HERO HEADER --- */}
-      <section className="relative w-full bg-white pt-7 pb-8 sm:py-12 lg:py-14 px-4 sm:px-6 border-b border-[#e8eaed] overflow-hidden">
+      {/* --- 1. PREMIUM EDITORIAL ARTICLE HERO HEADER --- */}
+      <section className="relative w-full bg-white pt-8 pb-9 sm:py-14 lg:py-18 px-4 sm:px-6 border-b border-[#e8eaed] overflow-hidden">
         <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-40 pointer-events-none" />
 
         <div className="max-w-[1160px] mx-auto relative z-10">
@@ -422,16 +411,17 @@ export default function BlogPost() {
           {/* Metadata Badges Row */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-4">
             <span
-              className={`text-[11.5px] sm:text-[12px] font-semibold px-3 py-1 rounded-full border ${catStyle.badge}`}
+              className={`text-[11.5px] sm:text-[12px] font-semibold px-3.5 py-1 rounded-full border ${catStyle.badge}`}
             >
               {post.category}
             </span>
 
-            <span className="text-[11.5px] sm:text-[12px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] border border-[#ceead6] px-3 py-1 rounded-full">
-              ✓ Peer-Reviewed ({post.seoScore || 94}/100 SEO Score)
+            <span className="text-[11.5px] sm:text-[12px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] border border-[#ceead6] px-3.5 py-1 rounded-full flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
+              Peer-Reviewed ({post.seoScore || 94}/100 Rank Math Score)
             </span>
 
-            <span className="text-[12px] text-[#5f6368] bg-[#f8f9fa] border border-[#e8eaed] px-3 py-1 rounded-full">
+            <span className="text-[12px] text-[#5f6368] bg-[#f8f9fa] border border-[#e8eaed] px-3.5 py-1 rounded-full">
               ⏱ {post.readTime} ({wordCount} words)
             </span>
 
@@ -441,31 +431,36 @@ export default function BlogPost() {
           </div>
 
           {/* Main Article Title */}
-          <h2 className="gw-font-display text-[26px] sm:text-[38px] md:text-[46px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] max-w-[960px] mb-4">
+          <h2 className="gw-font-display text-[28px] sm:text-[40px] md:text-[50px] font-medium text-[#202124] leading-[1.14] tracking-[-0.025em] max-w-[980px] mb-4 sm:mb-5">
             {post.title}
           </h2>
 
           {/* Lead Summary / Excerpt */}
-          <p className="gw-font-text text-[15px] sm:text-[17.5px] text-[#5f6368] leading-[1.65] max-w-[840px] mb-6">
+          <p className="gw-font-text text-[15px] sm:text-[18px] text-[#5f6368] leading-[1.65] max-w-[860px] mb-7">
             {post.excerpt}
           </p>
 
-          {/* Author & Quick Share Strip */}
+          {/* Author with SeoHub Logo & Quick Share Strip */}
           <div className="pt-5 border-t border-[#f1f3f4] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] font-bold text-[14px] flex items-center justify-center shrink-0">
-                {getAuthorInitials(post.author)}
+            <div className="flex items-center gap-3.5">
+              {/* SeoHub Corporate Logo / Brand Avatar Mark */}
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1a73e8] to-[#1557b0] text-white font-bold text-[13px] flex items-center justify-center shrink-0 shadow-sm border-2 border-white ring-2 ring-[#d2e3fc]">
+               <img 
+    src="/seohublogo.png" 
+    alt="SeoHub Logo" 
+    className="w-full h-full object-contain p-1"
+  />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="gw-font-display text-[14.5px] font-medium text-[#202124]">
-                    {post.author}
+                  <span className="gw-font-display text-[15px] font-medium text-[#202124]">
+                    {post.author || "SeoHub Technical Team"}
                   </span>
-                  <span className="text-[10.5px] font-semibold bg-[#f8f9fa] text-[#5f6368] border border-[#dadce0] px-2 py-0.2 rounded-full">
+                  <span className="text-[10.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] px-2.5 py-0.2 rounded-full">
                     SeoHub Ltd
                   </span>
                 </div>
-                <span className="block text-[12px] text-[#5f6368]">
+                <span className="block text-[12.5px] text-[#5f6368]">
                   {post.authorRole || "Senior Link Strategist"}
                 </span>
               </div>
@@ -509,36 +504,36 @@ export default function BlogPost() {
         <div className="max-w-[1160px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-7 lg:gap-9 items-start">
           {/* LEFT 8 COLUMNS: ARTICLE CARD */}
           <div className="lg:col-span-8 min-w-0 space-y-6">
-            <article className="bg-white rounded-[24px] sm:rounded-[28px] border border-[#e8eaed] shadow-[0_4px_20px_rgba(60,64,67,0.04)] overflow-hidden">
+            <article className="bg-white rounded-[24px] sm:rounded-[28px] border border-[#e8eaed] shadow-[0_4px_24px_rgba(60,64,67,0.05)] overflow-hidden">
               {/* Top Category Colour Strip */}
               <div className={`h-[4px] w-full ${catStyle.accent}`} />
 
               {/* Featured Cover Image */}
               {post.image && (
-                <div className="relative w-full h-[220px] sm:h-[360px] bg-[#f1f3f4] overflow-hidden border-b border-[#e8eaed]">
+                <div className="relative w-full h-[240px] sm:h-[380px] bg-[#f1f3f4] overflow-hidden border-b border-[#e8eaed]">
                   <img
                     src={post.image}
                     alt={post.imageAlt || post.title}
                     className="w-full h-full object-cover"
                   />
                   {post.focusKeyword && (
-                    <span className="absolute bottom-3 right-3 bg-[#202124]/80 backdrop-blur-xs text-white text-[11px] font-medium px-3 py-1 rounded-full">
-                      Topic: {post.focusKeyword}
+                    <span className="absolute bottom-3 right-3 bg-[#202124]/85 backdrop-blur-xs text-white text-[11.5px] font-medium px-3.5 py-1 rounded-full">
+                      Target Keyword: {post.focusKeyword}
                     </span>
                   )}
                 </div>
               )}
 
-              <div className="p-5 sm:p-8 lg:p-10">
+              <div className="p-6 sm:p-9 lg:p-12">
                 {/* Mobile Collapsible Table of Contents */}
                 {tocHeadings.length > 0 && (
-                  <div className="lg:hidden mb-6 rounded-[16px] bg-[#f8fbff] border border-[#d2e3fc] overflow-hidden">
+                  <div className="lg:hidden mb-8 rounded-[18px] bg-[#f8fbff] border border-[#d2e3fc] overflow-hidden shadow-2xs">
                     <button
                       type="button"
                       onClick={() => setIsMobileTocOpen(!isMobileTocOpen)}
-                      className="w-full px-4 py-3 flex items-center justify-between text-left cursor-pointer"
+                      className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer"
                     >
-                      <span className="gw-font-display text-[14px] font-semibold text-[#1a73e8]">
+                      <span className="gw-font-display text-[14.5px] font-semibold text-[#1a73e8]">
                         📑 Table of Contents ({tocHeadings.length} Sections)
                       </span>
                       <span className="text-[#1a73e8] font-bold">
@@ -546,14 +541,14 @@ export default function BlogPost() {
                       </span>
                     </button>
                     {isMobileTocOpen && (
-                      <div className="px-4 pb-3.5 pt-1 space-y-1.5 border-t border-[#d2e3fc]/60">
+                      <div className="px-4 pb-4 pt-1 space-y-2 border-t border-[#d2e3fc]/60">
                         {tocHeadings.map((h, i) => (
                           <button
                             key={h.id}
                             type="button"
                             onClick={() => scrollToHeading(h.id)}
-                            className={`w-full text-left text-[13px] py-1 transition-colors cursor-pointer ${
-                              h.level === 3 ? "pl-4 text-[12.5px]" : "font-medium"
+                            className={`w-full text-left text-[13.5px] py-1 transition-colors cursor-pointer ${
+                              h.level === 3 ? "pl-4 text-[13px]" : "font-medium"
                             } ${
                               activeHeadingId === h.id
                                 ? "text-[#1a73e8] font-semibold"
@@ -576,15 +571,15 @@ export default function BlogPost() {
 
                 {/* Topic Tags Strip */}
                 {Array.isArray(post.tags) && post.tags.length > 0 && (
-                  <div className="mt-8 pt-5 border-t border-[#f1f3f4] flex flex-wrap items-center gap-2">
-                    <span className="text-[12px] font-semibold text-[#5f6368] mr-1">
+                  <div className="mt-10 pt-6 border-t border-[#f1f3f4] flex flex-wrap items-center gap-2">
+                    <span className="text-[12.5px] font-semibold text-[#5f6368] mr-1">
                       Related Topics:
                     </span>
                     {post.tags.map((tag, idx) => (
                       <Link
                         key={idx}
                         to="/blog"
-                        className="text-[12px] font-medium text-[#3c4043] hover:text-[#1a73e8] bg-[#f8f9fa] hover:bg-[#e8f0fe] border border-[#e8eaed] px-3 py-1 rounded-full transition-colors"
+                        className="text-[12px] font-medium text-[#3c4043] hover:text-[#1a73e8] bg-[#f8f9fa] hover:bg-[#e8f0fe] border border-[#e8eaed] px-3.5 py-1 rounded-full transition-colors"
                       >
                         #{tag}
                       </Link>
@@ -593,52 +588,62 @@ export default function BlogPost() {
                 )}
 
                 {/* In-Article Conversion Banner */}
-                <div className="mt-8 rounded-[20px] bg-gradient-to-r from-[#f8fbff] via-[#f1faf4] to-[#e8f0fe] border border-[#d2e3fc] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="mt-10 rounded-[22px] bg-gradient-to-r from-[#f8fbff] via-[#f1faf4] to-[#e8f0fe] border border-[#d2e3fc] p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 shadow-2xs">
                   <div>
-                    <span className="inline-block text-[11px] font-semibold uppercase tracking-wider text-[#1e8e3e] bg-white px-2.5 py-0.5 rounded-full border border-[#ceead6] mb-1.5">
+                    <span className="inline-block text-[11.5px] font-semibold uppercase tracking-wider text-[#1e8e3e] bg-white px-3 py-1 rounded-full border border-[#ceead6] mb-2">
                       ● Instant White-Label Execution
                     </span>
-                    <h2 className="gw-font-display text-[18px] sm:text-[20px] font-medium text-[#202124]">
-                      Need verified DA/DR 50+ placements for your site?
+                    <h2 className="gw-font-display text-[19px] sm:text-[21px] font-medium text-[#202124]">
+                      Need verified DA/DR 50+ placements for your brand?
                     </h2>
-                    <p className="text-[13px] text-[#5f6368] mt-0.5">
+                    <p className="text-[13.5px] text-[#5f6368] mt-1">
                       Combine Homepage Posts, .ID Regional, and .EDU/.GOV links
                       starting from $1.00/link.
                     </p>
                   </div>
                   <Link
                     to="/#estimator"
-                    className="gw-font-display shrink-0 w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white text-[13.5px] font-medium text-center shadow-xs transition-all"
+                    className="gw-font-display shrink-0 w-full sm:w-auto px-6 py-3 rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white text-[14px] font-medium text-center shadow-xs transition-all"
                   >
                     Launch Calculator →
                   </Link>
                 </div>
 
                 {/* Author Bio & SeoHub Ltd Editorial Verification Box */}
-                <div className="mt-8 p-5 sm:p-6 rounded-[20px] bg-[#f8f9fa] border border-[#e8eaed] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-12 h-12 rounded-full bg-[#1a73e8] text-white font-bold text-[15px] flex items-center justify-center shrink-0">
-                      {getAuthorInitials(post.author)}
+                <div className="mt-10 p-6 sm:p-7 rounded-[22px] bg-[#f8f9fa] border border-[#e8eaed] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-13 h-13 rounded-full bg-gradient-to-br from-[#1a73e8] to-[#1557b0] text-white font-bold text-[14px] flex items-center justify-center shrink-0 shadow-sm border-2 border-white ring-2 ring-[#d2e3fc]">
+                      <svg
+                        className="w-6 h-6"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                      </svg>
                     </div>
                     <div>
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1a73e8] block">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1a73e8] block mb-0.5">
                         Written & Fact-Checked By
                       </span>
-                      <h2 className="gw-font-display text-[17px] font-medium text-[#202124]">
-                        {post.author}
+                      <h2 className="gw-font-display text-[18px] font-medium text-[#202124]">
+                        {post.author || "SeoHub Technical Team"}
                       </h2>
-                      <p className="text-[12.5px] text-[#5f6368] leading-relaxed mt-0.5 max-w-[520px]">
+                      <p className="text-[13px] text-[#5f6368] leading-relaxed mt-1 max-w-[520px]">
                         {post.authorRole || "Senior Link Strategist"} at{" "}
                         <strong className="text-[#202124]">SeoHub Ltd</strong>.
                         Specialising in Class-C IP isolated PBN architecture,
-                        regional APACccTLD rankings, and enterprise E-E-A-T
+                        regional APAC ccTLD rankings, and enterprise E-E-A-T
                         link building.
                       </p>
                     </div>
                   </div>
                   <Link
                     to="/contact"
-                    className="shrink-0 text-[12.5px] font-semibold text-[#1a73e8] hover:underline"
+                    className="shrink-0 text-[13px] font-semibold text-[#1a73e8] hover:underline"
                   >
                     Ask Our Team →
                   </Link>
@@ -652,12 +657,12 @@ export default function BlogPost() {
                 {prevPost ? (
                   <Link
                     to={`/blog/${prevPost.slug}`}
-                    className="group bg-white rounded-[20px] p-5 border border-[#e8eaed] hover:border-[#1a73e8] shadow-2xs transition-all flex flex-col justify-between"
+                    className="group bg-white rounded-[20px] p-5 sm:p-6 border border-[#e8eaed] hover:border-[#1a73e8] shadow-2xs transition-all flex flex-col justify-between"
                   >
-                    <span className="text-[11.5px] font-semibold text-[#5f6368] group-hover:text-[#1a73e8] mb-1">
-                      ← Previous Article
+                    <span className="text-[12px] font-semibold text-[#5f6368] group-hover:text-[#1a73e8] mb-1.5">
+                      ← Previous Guide
                     </span>
-                    <h2 className="gw-font-display text-[15.5px] font-medium text-[#202124] group-hover:text-[#1a73e8] line-clamp-2 leading-snug">
+                    <h2 className="gw-font-display text-[16px] font-medium text-[#202124] group-hover:text-[#1a73e8] line-clamp-2 leading-snug">
                       {prevPost.title}
                     </h2>
                   </Link>
@@ -668,12 +673,12 @@ export default function BlogPost() {
                 {nextPost && (
                   <Link
                     to={`/blog/${nextPost.slug}`}
-                    className="group bg-white rounded-[20px] p-5 border border-[#e8eaed] hover:border-[#1a73e8] shadow-2xs transition-all flex flex-col justify-between sm:text-right"
+                    className="group bg-white rounded-[20px] p-5 sm:p-6 border border-[#e8eaed] hover:border-[#1a73e8] shadow-2xs transition-all flex flex-col justify-between sm:text-right"
                   >
-                    <span className="text-[11.5px] font-semibold text-[#5f6368] group-hover:text-[#1a73e8] mb-1">
-                      Next Article →
+                    <span className="text-[12px] font-semibold text-[#5f6368] group-hover:text-[#1a73e8] mb-1.5">
+                      Next Guide →
                     </span>
-                    <h2 className="gw-font-display text-[15.5px] font-medium text-[#202124] group-hover:text-[#1a73e8] line-clamp-2 leading-snug">
+                    <h2 className="gw-font-display text-[16px] font-medium text-[#202124] group-hover:text-[#1a73e8] line-clamp-2 leading-snug">
                       {nextPost.title}
                     </h2>
                   </Link>
@@ -686,17 +691,17 @@ export default function BlogPost() {
           <aside className="lg:col-span-4 lg:sticky lg:top-[84px] space-y-5">
             {/* 1. Sticky Interactive Table of Contents (Desktop) */}
             {tocHeadings.length > 0 && (
-              <div className="hidden lg:block bg-white rounded-[22px] border border-[#e8eaed] p-5 shadow-[0_4px_20px_rgba(60,64,67,0.04)]">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#f1f3f4]">
-                  <span className="gw-font-display text-[15px] font-medium text-[#202124]">
-                    On This Page
+              <div className="hidden lg:block bg-white rounded-[24px] border border-[#e8eaed] p-6 shadow-[0_4px_20px_rgba(60,64,67,0.04)]">
+                <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-[#f1f3f4]">
+                  <span className="gw-font-display text-[16px] font-medium text-[#202124]">
+                    Table of Contents
                   </span>
-                  <span className="text-[11px] font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2 py-0.5 rounded-full">
+                  <span className="text-[11.5px] font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
                     {Math.round(readingProgress)}% Read
                   </span>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
                   {tocHeadings.map((h) => {
                     const active = activeHeadingId === h.id;
                     return (
@@ -704,11 +709,11 @@ export default function BlogPost() {
                         key={h.id}
                         type="button"
                         onClick={() => scrollToHeading(h.id)}
-                        className={`w-full text-left px-3 py-2 rounded-[10px] text-[12.5px] transition-all cursor-pointer flex items-start gap-2 ${
-                          h.level === 3 ? "pl-6 text-[12px]" : ""
+                        className={`w-full text-left px-3.5 py-2 rounded-[12px] text-[13px] transition-all cursor-pointer flex items-start gap-2.5 ${
+                          h.level === 3 ? "pl-7 text-[12.5px]" : ""
                         } ${
                           active
-                            ? "bg-[#e8f0fe] text-[#1a73e8] font-semibold"
+                            ? "bg-[#e8f0fe] text-[#1a73e8] font-semibold shadow-2xs"
                             : "text-[#5f6368] hover:text-[#202124] hover:bg-[#f8f9fa]"
                         }`}
                       >
@@ -728,7 +733,7 @@ export default function BlogPost() {
             )}
 
             {/* 2. Interactive Quick Link Estimator Widget */}
-            <div className="bg-white rounded-[24px] border border-[#dadce0] shadow-[0_10px_30px_rgba(60,64,67,0.06)] overflow-hidden">
+            <div className="bg-white rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.06)] overflow-hidden">
               <div className="grid grid-cols-4 h-[4px] w-full">
                 <div className="bg-[#4285F4]" />
                 <div className="bg-[#EA4335]" />
@@ -736,23 +741,23 @@ export default function BlogPost() {
                 <div className="bg-[#34A853]" />
               </div>
 
-              <div className="p-5 sm:p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1a73e8]">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-[11.5px] font-semibold uppercase tracking-wider text-[#1a73e8]">
                     Quick Price Estimator
                   </span>
-                  <span className="text-[11px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] px-2 py-0.5 rounded-full">
+                  <span className="text-[11.5px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] px-2.5 py-0.5 rounded-full">
                     DA/DR 50+
                   </span>
                 </div>
 
-                <h2 className="gw-font-display text-[18px] font-medium text-[#202124] mb-3">
+                <h2 className="gw-font-display text-[19px] font-medium text-[#202124] mb-3.5">
                   Estimate Your Link Campaign
                 </h2>
 
-                <div className="space-y-3 mb-4">
+                <div className="space-y-3.5 mb-4">
                   <div>
-                    <label className="block text-[11.5px] font-medium text-[#5f6368] mb-1">
+                    <label className="block text-[12px] font-medium text-[#5f6368] mb-1.5">
                       Select Placement Tier
                     </label>
                     <select
@@ -763,7 +768,7 @@ export default function BlogPost() {
                         );
                         if (found) setQuickService(found);
                       }}
-                      className="w-full px-3 py-2 bg-[#f8f9fa] border border-[#dadce0] rounded-[10px] text-[13px] font-medium text-[#202124] focus:outline-none focus:border-[#1a73e8]"
+                      className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#dadce0] rounded-[12px] text-[13.5px] font-medium text-[#202124] focus:outline-none focus:border-[#1a73e8]"
                     >
                       {quickServicesList.map((s) => (
                         <option key={s.slug} value={s.slug}>
@@ -774,18 +779,18 @@ export default function BlogPost() {
                   </div>
 
                   <div>
-                    <label className="block text-[11.5px] font-medium text-[#5f6368] mb-1">
+                    <label className="block text-[12px] font-medium text-[#5f6368] mb-1.5">
                       Select Link Volume
                     </label>
-                    <div className="grid grid-cols-4 gap-1.5">
+                    <div className="grid grid-cols-4 gap-2">
                       {[50, 100, 250, 500].map((vol) => (
                         <button
                           key={vol}
                           type="button"
                           onClick={() => setQuickQty(vol)}
-                          className={`py-1.5 rounded-[8px] text-[12px] font-medium border transition-all cursor-pointer ${
+                          className={`py-2 rounded-[10px] text-[12.5px] font-medium border transition-all cursor-pointer ${
                             quickQty === vol
-                              ? "bg-[#1a73e8] border-[#1a73e8] text-white font-semibold"
+                              ? "bg-[#1a73e8] border-[#1a73e8] text-white font-semibold shadow-xs"
                               : "bg-[#f8f9fa] border-[#e8eaed] text-[#3c4043]"
                           }`}
                         >
@@ -796,30 +801,30 @@ export default function BlogPost() {
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-[14px] bg-[#f8fbff] border border-[#d2e3fc] flex items-center justify-between mb-4">
+                <div className="p-4 rounded-[16px] bg-[#f8fbff] border border-[#d2e3fc] flex items-center justify-between mb-4">
                   <div>
-                    <span className="block text-[11px] text-[#5f6368]">
+                    <span className="block text-[11.5px] text-[#5f6368]">
                       Estimated Total ({quickQty} Links)
                     </span>
-                    <span className="text-[11px] font-semibold text-[#1e8e3e]">
+                    <span className="text-[11.5px] font-semibold text-[#1e8e3e]">
                       ● White-Label Report Included
                     </span>
                   </div>
-                  <span className="gw-font-display text-[22px] font-bold text-[#1a73e8]">
+                  <span className="gw-font-display text-[24px] font-bold text-[#1a73e8]">
                     ${(quickQty * quickService.price).toLocaleString("en-US")}
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Link
                     to={`/services/${quickService.slug}`}
-                    className="gw-font-display w-full h-[44px] rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white text-[13.5px] font-medium flex items-center justify-center shadow-xs transition-colors"
+                    className="gw-font-display w-full h-[48px] rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white text-[14px] font-medium flex items-center justify-center shadow-xs transition-colors"
                   >
                     Order {quickService.name.split(" (")[0]} →
                   </Link>
                   <Link
                     to="/#estimator"
-                    className="gw-font-display w-full h-[42px] rounded-full border border-[#dadce0] bg-white hover:bg-[#f8f9fa] text-[#202124] text-[13px] font-medium flex items-center justify-center transition-colors"
+                    className="gw-font-display w-full h-[44px] rounded-full border border-[#dadce0] bg-white hover:bg-[#f8f9fa] text-[#202124] text-[13.5px] font-medium flex items-center justify-center transition-colors"
                   >
                     Open Full Multi-Service Calculator
                   </Link>
@@ -832,37 +837,37 @@ export default function BlogPost() {
 
       {/* --- 3. RELATED SEO RESEARCH ARTICLES GRID --- */}
       {relatedPosts.length > 0 && (
-        <section className="w-full py-10 sm:py-14 px-4 sm:px-6 border-t border-[#e8eaed] bg-white">
+        <section className="w-full py-12 sm:py-16 px-4 sm:px-6 border-t border-[#e8eaed] bg-white">
           <div className="max-w-[1160px] mx-auto">
-            <div className="flex items-center justify-between mb-7">
+            <div className="flex items-center justify-between mb-8">
               <div>
                 <span className="text-[11.5px] font-semibold uppercase tracking-wider text-[#1a73e8] block mb-1">
                   Continue Reading
                 </span>
-                <h2 className="gw-font-display text-[22px] sm:text-[28px] font-medium text-[#202124]">
+                <h2 className="gw-font-display text-[24px] sm:text-[30px] font-medium text-[#202124]">
                   Related SEO Guides & Case Studies
                 </h2>
               </div>
               <Link
                 to="/blog"
-                className="text-[13px] font-semibold text-[#1a73e8] hover:underline"
+                className="text-[13.5px] font-semibold text-[#1a73e8] hover:underline"
               >
                 View All Articles →
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedPosts.map((rel) => {
                 const style = getCategoryStyle(rel.category);
                 return (
                   <Link
                     key={rel.id}
                     to={`/blog/${rel.slug}`}
-                    className="group bg-[#fcfcfc] hover:bg-white rounded-[22px] border border-[#e8eaed] hover:border-[#d2e3fc] shadow-2xs hover:shadow-[0_12px_32px_rgba(26,115,232,0.08)] transition-all overflow-hidden flex flex-col justify-between"
+                    className="group bg-[#fcfcfc] hover:bg-white rounded-[24px] border border-[#e8eaed] hover:border-[#d2e3fc] shadow-2xs hover:shadow-[0_16px_40px_rgba(26,115,232,0.09)] transition-all overflow-hidden flex flex-col justify-between"
                   >
                     <div>
                       <div className={`h-[3px] w-full ${style.accent}`} />
-                      <div className="h-[165px] w-full bg-[#f1f3f4] overflow-hidden relative">
+                      <div className="h-[180px] w-full bg-[#f1f3f4] overflow-hidden relative">
                         <img
                           src={rel.image}
                           alt={rel.imageAlt || rel.title}
@@ -870,27 +875,27 @@ export default function BlogPost() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <span
-                          className={`absolute top-3 left-3 text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full border bg-white/95 ${style.badge}`}
+                          className={`absolute top-3 left-3 text-[11px] font-semibold px-3 py-0.5 rounded-full border bg-white/95 ${style.badge}`}
                         >
                           {rel.category}
                         </span>
                       </div>
-                      <div className="p-5">
-                        <span className="text-[11px] text-[#5f6368] block mb-1.5">
+                      <div className="p-6">
+                        <span className="text-[11.5px] text-[#5f6368] block mb-2">
                           {rel.publishedAt} • {rel.readTime}
                         </span>
-                        <h2 className="gw-font-display text-[17px] font-medium text-[#202124] group-hover:text-[#1a73e8] transition-colors line-clamp-2 leading-snug mb-2">
+                        <h2 className="gw-font-display text-[18px] font-medium text-[#202124] group-hover:text-[#1a73e8] transition-colors line-clamp-2 leading-snug mb-2.5">
                           {rel.title}
                         </h2>
-                        <p className="text-[13px] text-[#5f6368] line-clamp-2 leading-relaxed">
+                        <p className="text-[13.5px] text-[#5f6368] line-clamp-3 leading-relaxed">
                           {rel.excerpt}
                         </p>
                       </div>
                     </div>
 
-                    <div className="px-5 py-3.5 border-t border-[#f1f3f4] flex items-center justify-between text-[12px]">
+                    <div className="px-6 py-4 border-t border-[#f1f3f4] flex items-center justify-between text-[12.5px]">
                       <span className="font-medium text-[#3c4043]">
-                        {rel.author}
+                        {rel.author || "SeoHub Ltd"}
                       </span>
                       <span className="font-semibold text-[#1a73e8]">
                         Read Guide →
