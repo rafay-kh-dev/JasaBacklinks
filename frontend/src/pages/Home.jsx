@@ -1626,7 +1626,7 @@ function PackageEstimator() {
                       ) : (
                         <>
                           <svg
-  className="w-4 h-4 text-[#1a73e8]"
+  className="w-4 h-4 text-black"
   xmlns="http://www.w3.org/2000/svg"
   width="100%"
   height="100%"
