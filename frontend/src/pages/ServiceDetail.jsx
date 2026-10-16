@@ -2209,7 +2209,7 @@ export default function ServiceDetail({ forcedSlug }) {
                       type="button"
                       onClick={() => openCheckoutModalWithCart(checkoutCart)}
                       disabled={totalLinks === 0 || isInitializing}
-                      className="gw-font-display w-full h-[48px] rounded-full bg-[#1a73e8] text-white font-medium text-[14.5px] hover:bg-[#1557b0] transition-all cursor-pointer disabled:opacity-50"
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[#635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       Pay with Card (Instant)
                     </button>
@@ -2255,7 +2255,7 @@ export default function ServiceDetail({ forcedSlug }) {
                       type="button"
                       onClick={() => handleBoomFiDirectCheckout(checkoutCart)}
                       disabled={totalLinks === 0 || isRedirectingBoomFi}
-                      className="gw-font-display w-full h-[46px] rounded-full border border-[#dadce0] bg-white hover:bg-[#f8f9fa] text-[#202124] font-medium text-[14px] cursor-pointer disabled:opacity-50"
+                      className="gw-font-display w-full h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#f8f9fa] text-[#202124] font-medium text-[14px] cursor-pointer disabled:opacity-50"
                     >
                       {isRedirectingBoomFi
                         ? "Redirecting to BoomFi Gateway..."
@@ -2488,8 +2488,29 @@ export default function ServiceDetail({ forcedSlug }) {
                   type="button"
                   onClick={() => handleBoomFiDirectCheckout(checkoutCart)}
                   disabled={isRedirectingBoomFi}
-                  className="gw-font-display w-full h-[44px] rounded-full border border-[#dadce0] bg-white hover:bg-[#f8f9fa] text-[#202124] font-medium text-[13.5px] flex items-center justify-center gap-2 cursor-pointer"
-                >
+                  className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-[#d5ff2e] text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#c2ed15] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <svg
+  className="w-4 h-4 text-black"
+  xmlns="http://www.w3.org/2000/svg"
+  width="100%"
+  height="100%"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  strokeWidth={2}
+  strokeLinecap="round"
+  strokeLinejoin="round"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+  <path d="M8 6v12" />
+  <path d="M8 12h6" />
+  <path d="M9 3v3" />
+  <path d="M13 3v3" />
+  <path d="M9 18v3" />
+  <path d="M13 18v3" />
+</svg>
                   {isRedirectingBoomFi
                     ? "Redirecting to BoomFi Gateway..."
                     : "Pay with Crypto (BoomFi)"}
