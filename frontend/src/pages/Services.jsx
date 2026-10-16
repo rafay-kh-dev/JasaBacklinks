@@ -1998,16 +1998,26 @@ export default function Services() {
                       ) : (
                         <>
                           <svg
-                            className="w-4 h-4 text-[#1a73e8]"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                          </svg>
+  className="w-4 h-4 text-black"
+  xmlns="http://www.w3.org/2000/svg"
+  width="100%"
+  height="100%"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  strokeWidth={2}
+  strokeLinecap="round"
+  strokeLinejoin="round"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+  <path d="M8 6v12" />
+  <path d="M8 12h6" />
+  <path d="M9 3v3" />
+  <path d="M13 3v3" />
+  <path d="M9 18v3" />
+  <path d="M13 18v3" />
+</svg>
                           <span>Pay with Crypto (BoomFi)</span>
                         </>
                       )}
