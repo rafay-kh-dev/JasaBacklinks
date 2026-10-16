@@ -1892,7 +1892,7 @@ export default function Services() {
                   </div>
 
                   {paymentError && (
-                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
+                    <div className="mb-3 p-3 rounded-[12px] bg-[#635bff] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
                       {paymentError}
                     </div>
                   )}
