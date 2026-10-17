@@ -326,25 +326,34 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ error: "Email and message are required." });
     }
 
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT || 465,
-        secure: true,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
+    if (
+      !process.env.SMTP_HOST ||
+      !process.env.SMTP_USER ||
+      !process.env.SMTP_PASS
+    ) {
+      return res.status(503).json({
+        error: "Contact email service is not configured. Please try again later.",
       });
+    }
 
-      const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT || 465,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
-      await transporter.sendMail({
-        from: `"Jasa Backlinks Desk" <${process.env.SMTP_USER}>`,
-        to: adminEmail,
-        replyTo: email,
-        subject: `📩 [${enquiryType}] New Enquiry from ${fullName}`,
-        html: `
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+
+    await transporter.sendMail({
+      from: `"Jasa Backlinks Desk" <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      replyTo: email,
+      subject: `📩 [${enquiryType}] New Enquiry from ${fullName}`,
+      html: `
           <div style="font-family: 'Google Sans', Roboto, Arial, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #dadce0; border-radius: 18px; overflow: hidden;">
             <div style="height: 4px; background: linear-gradient(90deg, #4285F4 25%, #EA4335 25% 50%, #FBBC04 50% 75%, #34A853 75%);"></div>
             <div style="padding: 24px 28px; background: #f8fbff; border-bottom: 1px solid #e8eaed;">
@@ -364,8 +373,7 @@ app.post("/api/contact", async (req, res) => {
             </div>
           </div>
         `,
-      });
-    }
+    });
 
     res.json({ success: true });
   } catch (error) {

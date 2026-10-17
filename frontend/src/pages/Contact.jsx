@@ -80,7 +80,7 @@ export default function Contact() {
     setErrorMessage("");
 
     try {
-      await axios.post(`${BACKEND_URL}/api/contact`, {
+      const { data } = await axios.post(`${BACKEND_URL}/api/contact`, {
         enquiryType,
         fullName,
         email,
@@ -90,14 +90,19 @@ export default function Contact() {
         websiteUrl,
         message,
       });
+      if (!data?.success) {
+        throw new Error("The server did not confirm that your enquiry was sent.");
+      }
+      setIsSubmitted(true);
     } catch (err) {
-      console.warn(
-        "Enquiry logged; backend email notification pending:",
-        err.message,
+      console.error("Contact form submission failed:", err);
+      setErrorMessage(
+        err.response?.data?.error ||
+          err.message ||
+          "Unable to send your enquiry. Please try again or contact us directly.",
       );
     } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
     }
   };
 
