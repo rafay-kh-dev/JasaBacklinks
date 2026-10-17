@@ -232,13 +232,20 @@ export default function Header() {
             <img
               src="/favicon.svg"
               alt="Jasa Backlinks"
+              width="32"
+              height="32"
               className="h-[26px] w-[26px] object-contain"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
               }}
             />
-            <span className="text-[21px] font-medium text-[#202124] tracking-[-0.015em] leading-none mt-0.5">
-              Jasa Backlinks
+            <span className="flex flex-col items-end justify-center">
+              <span className="text-[21px] font-medium text-[#202124] tracking-[-0.015em] leading-none mt-0.5">
+                Jasa Backlinks
+              </span>
+              <span className="text-[9px] font-medium text-[#5f6368] leading-tight tracking-[0.02em]">
+                Powered By <span className="text-[#1a73e8]">SeoHub Ltd</span>
+              </span>
             </span>
           </Link>
 

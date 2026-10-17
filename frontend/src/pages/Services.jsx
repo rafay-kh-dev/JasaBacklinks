@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   CardNumberElement,
@@ -28,7 +27,18 @@ const TEAM_CONTACTS = {
   supportEmail: "jasa-backlinks@seohubltd.com",
 };
 
-const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
+let stripePromise;
+const getStripePromise = () => {
+  if (!stripePromise) {
+    stripePromise = import("@stripe/stripe-js")
+      .then(({ loadStripe }) => loadStripe(STRIPE_PUBLIC_KEY))
+      .catch((error) => {
+        stripePromise = undefined;
+        throw error;
+      });
+  }
+  return stripePromise;
+};
 
 const STRIPE_ELEMENT_OPTIONS = {
   style: {
@@ -957,10 +967,10 @@ export default function Services() {
     document.body.style.overflow = "hidden";
 
     try {
-      const { data } = await axios.post(
-        `${BACKEND_URL}/api/create-stripe-intent`,
-        { cart: cartObj },
-      );
+      const [{ data }] = await Promise.all([
+        axios.post(`${BACKEND_URL}/api/create-stripe-intent`, { cart: cartObj }),
+        getStripePromise(),
+      ]);
       setClientSecret(data.clientSecret);
     } catch (err) {
       setPaymentError(
@@ -2274,7 +2284,7 @@ export default function Services() {
                   Preparing secure 256-bit payment session...
                 </div>
               ) : clientSecret ? (
-                <Elements stripe={stripePromise}>
+                <Elements stripe={getStripePromise()}>
                   <CustomStripeCardForm
                     clientSecret={clientSecret}
                     totalAmount={finalTotal}

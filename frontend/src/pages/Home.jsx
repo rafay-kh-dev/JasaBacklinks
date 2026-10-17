@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   CardNumberElement,
@@ -28,7 +27,18 @@ const TEAM_CONTACTS = {
   supportEmail: "jasa-backlinks@seohubltd.com",
 };
 
-const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
+let stripePromise;
+const getStripePromise = () => {
+  if (!stripePromise) {
+    stripePromise = import("@stripe/stripe-js")
+      .then(({ loadStripe }) => loadStripe(STRIPE_PUBLIC_KEY))
+      .catch((error) => {
+        stripePromise = undefined;
+        throw error;
+      });
+  }
+  return stripePromise;
+};
 
 // Custom Google Workspace Typography & Styling for Stripe Individual Fields
 const STRIPE_ELEMENT_OPTIONS = {
@@ -964,10 +974,10 @@ function PackageEstimator() {
     setIsInitializingPayment(true);
     setPaymentError("");
     try {
-      const { data } = await axios.post(
-        `${BACKEND_URL}/api/create-stripe-intent`,
-        { cart },
-      );
+      const [{ data }] = await Promise.all([
+        axios.post(`${BACKEND_URL}/api/create-stripe-intent`, { cart }),
+        getStripePromise(),
+      ]);
       setClientSecret(data.clientSecret);
       setIsStripeModalOpen(true);
       document.body.style.overflow = "hidden";
@@ -1773,7 +1783,7 @@ function PackageEstimator() {
             </div>
 
             <div className="p-6">
-              <Elements stripe={stripePromise}>
+              <Elements stripe={getStripePromise()}>
                 <CustomStripeCardForm
                   clientSecret={clientSecret}
                   totalAmount={finalTotal}
@@ -2695,6 +2705,8 @@ function CTASection() {
                   <img
                     src="https://randomuser.me/api/portraits/men/32.jpg"
                     alt="Partner"
+                    width="32"
+                    height="32"
                     loading="lazy"
                     referrerPolicy="no-referrer"
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
@@ -2702,6 +2714,8 @@ function CTASection() {
                   <img
                     src="https://randomuser.me/api/portraits/men/46.jpg"
                     alt="Partner"
+                    width="32"
+                    height="32"
                     loading="lazy"
                     referrerPolicy="no-referrer"
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
@@ -2709,6 +2723,8 @@ function CTASection() {
                   <img
                     src="https://randomuser.me/api/portraits/women/68.jpg"
                     alt="Partner"
+                    width="32"
+                    height="32"
                     loading="lazy"
                     referrerPolicy="no-referrer"
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
@@ -2903,24 +2919,32 @@ export default function Home() {
               <img
                 src="https://randomuser.me/api/portraits/men/32.jpg"
                 alt="Agency Partner"
+                width="32"
+                height="32"
                 referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://randomuser.me/api/portraits/men/46.jpg"
                 alt="Agency Partner"
+                width="32"
+                height="32"
                 referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://randomuser.me/api/portraits/women/68.jpg"
                 alt="Agency Partner"
+                width="32"
+                height="32"
                 referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />
               <img
                 src="https://randomuser.me/api/portraits/men/85.jpg"
                 alt="Agency Partner"
+                width="32"
+                height="32"
                 referrerPolicy="no-referrer"
                 className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
               />

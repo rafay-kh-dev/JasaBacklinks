@@ -121,6 +121,8 @@ export default function Footer() {
               <img
                 src="/favicon.svg"
                 alt="Jasa Backlinks"
+                width="32"
+                height="32"
                 className="h-[22px] sm:h-[24px] w-auto"
               />
             </Link>
