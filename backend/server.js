@@ -48,6 +48,9 @@ const calculateSecureTotal = (cart = {}) => {
   return total;
 };
 
+const hasUnpricedGuestPostingItems = (cart = {}) =>
+  Object.keys(cart || {}).some((id) => id.startsWith("guestpost_"));
+
 // ==========================================
 // 🧪 EMAIL TEMPLATE TESTING ROUTES
 // ==========================================
@@ -133,6 +136,11 @@ app.post("/api/create-stripe-intent", async (req, res) => {
   try {
     if (!stripe) return res.status(500).json({ error: "STRIPE_SECRET_KEY missing." });
     const { cart } = req.body;
+    if (hasUnpricedGuestPostingItems(cart)) {
+      return res.status(503).json({
+        error: "Guest Posting checkout is unavailable until final rates are configured.",
+      });
+    }
     const totalAmount = calculateSecureTotal(cart);
     if (totalAmount <= 0) return res.status(400).json({ error: "Invalid cart total." });
 
@@ -162,6 +170,11 @@ async function getPayPalAccessToken() {
 app.post("/api/create-paypal-order", async (req, res) => {
   try {
     const { cart } = req.body;
+    if (hasUnpricedGuestPostingItems(cart)) {
+      return res.status(503).json({
+        error: "Guest Posting checkout is unavailable until final rates are configured.",
+      });
+    }
     const totalAmount = calculateSecureTotal(cart);
     if (totalAmount <= 0) return res.status(400).json({ error: "Invalid total." });
 
@@ -198,6 +211,11 @@ app.post("/api/capture-paypal-order", async (req, res) => {
 app.post("/api/create-boomfi-charge", async (req, res) => {
   try {
     const { cart } = req.body;
+    if (hasUnpricedGuestPostingItems(cart)) {
+      return res.status(503).json({
+        error: "Guest Posting checkout is unavailable until final rates are configured.",
+      });
+    }
     const totalAmount = calculateSecureTotal(cart);
     if (totalAmount <= 0) {
       return res.status(400).json({ error: "Invalid cart total." });

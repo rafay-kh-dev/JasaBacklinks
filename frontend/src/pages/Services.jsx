@@ -27,6 +27,78 @@ const TEAM_CONTACTS = {
   supportEmail: "jasa-backlinks@seohubltd.com",
 };
 
+const GUEST_POSTING_OPTIONS = {
+  da: [30, 40, 50, 60],
+  dr: [30, 40, 50, 60],
+  niches: [
+    { id: "general", label: "General" },
+    { id: "business", label: "Business" },
+    { id: "technology", label: "Technology" },
+    { id: "health", label: "Health & Wellness" },
+    { id: "finance", label: "Finance" },
+    { id: "travel", label: "Travel" },
+    { id: "lifestyle", label: "Lifestyle" },
+    { id: "other", label: "Other" },
+  ],
+  extensions: [
+    { id: "com", label: ".COM" },
+    { id: "net", label: ".NET" },
+    { id: "org", label: ".ORG" },
+    { id: "co_uk", label: ".CO.UK" },
+    { id: "com_au", label: ".COM.AU" },
+    { id: "id", label: ".ID" },
+  ],
+};
+
+const GUEST_POSTING_SAMPLE_RATES = {
+  base: 5,
+  perDaTier: 2,
+  perDrTier: 2,
+  niche: {
+    general: 0,
+    business: 1,
+    technology: 1,
+    health: 2,
+    finance: 3,
+    travel: 1,
+    lifestyle: 1,
+    other: 0,
+  },
+  extension: { com: 0, net: 0, org: 1, co_uk: 2, com_au: 2, id: 1 },
+};
+
+const getGuestPostingPrice = ({ da, dr, niche, extension }) =>
+  GUEST_POSTING_SAMPLE_RATES.base +
+  ((Number(da) - 30) / 10) * GUEST_POSTING_SAMPLE_RATES.perDaTier +
+  ((Number(dr) - 30) / 10) * GUEST_POSTING_SAMPLE_RATES.perDrTier +
+  GUEST_POSTING_SAMPLE_RATES.niche[niche] +
+  GUEST_POSTING_SAMPLE_RATES.extension[extension];
+
+const getGuestPostingItem = (id) => {
+  const match = /^guestpost_(30|40|50|60)_(30|40|50|60)_([a-z]+)_([a-z_]+)$/.exec(
+    id,
+  );
+  if (!match) return null;
+
+  const [, da, dr, niche, extension] = match;
+  const nicheOption = GUEST_POSTING_OPTIONS.niches.find(
+    (option) => option.id === niche,
+  );
+  const extensionOption = GUEST_POSTING_OPTIONS.extensions.find(
+    (option) => option.id === extension,
+  );
+  if (!nicheOption || !extensionOption) return null;
+
+  const options = { da, dr, niche, extension };
+  return {
+    id,
+    name: `Guest Post • DA ${da}+ / DR ${dr}+`,
+    detail: `${nicheOption.label} • ${extensionOption.label}`,
+    price: getGuestPostingPrice(options),
+    ...options,
+  };
+};
+
 let stripePromise;
 const getStripePromise = () => {
   if (!stripePromise) {
@@ -805,6 +877,13 @@ export default function Services() {
   const [calcCategory, setCalcCategory] = useState("all");
   const [expandedSpecs, setExpandedSpecs] = useState({});
   const [mobileCompareTab, setMobileCompareTab] = useState("standard");
+  const [guestPostOptions, setGuestPostOptions] = useState({
+    da: "50",
+    dr: "50",
+    niche: "technology",
+    extension: "com",
+  });
+  const [guestPostQty, setGuestPostQty] = useState(1);
 
   // Individual Service Card Quick Quantities
   const [selectedQtys, setSelectedQtys] = useState({
@@ -834,7 +913,7 @@ export default function Services() {
   const [completedPayment, setCompletedPayment] = useState(null);
 
   const categories = [
-    { id: "all", label: "All Services", shortLabel: "All", count: 9 },
+    { id: "all", label: "All Services", shortLabel: "All", count: 10 },
     {
       id: "standard",
       label: "Standard PBN (.COM/.NET)",
@@ -990,6 +1069,15 @@ export default function Services() {
   const selectedPackagesDetailed = Object.entries(checkoutCart)
     .filter(([, q]) => q > 0)
     .map(([id, qty]) => {
+      const guestPost = getGuestPostingItem(id);
+      if (guestPost) {
+        return {
+          ...guestPost,
+          qty,
+          subtotal: guestPost.price * qty,
+          isGuestPost: true,
+        };
+      }
       const svc = ALL_SERVICES.find((s) => s.id === id);
       return {
         id,
@@ -1009,6 +1097,15 @@ export default function Services() {
     (sum, item) => sum + item.qty,
     0,
   );
+  const guestPostItems = selectedPackagesDetailed.filter(
+    (item) => item.isGuestPost,
+  );
+  const hasGuestPostItems = guestPostItems.length > 0;
+
+  const addGuestPostToCart = () => {
+    const id = `guestpost_${guestPostOptions.da}_${guestPostOptions.dr}_${guestPostOptions.niche}_${guestPostOptions.extension}`;
+    setCheckoutCart((prev) => ({ ...prev, [id]: guestPostQty }));
+  };
 
   const handlePaymentSuccess = (transactionId, method) => {
     setIsCheckoutGatewayOpen(false);
@@ -1136,9 +1233,10 @@ export default function Services() {
           </h2>
 
           <p className="gw-font-text text-[14px] sm:text-[16.5px] md:text-[18px] text-[#5f6368] max-w-[680px] mx-auto leading-[1.55] sm:leading-[1.6] mb-5 sm:mb-7 px-1">
-            Explore our 9 specialised backlink placements across global .COM,
-            regional Indonesian .ID, and high-trust .EDU / .GOV networks. Order
-            any package directly or build a custom bundle in the calculator below.
+            Explore 9 specialised backlink placements across global .COM,
+            regional Indonesian .ID, and high-trust .EDU / .GOV networks, plus
+            our configurable Guest Posting service. Build a custom campaign
+            below.
           </p>
 
           {/* Horizontal Scrollable Trust Pills on Mobile */}
@@ -1206,6 +1304,175 @@ export default function Services() {
             >
               Jump to Bulk Slider Calculator ↓
             </button>
+          </div>
+
+          <div className="relative mb-6 sm:mb-8 overflow-hidden rounded-[22px] sm:rounded-[26px] border border-[#d2e3fc] bg-white shadow-[0_8px_28px_rgba(26,115,232,0.08)]">
+            <div className="h-1 bg-gradient-to-r from-[#4285F4] via-[#1a73e8] to-[#34a853]" />
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-5 sm:gap-8 p-5 sm:p-8">
+              <div className="flex flex-col justify-center">
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#e8f0fe] px-3 py-1 text-[11px] font-semibold text-[#1a73e8]">
+                  Featured Service
+                </span>
+                <h2 className="gw-font-display mt-3 text-[23px] sm:text-[30px] font-medium leading-tight text-[#202124]">
+                  Guest Posting
+                </h2>
+                <p className="gw-font-text mt-2 text-[13.5px] sm:text-[14px] leading-relaxed text-[#5f6368]">
+                  Place a contextual article on a third-party website relevant
+                  to your chosen niche. Select the authority targets, niche,
+                  domain extension, and number of posts to build your brief.
+                </p>
+                <ul className="mt-4 space-y-2 text-[12.5px] text-[#3c4043]">
+                  {[
+                    "Choose DA and DR targets separately",
+                    "Match a website niche and domain extension",
+                    "Review your configuration in the campaign cart",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2">
+                      <span className="mt-0.5 text-[#34a853]">✓</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-[11.5px] leading-relaxed text-[#5f6368]">
+                  Publisher availability and final placement requirements
+                  should be confirmed before an order is placed.
+                </p>
+              </div>
+
+              <div className="rounded-[18px] border border-[#e8eaed] bg-[#f8fbff] p-4 sm:p-5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="gw-font-display text-[16px] font-semibold text-[#202124]">
+                    Configure your guest post
+                  </h3>
+                  <span className="rounded-full border border-[#fbbc04]/50 bg-[#fef7e0] px-2.5 py-1 text-[10.5px] font-semibold text-[#8a5b00]">
+                    SAMPLE RATES
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="text-[12px] font-medium text-[#3c4043]">
+                    Target Domain Authority (DA)
+                    <select
+                      value={guestPostOptions.da}
+                      onChange={(event) =>
+                        setGuestPostOptions((previous) => ({
+                          ...previous,
+                          da: event.target.value,
+                        }))
+                      }
+                      className="mt-1.5 w-full rounded-[10px] border border-[#dadce0] bg-white px-3 py-2.5 text-[13px] text-[#202124] focus:border-[#1a73e8] focus:outline-none"
+                    >
+                      {GUEST_POSTING_OPTIONS.da.map((tier) => (
+                        <option key={tier} value={tier}>
+                          DA {tier}+
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-[12px] font-medium text-[#3c4043]">
+                    Target Domain Rating (DR)
+                    <select
+                      value={guestPostOptions.dr}
+                      onChange={(event) =>
+                        setGuestPostOptions((previous) => ({
+                          ...previous,
+                          dr: event.target.value,
+                        }))
+                      }
+                      className="mt-1.5 w-full rounded-[10px] border border-[#dadce0] bg-white px-3 py-2.5 text-[13px] text-[#202124] focus:border-[#1a73e8] focus:outline-none"
+                    >
+                      {GUEST_POSTING_OPTIONS.dr.map((tier) => (
+                        <option key={tier} value={tier}>
+                          DR {tier}+
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-[12px] font-medium text-[#3c4043]">
+                    Website niche
+                    <select
+                      value={guestPostOptions.niche}
+                      onChange={(event) =>
+                        setGuestPostOptions((previous) => ({
+                          ...previous,
+                          niche: event.target.value,
+                        }))
+                      }
+                      className="mt-1.5 w-full rounded-[10px] border border-[#dadce0] bg-white px-3 py-2.5 text-[13px] text-[#202124] focus:border-[#1a73e8] focus:outline-none"
+                    >
+                      {GUEST_POSTING_OPTIONS.niches.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-[12px] font-medium text-[#3c4043]">
+                    Domain extension
+                    <select
+                      value={guestPostOptions.extension}
+                      onChange={(event) =>
+                        setGuestPostOptions((previous) => ({
+                          ...previous,
+                          extension: event.target.value,
+                        }))
+                      }
+                      className="mt-1.5 w-full rounded-[10px] border border-[#dadce0] bg-white px-3 py-2.5 text-[13px] text-[#202124] focus:border-[#1a73e8] focus:outline-none"
+                    >
+                      {GUEST_POSTING_OPTIONS.extensions.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3 border-t border-[#e8eaed] pt-4 sm:flex-row sm:items-end sm:justify-between">
+                  <label className="text-[12px] font-medium text-[#3c4043]">
+                    Number of guest posts
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={guestPostQty}
+                      onChange={(event) => {
+                        const value = Number.parseInt(event.target.value, 10);
+                        setGuestPostQty(
+                          Number.isNaN(value)
+                            ? 1
+                            : Math.max(1, Math.min(100, value)),
+                        );
+                      }}
+                      className="mt-1.5 block w-28 rounded-[10px] border border-[#dadce0] bg-white px-3 py-2 text-[13px] text-[#202124] focus:border-[#1a73e8] focus:outline-none"
+                    />
+                  </label>
+                  <div className="flex items-end justify-between gap-3 sm:justify-end">
+                    <div className="text-right">
+                      <span className="block text-[10.5px] text-[#5f6368]">
+                        Sample estimate
+                      </span>
+                      <span className="gw-font-display text-[21px] font-semibold text-[#1a73e8]">
+                        $
+                        {(
+                          getGuestPostingPrice(guestPostOptions) * guestPostQty
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addGuestPostToCart}
+                      className="h-10 rounded-full bg-[#1a73e8] px-4 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#1557b0]"
+                    >
+                      Add to Campaign
+                    </button>
+                  </div>
+                </div>
+                <p className="mt-3 rounded-[10px] bg-[#fef7e0] px-3 py-2 text-[11px] leading-relaxed text-[#6b5200]">
+                  Sample pricing only. Guest Posting checkout is disabled until
+                  confirmed rates are configured.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* 9 Enhanced Service Cards Grid */}
@@ -1763,6 +2030,63 @@ export default function Services() {
                     </div>
                   );
                 })}
+                {guestPostItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-[18px] border border-[#fbbc04] bg-[#fffdf5] p-4 sm:p-5"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className="gw-font-display text-[15px] font-semibold text-[#202124]">
+                            {item.name}
+                          </h4>
+                          <span className="rounded-full bg-[#fef7e0] px-2 py-0.5 text-[10px] font-semibold text-[#8a5b00]">
+                            SAMPLE RATE
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[12px] text-[#5f6368]">
+                          {item.detail} • ${item.price.toFixed(2)} / post
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 sm:justify-end">
+                        <label className="text-[11px] font-medium text-[#5f6368]">
+                          Posts
+                          <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={item.qty}
+                            onChange={(event) => {
+                              const value = Number.parseInt(
+                                event.target.value,
+                                10,
+                              );
+                              setCheckoutCart((previous) => ({
+                                ...previous,
+                                [item.id]: Number.isNaN(value)
+                                  ? 1
+                                  : Math.max(1, Math.min(100, value)),
+                              }));
+                            }}
+                            className="mt-1 block w-20 rounded-[9px] border border-[#dadce0] bg-white px-2.5 py-1.5 text-[13px] text-[#202124]"
+                          />
+                        </label>
+                        <span className="gw-font-display text-[15px] font-semibold text-[#202124]">
+                          ${(item.price * item.qty).toFixed(2)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCalcServiceQty(item.id, 0)}
+                          className="rounded-full p-2 text-[#9aa0a6] transition-colors hover:bg-white hover:text-[#d93025]"
+                          aria-label={`Remove ${item.name} from campaign cart`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1829,7 +2153,13 @@ export default function Services() {
                                 {item.name}
                               </p>
                               <p className="text-[11px] text-[#5f6368]">
-                                ${item.price.toFixed(2)} / link
+                                {item.isGuestPost && (
+                                  <span className="block truncate">
+                                    {item.detail}
+                                  </span>
+                                )}
+                                ${item.price.toFixed(2)} /{" "}
+                                {item.isGuestPost ? "post" : "link"}
                               </p>
                             </div>
                           </div>
@@ -1872,9 +2202,9 @@ export default function Services() {
                       </span>
                     </div>
                     <div className="flex justify-between items-center mb-3 pb-3 border-b border-[#dadce0] text-[12.5px] sm:text-[13px] text-[#5f6368]">
-                      <span>Total Volume</span>
+                      <span>Total Links & Posts</span>
                       <span className="font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
-                        {totalLinks.toLocaleString()} Backlinks
+                        {totalLinks.toLocaleString()} items
                       </span>
                     </div>
                     <div className="flex justify-between items-end pt-1">
@@ -1906,6 +2236,16 @@ export default function Services() {
                       {paymentError}
                     </div>
                   )}
+                  {hasGuestPostItems && (
+                    <div
+                      role="status"
+                      className="mb-3 rounded-[12px] border border-[#fbbc04]/60 bg-[#fef7e0] p-3 text-[12px] leading-relaxed text-[#6b5200]"
+                    >
+                      Guest Posting uses sample rates right now. Remove it from
+                      the cart to pay for other services, or wait until final
+                      rates are configured.
+                    </div>
+                  )}
 
                   {/* API Checkout Buttons */}
                   <div className="space-y-2.5">
@@ -1915,7 +2255,8 @@ export default function Services() {
                       disabled={
                         totalLinks === 0 ||
                         isInitializing ||
-                        isRedirectingBoomFi
+                        isRedirectingBoomFi ||
+                        hasGuestPostItems
                       }
                       className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
@@ -1949,7 +2290,7 @@ export default function Services() {
                     </button>
 
                     <div className="w-full relative z-0">
-                      {totalLinks > 0 ? (
+                      {totalLinks > 0 && !hasGuestPostItems ? (
                         <PayPalScriptProvider
                           options={{
                             "client-id": PAYPAL_CLIENT_ID,
@@ -1992,7 +2333,9 @@ export default function Services() {
                           className="w-full h-[48px] sm:h-[50px] rounded-full bg-[#FFC439] opacity-50 cursor-not-allowed flex items-center justify-center"
                         >
                           <span className="gw-font-display text-[14.5px] font-semibold text-[#003087]">
-                            PayPal
+                            {hasGuestPostItems
+                              ? "PayPal unavailable for sample rates"
+                              : "PayPal"}
                           </span>
                         </button>
                       )}
@@ -2004,7 +2347,8 @@ export default function Services() {
                       disabled={
                         totalLinks === 0 ||
                         isInitializing ||
-                        isRedirectingBoomFi
+                        isRedirectingBoomFi ||
+                        hasGuestPostItems
                       }
                       className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-[#d5ff2e] text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#c2ed15] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
@@ -2219,9 +2563,10 @@ export default function Services() {
             <button
               type="button"
               onClick={() => openCheckoutModalWithCart(checkoutCart)}
-              className="gw-font-display text-[13px] sm:text-[14px] font-medium bg-[#1a73e8] hover:bg-[#1557b0] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-sm transition-colors cursor-pointer whitespace-nowrap"
+              disabled={hasGuestPostItems}
+              className="gw-font-display text-[13px] sm:text-[14px] font-medium bg-[#1a73e8] hover:bg-[#1557b0] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-sm transition-colors cursor-pointer whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Checkout →
+              {hasGuestPostItems ? "Rates pending" : "Checkout →"}
             </button>
           </div>
         </div>
@@ -2304,45 +2649,52 @@ export default function Services() {
                   Or express checkout with PayPal / Crypto
                 </p>
 
-                <PayPalScriptProvider
-                  options={{
-                    "client-id": PAYPAL_CLIENT_ID,
-                    currency: "USD",
-                    intent: "capture",
-                  }}
-                >
-                  <PayPalButtons
-                    style={{
-                      layout: "horizontal",
-                      height: 44,
-                      color: "gold",
-                      shape: "pill",
-                      tagline: false,
+                {hasGuestPostItems ? (
+                  <div className="rounded-[12px] bg-[#fef7e0] p-3 text-center text-[12px] text-[#6b5200]">
+                    Payment disabled while the cart contains Guest Posting
+                    sample rates.
+                  </div>
+                ) : (
+                  <PayPalScriptProvider
+                    options={{
+                      "client-id": PAYPAL_CLIENT_ID,
+                      currency: "USD",
+                      intent: "capture",
                     }}
-                    createOrder={async () => {
-                      const { data } = await axios.post(
-                        `${BACKEND_URL}/api/create-paypal-order`,
-                        { cart: checkoutCart },
-                      );
-                      return data.id;
-                    }}
-                    onApprove={async (data) => {
-                      const res = await axios.post(
-                        `${BACKEND_URL}/api/capture-paypal-order`,
-                        { orderID: data.orderID },
-                      );
-                      handlePaymentSuccess(
-                        res.data?.captureId || data.orderID,
-                        "PayPal Checkout",
-                      );
-                    }}
-                  />
-                </PayPalScriptProvider>
+                  >
+                    <PayPalButtons
+                      style={{
+                        layout: "horizontal",
+                        height: 44,
+                        color: "gold",
+                        shape: "pill",
+                        tagline: false,
+                      }}
+                      createOrder={async () => {
+                        const { data } = await axios.post(
+                          `${BACKEND_URL}/api/create-paypal-order`,
+                          { cart: checkoutCart },
+                        );
+                        return data.id;
+                      }}
+                      onApprove={async (data) => {
+                        const res = await axios.post(
+                          `${BACKEND_URL}/api/capture-paypal-order`,
+                          { orderID: data.orderID },
+                        );
+                        handlePaymentSuccess(
+                          res.data?.captureId || data.orderID,
+                          "PayPal Checkout",
+                        );
+                      }}
+                    />
+                  </PayPalScriptProvider>
+                )}
 
                 <button
                   type="button"
                   onClick={handleBoomFiCheckout}
-                  disabled={isRedirectingBoomFi}
+                  disabled={isRedirectingBoomFi || hasGuestPostItems}
                   className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed1] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <svg

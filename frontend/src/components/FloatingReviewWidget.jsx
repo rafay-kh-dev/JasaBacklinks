@@ -76,10 +76,10 @@ export default function FloatingReviewWidget() {
       name: "G2 Review",
       score: "4.5",
       icon: (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Exactly using your user-provided G2 circle SVG */}
           <svg
-            className="w-5.5 h-5.5 sm:w-6 sm:h-6 shrink-0"
+            className="w-5 h-5 sm:w-6 sm:h-6 shrink-0"
             viewBox="0 0 1000 1000"
             xmlns="http://www.w3.org/2000/svg"
           >
@@ -97,7 +97,7 @@ export default function FloatingReviewWidget() {
               fill="#fff"
             />
           </svg>
-          <span className="gw-font-display text-[15.5px] sm:text-[17px] font-bold text-[#0f172a] whitespace-nowrap">
+          <span className="gw-font-display text-[14px] sm:text-[17px] font-bold text-[#0f172a] whitespace-nowrap">
             G2 Review
           </span>
         </div>
@@ -149,7 +149,7 @@ export default function FloatingReviewWidget() {
       {/* Main Container Pill */}
       <div className="flex items-center bg-white rounded-full p-1 sm:p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#e8eaed] transition-all hover:shadow-[0_12px_40px_rgba(26,115,232,0.12)]">
         {/* Left Badge Part: Dark Green Circle + Score */}
-        <div className="flex items-center gap-1.5 sm:gap-3 pl-1.5 sm:pl-2 pr-2.5 sm:pr-5">
+        <div className="flex items-center gap-1 sm:gap-3 pl-1 sm:pl-2 pr-1.5 sm:pr-5">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#00875A] flex items-center justify-center shrink-0 shadow-2xs">
             <svg
               className="w-5.5 h-5.5 sm:w-6 sm:h-6 text-[#73ff73]"
@@ -173,19 +173,19 @@ export default function FloatingReviewWidget() {
         <div className="w-[1px] h-10 sm:h-11 bg-[#e2e8f0] shrink-0" />
 
         {/* Center Logo Section */}
-        <div className="flex items-center px-2.5 sm:px-5 min-w-[125px] sm:min-w-[170px] justify-start">
+        <div className="flex items-center px-1.5 sm:px-5 min-w-[105px] sm:min-w-[170px] justify-start">
           {activeReview.icon}
         </div>
 
         {/* Circular Arrows Navigation Controls */}
-        <div className="flex items-center gap-1 sm:gap-1.5 pr-1 sm:pr-1.5 shrink-0">
+        <div className="flex items-center gap-0.5 sm:gap-1.5 pr-0.5 sm:pr-1.5 shrink-0">
           <button
             onClick={prevReview}
-            className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
+            className="w-6 h-6 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
             aria-label="Previous platform"
           >
             <svg
-              className="w-4 h-4 sm:w-4.5 sm:h-4.5"
+              className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -196,11 +196,11 @@ export default function FloatingReviewWidget() {
           </button>
           <button
             onClick={nextReview}
-            className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
+            className="w-6 h-6 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
             aria-label="Next platform"
           >
             <svg
-              className="w-4 h-4 sm:w-4.5 sm:h-4.5"
+              className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
