@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Preloader from "./components/Preloader";
 import FloatingReviewWidget from "./components/FloatingReviewWidget";
 import FloatingContactWidget from "./components/FloatingContactWidget";
 import Home from "./pages/Home";
@@ -379,7 +378,6 @@ export default function App() {
   return (
     <Router>
       <RouteTitleManager />
-      <Preloader />
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow">
