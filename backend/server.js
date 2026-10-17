@@ -208,11 +208,12 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
     }
 
     const boomfiBaseUrl = process.env.BOOMFI_API_BASE || "https://mapi.boomfi.xyz/v1";
+    const planName = `Jasa Backlinks SEO Campaign ${crypto.randomBytes(6).toString("hex")}`;
 
     const response = await axios.post(
       `${boomfiBaseUrl}/paylinks`,
       {
-        name: "Jasa Backlinks SEO Campaign",
+        name: planName,
         description: `Bulk Link Placement Order ($${totalAmount.toFixed(2)} USD)`,
         amount: totalAmount.toFixed(2),
         currency: "USD",

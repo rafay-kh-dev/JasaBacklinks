@@ -16,15 +16,14 @@ import axios from "axios";
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 // --- YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3) ---
 const TEAM_CONTACTS = {
-  whatsappUrl: "https://wa.me/6281234567890",
-  whatsappLabel: "+62 812-3456-7890",
-  telegramUrl: "https://t.me/jasabacklinks",
-  telegramLabel: "@jasabacklinks",
+  whatsappUrl: "https://wa.me/447598789693",
+  whatsappLabel: "+44 7598789693",
+  telegramUrl: "https://t.me/SEOHUBLTD",
+  telegramLabel: "@SEOHUBLTD",
   supportEmail: "jasa-backlinks@seohubltd.com",
 };
 
@@ -1726,23 +1725,23 @@ export default function ServiceDetail({ forcedSlug }) {
                       className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] hover:bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] shadow-[0_6px_20px_rgba(26,115,232,0.25)] transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <svg
-  className="w-8   h-4"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 468 222.5"
-  fill="white"
-  role="img"
-  aria-label="Stripe"
->
-  <g>
-    <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
-    <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
-    <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
-    <rect x="223.8" y="69.3" width="25.1" height="87.5" />
-    <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
-    <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
-    <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
-  </g>
-</svg>
+                        className="w-8   h-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 468 222.5"
+                        fill="white"
+                        role="img"
+                        aria-label="Stripe"
+                      >
+                        <g>
+                          <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
+                          <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
+                          <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
+                          <rect x="223.8" y="69.3" width="25.1" height="87.5" />
+                          <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
+                          <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
+                          <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
+                        </g>
+                      </svg>
                       <span>
                         Order {heroQty.toLocaleString()} Links ($
                         {heroTotalAmount.toLocaleString("en-US", {
@@ -1752,6 +1751,42 @@ export default function ServiceDetail({ forcedSlug }) {
                         )
                       </span>
                     </button>
+
+                    <PayPalScriptProvider
+                      options={{
+                        "client-id": PAYPAL_CLIENT_ID,
+                        currency: "USD",
+                        intent: "capture",
+                      }}
+                    >
+                      <PayPalButtons
+                        style={{
+                          layout: "horizontal",
+                          height: 46,
+                          color: "gold",
+                          shape: "pill",
+                          tagline: false,
+                        }}
+                        forceReRender={[currentService.id, heroQty]}
+                        createOrder={async () => {
+                          const { data } = await axios.post(
+                            `${BACKEND_URL}/api/create-paypal-order`,
+                            { cart: { [currentService.id]: heroQty } },
+                          );
+                          return data.id;
+                        }}
+                        onApprove={async (data) => {
+                          const res = await axios.post(
+                            `${BACKEND_URL}/api/capture-paypal-order`,
+                            { orderID: data.orderID },
+                          );
+                          handlePaymentSuccess(
+                            res.data?.captureId || data.orderID,
+                            "PayPal Checkout",
+                          );
+                        }}
+                      />
+                    </PayPalScriptProvider>
 
                     <button
                       type="button"
@@ -1764,26 +1799,26 @@ export default function ServiceDetail({ forcedSlug }) {
                       className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed1] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <svg
-  className="w-4 h-4 text-black"
-  xmlns="http://www.w3.org/2000/svg"
-  width="100%"
-  height="100%"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth={2}
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
-  <path d="M8 6v12" />
-  <path d="M8 12h6" />
-  <path d="M9 3v3" />
-  <path d="M13 3v3" />
-  <path d="M9 18v3" />
-  <path d="M13 18v3" />
-</svg>
+                        className="w-4 h-4 text-black"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+                        <path d="M8 6v12" />
+                        <path d="M8 12h6" />
+                        <path d="M9 3v3" />
+                        <path d="M13 3v3" />
+                        <path d="M9 18v3" />
+                        <path d="M13 18v3" />
+                      </svg>
                       {isRedirectingBoomFi
                         ? "Redirecting to BoomFi Gateway..."
                         : "Pay with Crypto (BoomFi)"}
@@ -1842,8 +1877,9 @@ export default function ServiceDetail({ forcedSlug }) {
               Multi-Service Bundle Calculator
             </div>
             <h2 className="gw-font-display text-[26px] sm:text-[36px] md:text-[42px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-2.5">
-              Combine <span className="text-[#1a73e8]">{currentService.name}</span>{" "}
-              with other networks.
+              Combine{" "}
+              <span className="text-[#1a73e8]">{currentService.name}</span> with
+              other networks.
             </h2>
             <p className="gw-font-text text-[14px] sm:text-[16px] text-[#5f6368] leading-[1.6]">
               Your current selection is pre-loaded below. Add any other PBN,
@@ -2489,28 +2525,28 @@ export default function ServiceDetail({ forcedSlug }) {
                   onClick={() => handleBoomFiDirectCheckout(checkoutCart)}
                   disabled={isRedirectingBoomFi}
                   className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full border border-[#dadce0] bg-[#d5ff2e] text-[#202124] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#c2ed15] hover:border-[#bdc1c6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <svg
-  className="w-4 h-4 text-black"
-  xmlns="http://www.w3.org/2000/svg"
-  width="100%"
-  height="100%"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth={2}
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
-  <path d="M8 6v12" />
-  <path d="M8 12h6" />
-  <path d="M9 3v3" />
-  <path d="M13 3v3" />
-  <path d="M9 18v3" />
-  <path d="M13 18v3" />
-</svg>
+                >
+                  <svg
+                    className="w-4 h-4 text-black"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+                    <path d="M8 6v12" />
+                    <path d="M8 12h6" />
+                    <path d="M9 3v3" />
+                    <path d="M13 3v3" />
+                    <path d="M9 18v3" />
+                    <path d="M13 18v3" />
+                  </svg>
                   {isRedirectingBoomFi
                     ? "Redirecting to BoomFi Gateway..."
                     : "Pay with Crypto (BoomFi)"}

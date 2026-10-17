@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 
 const TEAM_CONTACTS = {
-  whatsappUrl: "https://wa.me/6281234567890",
-  whatsappLabel: "+62 812-3456-7890",
-  telegramUrl: "https://t.me/jasabacklinks",
-  telegramLabel: "@jasabacklinks",
+  whatsappUrl: "https://wa.me/447598789693",
+  whatsappLabel: "+44 7598789693",
+  telegramUrl: "https://t.me/SEOHUBLTD",
+  telegramLabel: "@SEOHUBLTD",
   supportEmail: "jasa-backlinks@seohubltd.com",
 };
 
