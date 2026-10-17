@@ -3,8 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { FALLBACK_BLOGS } from "./Blog";
 
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 const CATEGORY_STYLES = {
   "PBN Strategy": {
@@ -81,7 +80,7 @@ export default function BlogPost() {
           ];
           localStorage.setItem(
             "jasa_blogs_cache",
-            JSON.stringify(combinedList)
+            JSON.stringify(combinedList),
           );
         }
       } catch {
@@ -101,7 +100,7 @@ export default function BlogPost() {
       setAllBlogs(combinedList);
       const matched =
         combinedList.find(
-          (b) => b.slug?.toLowerCase() === slug?.toLowerCase()
+          (b) => b.slug?.toLowerCase() === slug?.toLowerCase(),
         ) || combinedList[0];
 
       setPost(matched);
@@ -137,7 +136,7 @@ export default function BlogPost() {
         });
 
         return `<${tag}${attrs} id="${generatedId}">${innerHtml}</${tag}>`;
-      }
+      },
     );
 
     const plainText = post.content
@@ -226,7 +225,9 @@ export default function BlogPost() {
       const docHeight =
         document.documentElement.scrollHeight - window.innerHeight;
       const pct =
-        docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+        docHeight > 0
+          ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100))
+          : 0;
       setReadingProgress(pct);
 
       if (tocHeadings.length > 0) {
@@ -445,11 +446,11 @@ export default function BlogPost() {
             <div className="flex items-center gap-3.5">
               {/* SeoHub Corporate Logo / Brand Avatar Mark */}
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1a73e8] to-[#1557b0] text-white font-bold text-[13px] flex items-center justify-center shrink-0 shadow-sm border-2 border-white ring-2 ring-[#d2e3fc]">
-               <img 
-    src="/seohublogo.png" 
-    alt="SeoHub Logo" 
-    className="w-full h-full object-contain p-1"
-  />
+                <img
+                  src="/SeoHubLogo.png"
+                  alt="SeoHub Logo"
+                  className="w-full h-full object-contain p-1"
+                />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -764,7 +765,7 @@ export default function BlogPost() {
                       value={quickService.slug}
                       onChange={(e) => {
                         const found = quickServicesList.find(
-                          (s) => s.slug === e.target.value
+                          (s) => s.slug === e.target.value,
                         );
                         if (found) setQuickService(found);
                       }}

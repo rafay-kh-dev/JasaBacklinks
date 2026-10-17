@@ -126,7 +126,8 @@ export default function About() {
 
           <p className="gw-font-text text-[14.5px] sm:text-[17px] md:text-[18.5px] text-[#5f6368] max-w-[720px] mx-auto leading-[1.6] mb-7 sm:mb-9 px-1">
             Jasa Backlinks is a premier SEO and private link infrastructure
-            platform operating under <strong className="text-[#202124]">SeoHub Ltd</strong>. We empower
+            platform operating under{" "}
+            <strong className="text-[#202124]">SeoHub Ltd</strong>. We empower
             global SEO agencies, e-commerce brands, and enterprise marketing
             teams with verified DA/DR 50+ placements across .COM, .ID, .EDU, and
             .GOV networks.
@@ -140,7 +141,7 @@ export default function About() {
               Explore Our 12 Services →
             </Link>
             <Link
-              to="/contact"
+              to="https://seohubltd.com/contact"
               className="gw-font-display w-full sm:w-auto px-7 h-[48px] sm:h-[52px] rounded-full border border-[#dadce0] bg-white hover:bg-[#f8f9fa] text-[#202124] text-[14.5px] sm:text-[15px] font-medium flex items-center justify-center transition-all"
             >
               Contact SeoHub Ltd Desk
@@ -158,7 +159,9 @@ export default function About() {
                 key={idx}
                 className="relative bg-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 lg:p-7 border border-[#e8eaed] shadow-[0_2px_10px_rgba(60,64,67,0.03)] overflow-hidden flex flex-col justify-between"
               >
-                <div className={`absolute top-0 inset-x-0 h-[3px] ${item.topBar}`} />
+                <div
+                  className={`absolute top-0 inset-x-0 h-[3px] ${item.topBar}`}
+                />
                 <div>
                   <span
                     className={`inline-block text-[10px] sm:text-[11px] font-semibold px-2.5 py-0.5 rounded-full mb-3 ${item.color}`}
@@ -204,8 +207,8 @@ export default function About() {
                   blogs, and opaque invoicing. Under the leadership of{" "}
                   <strong className="text-[#202124]">SeoHub Ltd</strong>, we
                   engineered Jasa Backlinks to give SEO professionals direct,
-                  self-serve access to a privately owned, enterprise-grade domain
-                  ecosystem.
+                  self-serve access to a privately owned, enterprise-grade
+                  domain ecosystem.
                 </p>
                 <p className="gw-font-text text-[14px] sm:text-[15.5px] text-[#5f6368] leading-[1.65]">
                   Whether you are scaling a local Indonesian brand on{" "}
@@ -273,7 +276,9 @@ export default function About() {
                     </span>
                   </div>
                   <div className="flex justify-between py-2">
-                    <span className="text-[#5f6368]">Official Support Desk</span>
+                    <span className="text-[#5f6368]">
+                      Official Support Desk
+                    </span>
                     <span className="font-mono text-[12px] font-semibold text-[#1a73e8]">
                       {TEAM_CONTACTS.supportEmail}
                     </span>

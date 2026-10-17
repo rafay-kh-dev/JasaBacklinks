@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Preloader from "./components/Preloader";
+import FloatingReviewWidget from "./components/FloatingReviewWidget";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetail, { SERVICE_PAGES_DATA } from "./pages/ServiceDetail";
@@ -22,7 +24,7 @@ const SITE_URL =
   import.meta.env.VITE_SITE_URL ||
   (typeof window !== "undefined"
     ? window.location.origin
-    : "https://jasabacklinks.com");
+    : "https://www.jasabacklinks.net");
 
 // --- AUTOMATIC TAB TITLE, META DESCRIPTION, CANONICAL & JSON-LD SCHEMA MANAGER ---
 function RouteTitleManager() {
@@ -36,12 +38,15 @@ function RouteTitleManager() {
         : rawPath;
     const canonicalUrl = `${SITE_URL}${path === "/" ? "" : path}`;
 
+    // Single blog post (/blog/:slug) manages its own SEO title & meta description inside BlogPost.jsx
+    const isSingleBlogPost = path.startsWith("/blog/") && path !== "/blog";
+
     // 1. Static Pages Title & Meta Description Map
     const staticSeoMap = {
       "/": {
-        title: "Jasa Backlinks",
+        title: "Jasa Backlinks — Enterprise PBN & DA/DR 50+ Link Building",
         description:
-          "Enterprise PBN and authority link building services (DA/DR 50+) across .COM, .ID regional, and .EDU/.GOV networks. Operated by SeoHub Ltd.",
+          "Scale your Google rankings with Jasa Backlinks (by SeoHub Ltd). Verified DA/DR 50+ Homepage PBN Posts, Sidebar Blogrolls, .ID Regional, and .EDU/.GOV backlinks starting at $1/link.",
       },
       "/services": {
         title: "Services | Jasa Backlinks",
@@ -79,14 +84,14 @@ function RouteTitleManager() {
           "Review our Terms of Service, DA/DR 50+ metric guarantees, 5–7 day turnaround SLAs, and 12-month link replacement policy.",
       },
       "/blog": {
-  title: "SEO & Authority Link Building Blog | Jasa Backlinks",
-  description:
-    "Read technical SEO guides, DA/DR 50+ PBN case studies, .ID regional ranking strategies, and .EDU/.GOV authority insights from SeoHub Ltd.",
-},
-"/admin": {
-  title: "Admin Blog CMS | Jasa Backlinks",
-  description: "Jasa Backlinks Administrator Content Management Portal.",
-},
+        title: "SEO & Authority Link Building Blog | Jasa Backlinks",
+        description:
+          "Read technical SEO guides, DA/DR 50+ PBN case studies, .ID regional ranking strategies, and .EDU/.GOV authority insights from SeoHub Ltd.",
+      },
+      "/admin": {
+        title: "Admin Blog CMS | Jasa Backlinks",
+        description: "Jasa Backlinks Administrator Content Management Portal.",
+      },
     };
 
     let pageTitle = "Jasa Backlinks | Powered by SeoHub Ltd";
@@ -113,19 +118,24 @@ function RouteTitleManager() {
       }
     }
 
-    // Apply Document Title
-    document.title = pageTitle;
+    if (!isSingleBlogPost) {
+      document.title = pageTitle;
 
-    // Apply or Update <meta name="description">
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement("meta");
-      metaDesc.setAttribute("name", "description");
-      document.head.appendChild(metaDesc);
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement("meta");
+        metaDesc.setAttribute("name", "description");
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute("content", pageDescription);
+
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute("content", pageTitle);
+
+      let ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute("content", pageDescription);
     }
-    metaDesc.setAttribute("content", pageDescription);
 
-    // Apply or Update <link rel="canonical">
     let canonicalLink = document.querySelector('link[rel="canonical"]');
     if (!canonicalLink) {
       canonicalLink = document.createElement("link");
@@ -141,6 +151,7 @@ function RouteTitleManager() {
       name: "Jasa Backlinks",
       legalName: "SeoHub Ltd",
       url: SITE_URL,
+      logo: `${SITE_URL}/logo.png`,
       email: "jasa-backlinks@seohubltd.com",
       description:
         "Enterprise PBN and high-authority DA/DR 50+ link building infrastructure across .COM, .ID regional, and .EDU/.GOV domains.",
@@ -149,10 +160,7 @@ function RouteTitleManager() {
         name: "SeoHub Ltd",
         url: "https://seohub.ltd",
       },
-      sameAs: [
-        "https://t.me/jasabacklinks",
-        "https://wa.me/6281234567890",
-      ],
+      sameAs: ["https://t.me/jasabacklinks", "https://wa.me/6281234567890"],
       contactPoint: [
         {
           "@type": "ContactPoint",
@@ -169,12 +177,12 @@ function RouteTitleManager() {
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
       name: "Jasa Backlinks",
+      description: staticSeoMap["/"].description,
       publisher: {
         "@id": `${SITE_URL}/#organization`,
       },
     };
 
-    // Dynamic BreadcrumbList Schema
     const breadcrumbItems = [
       {
         "@type": "ListItem",
@@ -221,13 +229,8 @@ function RouteTitleManager() {
       itemListElement: breadcrumbItems,
     };
 
-    const schemaGraph = [
-      organizationSchema,
-      websiteSchema,
-      breadcrumbSchema,
-    ];
+    const schemaGraph = [organizationSchema, websiteSchema, breadcrumbSchema];
 
-    // 3. Route-Specific Schema Additions
     if (path === "/" || path === "/services") {
       const catalogueItems = (SERVICE_PAGES_DATA || []).map((svc, idx) => ({
         "@type": "ListItem",
@@ -260,7 +263,6 @@ function RouteTitleManager() {
     }
 
     if (matchedService) {
-      // Dedicated Service + Product Rich Snippet Schema
       schemaGraph.push({
         "@type": ["Service", "Product"],
         "@id": `${canonicalUrl}#service`,
@@ -298,8 +300,10 @@ function RouteTitleManager() {
         },
       });
 
-      // Dynamic FAQPage Schema for Each Individual Service
-      if (Array.isArray(matchedService.faqs) && matchedService.faqs.length > 0) {
+      if (
+        Array.isArray(matchedService.faqs) &&
+        matchedService.faqs.length > 0
+      ) {
         schemaGraph.push({
           "@type": "FAQPage",
           "@id": `${canonicalUrl}#faq`,
@@ -346,7 +350,6 @@ function RouteTitleManager() {
       "@graph": schemaGraph,
     };
 
-    // Inject or Update <script id="jasa-jsonld-schema" type="application/ld+json">
     let schemaScript = document.getElementById("jasa-jsonld-schema");
     if (!schemaScript) {
       schemaScript = document.createElement("script");
@@ -356,7 +359,6 @@ function RouteTitleManager() {
     }
     schemaScript.textContent = JSON.stringify(fullJsonLd);
 
-    // Smoothly handle scroll position on route change
     if (location.hash) {
       const targetId = location.hash.replace("#", "");
       setTimeout(() => {
@@ -376,6 +378,7 @@ export default function App() {
   return (
     <Router>
       <RouteTitleManager />
+      <Preloader />
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow">
@@ -394,6 +397,7 @@ export default function App() {
             <Route path="/admin" element={<AdminBlog />} />
           </Routes>
         </main>
+        <FloatingReviewWidget />
         <Footer />
       </div>
     </Router>
