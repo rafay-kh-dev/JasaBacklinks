@@ -9,7 +9,7 @@ const TEAM_CONTACTS = {
   whatsappLabel: "+44 7598789693",
   telegramUrl: "https://t.me/SEOHUBLTD",
   telegramLabel: "@SEOHUBLTD",
-  supportEmail: "jasa-backlinks@seohubltd.com",
+  supportEmail: "hello@jasabacklinks.net",
 };
 
 export default function Contact() {
@@ -91,7 +91,9 @@ export default function Contact() {
         message,
       });
       if (!data?.success) {
-        throw new Error("The server did not confirm that your enquiry was sent.");
+        throw new Error(
+          "The server did not confirm that your enquiry was sent.",
+        );
       }
       setIsSubmitted(true);
     } catch (err) {
