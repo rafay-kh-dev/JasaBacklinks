@@ -79,7 +79,15 @@ const sidebarLinks = [
 function MinimalSEOIcon({ name }) {
   const icons = {
     "file-text": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
         <polyline points="14 2 14 8 20 8"></polyline>
         <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -87,54 +95,118 @@ function MinimalSEOIcon({ name }) {
         <polyline points="10 9 9 9 8 9"></polyline>
       </svg>
     ),
-    "layout": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    layout: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
         <line x1="3" y1="9" x2="21" y2="9"></line>
         <line x1="9" y1="21" x2="9" y2="9"></line>
       </svg>
     ),
-    "pin": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    pin: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <line x1="12" y1="17" x2="12" y2="22"></line>
         <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
       </svg>
     ),
-    "globe": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    globe: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="2" y1="12" x2="22" y2="12"></line>
         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
       </svg>
     ),
-    "map": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    map: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
         <line x1="8" y1="2" x2="8" y2="18"></line>
         <line x1="16" y1="6" x2="16" y2="22"></line>
       </svg>
     ),
-    "target": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    target: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="10"></circle>
         <circle cx="12" cy="12" r="6"></circle>
         <circle cx="12" cy="12" r="2"></circle>
       </svg>
     ),
-    "graduation": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    graduation: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
         <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
       </svg>
     ),
-    "book": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    book: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
       </svg>
     ),
-    "building": (
-      <svg className="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    building: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
         <path d="M9 22v-4h6v4"></path>
         <path d="M8 6h.01"></path>
@@ -152,20 +224,18 @@ function MinimalSEOIcon({ name }) {
 
   const colors = {
     "file-text": "text-[#4285F4]",
-    "layout": "text-[#4285F4]",
-    "pin": "text-[#FBBC04]",
-    "globe": "text-[#34A853]",
-    "map": "text-[#34A853]",
-    "target": "text-[#FBBC04]",
-    "graduation": "text-[#A142F4]",
-    "book": "text-[#A142F4]",
-    "building": "text-[#EA4335]",
+    layout: "text-[#4285F4]",
+    pin: "text-[#FBBC04]",
+    globe: "text-[#34A853]",
+    map: "text-[#34A853]",
+    target: "text-[#FBBC04]",
+    graduation: "text-[#A142F4]",
+    book: "text-[#A142F4]",
+    building: "text-[#EA4335]",
   };
 
   return (
-    <span className={`${colors[name] || "text-[#4285F4]"}`}>
-      {icons[name]}
-    </span>
+    <span className={`${colors[name] || "text-[#4285F4]"}`}>{icons[name]}</span>
   );
 }
 
@@ -214,15 +284,14 @@ export default function Header() {
           : "bg-transparent border-b border-transparent"
       }`}
       style={{
-        fontFamily: "'Google Sans Text', 'Google Sans', 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+        fontFamily:
+          "'Google Sans Text', 'Google Sans', 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
       }}
     >
       {/* Top Bar */}
       <div className="flex items-center justify-between px-6 lg:px-10 h-[64px] max-w-[1920px] mx-auto">
-        
         {/* Left: Brand Logo & Navigation */}
         <div className="flex items-center h-full">
-          
           {/* Logo */}
           <Link
             to="/"
@@ -269,7 +338,9 @@ export default function Header() {
               <span className="mr-1">Services</span>
               <svg
                 className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                  isServicesOpen ? "rotate-180 text-[#1a73e8]" : "text-[#5f6368]"
+                  isServicesOpen
+                    ? "rotate-180 text-[#1a73e8]"
+                    : "text-[#5f6368]"
                 }`}
                 viewBox="0 0 24 24"
                 fill="none"
@@ -293,11 +364,11 @@ export default function Header() {
             </Link>
 
             <Link
-              to="/contact"
+              to="/Blog"
               onClick={closeMenu}
               className="flex items-center h-full px-1 hover:text-[#202124] transition-colors"
             >
-              Contact
+              Blog
             </Link>
           </nav>
         </div>
@@ -320,7 +391,7 @@ export default function Header() {
             onClick={closeMenu}
             className="inline-flex h-[40px] items-center justify-center rounded-full bg-[#1a73e8] px-6 text-[14px] font-medium text-white hover:bg-[#1557b0] transition-colors whitespace-nowrap"
           >
-            Get started
+            Contact Us
           </Link>
         </div>
 
@@ -332,11 +403,26 @@ export default function Header() {
             className="p-2 text-[#5f6368] hover:text-[#202124] rounded-full hover:bg-[#f1f3f4] transition-colors"
             aria-label="Toggle Menu"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {isMobileOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
@@ -346,12 +432,14 @@ export default function Header() {
       {/* Desktop Mega Menu */}
       {isServicesOpen && (
         <div className="hidden lg:flex absolute top-[64px] left-0 w-full bg-white border-b border-[#dadce0] shadow-[0_10px_20px_rgba(60,64,67,0.06)] min-h-[390px]">
-          
           {/* Left Panel: Services Rows */}
           <div className="flex-1 py-10 lg:py-12 pl-6 lg:pl-[60px] xl:pl-[120px] 2xl:pl-[170px] pr-6 lg:pr-10 xl:pr-12">
             <div className="flex flex-col gap-10 max-w-[1100px]">
               {serviceRows.map((row, rowIdx) => (
-                <div key={rowIdx} className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 lg:gap-x-10 xl:gap-x-16 items-start">
+                <div
+                  key={rowIdx}
+                  className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 lg:gap-x-10 xl:gap-x-16 items-start"
+                >
                   {row.map((item) => (
                     <Link
                       key={item.to}
@@ -392,8 +480,18 @@ export default function Header() {
               className="absolute top-6 right-6 xl:right-10 p-2 text-[#5f6368] hover:text-[#202124] hover:bg-[#e8eaed] rounded-full transition-colors cursor-pointer"
               aria-label="Close menu"
             >
-              <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-[18px] h-[18px]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.8"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
 
@@ -416,7 +514,11 @@ export default function Header() {
       {/* Mobile Navigation Drawer */}
       {isMobileOpen && (
         <div className="lg:hidden absolute top-[64px] left-0 w-full bg-white border-b border-[#dadce0] px-6 py-5 space-y-4 max-h-[calc(100vh-64px)] overflow-y-auto">
-          <Link to="/" onClick={closeMenu} className="block py-2 text-[16px] font-medium text-[#202124]">
+          <Link
+            to="/"
+            onClick={closeMenu}
+            className="block py-2 text-[16px] font-medium text-[#202124]"
+          >
             Home
           </Link>
 
@@ -433,7 +535,12 @@ export default function Header() {
                 fill="none"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
 
@@ -451,14 +558,18 @@ export default function Header() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[15px] font-medium text-[#202124]">{item.label}</span>
+                        <span className="text-[15px] font-medium text-[#202124]">
+                          {item.label}
+                        </span>
                         {item.badge && (
                           <span className="rounded bg-[#f1f3f4] px-1.5 py-0.5 text-[10px] font-bold text-[#5f6368]">
                             {item.badge}
                           </span>
                         )}
                       </div>
-                      <div className="text-[13.5px] text-[#5f6368] mt-0.5 line-clamp-2">{item.description}</div>
+                      <div className="text-[13.5px] text-[#5f6368] mt-0.5 line-clamp-2">
+                        {item.description}
+                      </div>
                     </div>
                   </Link>
                 ))}
@@ -466,10 +577,18 @@ export default function Header() {
             )}
           </div>
 
-          <Link to="/about" onClick={closeMenu} className="block py-2 text-[16px] font-medium text-[#202124]">
+          <Link
+            to="/about"
+            onClick={closeMenu}
+            className="block py-2 text-[16px] font-medium text-[#202124]"
+          >
             About
           </Link>
-          <Link to="/contact" onClick={closeMenu} className="block py-2 text-[16px] font-medium text-[#202124]">
+          <Link
+            to="/contact"
+            onClick={closeMenu}
+            className="block py-2 text-[16px] font-medium text-[#202124]"
+          >
             Contact
           </Link>
 
@@ -486,7 +605,7 @@ export default function Header() {
               onClick={closeMenu}
               className="flex h-[40px] w-full items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white"
             >
-              Get started
+              Contact Us
             </Link>
           </div>
         </div>

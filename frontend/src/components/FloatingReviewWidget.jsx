@@ -147,10 +147,10 @@ export default function FloatingReviewWidget() {
   return (
     <div className="fixed bottom-24 sm:bottom-8 left-4 sm:left-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-700">
       {/* Main Container Pill */}
-      <div className="flex items-center bg-white rounded-full p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#e8eaed] transition-all hover:shadow-[0_12px_40px_rgba(26,115,232,0.12)]">
+      <div className="flex items-center bg-white rounded-full p-1 sm:p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#e8eaed] transition-all hover:shadow-[0_12px_40px_rgba(26,115,232,0.12)]">
         {/* Left Badge Part: Dark Green Circle + Score */}
-        <div className="flex items-center gap-2 sm:gap-3 pl-2 pr-4 sm:pr-5">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#00875A] flex items-center justify-center shrink-0 shadow-2xs">
+        <div className="flex items-center gap-1.5 sm:gap-3 pl-1.5 sm:pl-2 pr-2.5 sm:pr-5">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#00875A] flex items-center justify-center shrink-0 shadow-2xs">
             <svg
               className="w-5.5 h-5.5 sm:w-6 sm:h-6 text-[#73ff73]"
               fill="currentColor"
@@ -173,15 +173,15 @@ export default function FloatingReviewWidget() {
         <div className="w-[1px] h-10 sm:h-11 bg-[#e2e8f0] shrink-0" />
 
         {/* Center Logo Section */}
-        <div className="flex items-center px-4 sm:px-5 min-w-[145px] sm:min-w-[170px] justify-start">
+        <div className="flex items-center px-2.5 sm:px-5 min-w-[125px] sm:min-w-[170px] justify-start">
           {activeReview.icon}
         </div>
 
         {/* Circular Arrows Navigation Controls */}
-        <div className="flex items-center gap-1.5 pr-1.5 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 pr-1 sm:pr-1.5 shrink-0">
           <button
             onClick={prevReview}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
+            className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
             aria-label="Previous platform"
           >
             <svg
@@ -196,7 +196,7 @@ export default function FloatingReviewWidget() {
           </button>
           <button
             onClick={nextReview}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
+            className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-[#cbd5e1] flex items-center justify-center text-[#334155] hover:bg-[#f8f9fa] hover:border-[#94a3b8] transition-colors cursor-pointer"
             aria-label="Next platform"
           >
             <svg
