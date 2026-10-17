@@ -367,11 +367,13 @@ function OrderOnboardingFlowModal({
   const [notes, setNotes] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
   const [isStep3ThankYou, setIsStep3ThankYou] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setIsStep3ThankYou(false);
+      setSubmissionError("");
     }
   }, [isOpen, paymentData]);
 
@@ -379,12 +381,12 @@ function OrderOnboardingFlowModal({
 
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
-    if (!contactHandle.trim()) return;
+    setSubmissionError("");
 
     setIsSubmitting(true);
 
     try {
-      await axios.post(`${BACKEND_URL}/api/submit-order`, {
+      const { data } = await axios.post(`${BACKEND_URL}/api/submit-order`, {
         transactionId: paymentData.transactionId,
         paymentMethod: paymentData.method,
         totalAmount: finalTotal,
@@ -400,14 +402,19 @@ function OrderOnboardingFlowModal({
           notes,
         },
       });
+      if (!data?.success) {
+        throw new Error("The server did not confirm that your order details were received.");
+      }
+      setIsStep3ThankYou(true);
     } catch (err) {
-      console.warn(
-        "Order logged locally; backend email notification pending:",
-        err.message,
+      console.error("Order details submission failed:", err);
+      setSubmissionError(
+        err.response?.data?.error ||
+          err.message ||
+          "Unable to submit your order details. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
-      setIsStep3ThankYou(true);
     }
   };
 
@@ -765,6 +772,17 @@ function OrderOnboardingFlowModal({
                     className="w-full px-3.5 py-2.5 bg-[#f8f9fa] focus:bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
                   />
                 </div>
+
+                {submissionError && (
+                  <div
+                    role="alert"
+                    className="rounded-[12px] border border-[#fad2cf] bg-[#fce8e6] p-3 text-[13px] font-medium text-[#d93025]"
+                  >
+                    Payment succeeded, but your order details could not be
+                    submitted: {submissionError} Please retry or contact support
+                    with your transaction ID.
+                  </div>
+                )}
 
                 <button
                   type="submit"

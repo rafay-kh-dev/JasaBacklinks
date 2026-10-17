@@ -58,15 +58,15 @@ const hasUnpricedGuestPostingItems = (cart = {}) =>
 // This route actually SENDS the emails to your inbox for live testing
 app.get("/api/send-test-emails", async (req, res) => {
   try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      return res.send("❌ Error: SMTP credentials are missing in your .env file.");
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      return res.status(503).send("Error: SMTP configuration is incomplete.");
     }
 
-    // FIXED: Using Custom SMTP Host instead of Gmail
+    const smtpPort = Number(process.env.SMTP_PORT || 465);
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT || 465,
-      secure: true, 
+      port: smtpPort,
+      secure: smtpPort === 465,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
 
@@ -284,38 +284,42 @@ app.post("/api/submit-order", async (req, res) => {
       return res.status(400).json({ error: "Customer email and target URLs are required." });
     }
 
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT || 465,
-        secure: true, // true for 465, false for 587
-        auth: { 
-          user: process.env.SMTP_USER, 
-          pass: process.env.SMTP_PASS 
-        },
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      return res.status(503).json({
+        error: "Order email service is not configured. Please contact support with your payment transaction ID.",
       });
-
-      const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
-
-      // Passing raw 'packages' array directly to our clean external templates
-      const clientHtml = getClientEmailHtml({ customer, transactionId, paymentMethod, totalLinks, totalAmount, packages });
-      const adminHtml = getAdminEmailHtml({ customer, transactionId, paymentMethod, totalLinks, totalAmount, packages });
-
-      await Promise.all([
-        transporter.sendMail({
-          from: `"Jasa Backlinks" <${process.env.SMTP_USER}>`,
-          to: customer.email,
-          subject: `Payment Receipt #${transactionId.slice(-8)} - Jasa Backlinks`,
-          html: clientHtml,
-        }),
-        transporter.sendMail({
-          from: `"Jasa Orders" <${process.env.SMTP_USER}>`,
-          to: adminEmail,
-          subject: `🔔 NEW ORDER: $${Number(totalAmount).toFixed(2)} from ${customer.fullName}`,
-          html: adminHtml,
-        }),
-      ]);
     }
+
+    const smtpPort = Number(process.env.SMTP_PORT || 465);
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+
+    const clientHtml = getClientEmailHtml({ customer, transactionId, paymentMethod, totalLinks, totalAmount, packages });
+    const adminHtml = getAdminEmailHtml({ customer, transactionId, paymentMethod, totalLinks, totalAmount, packages });
+
+    await Promise.all([
+      transporter.sendMail({
+        from: `"Jasa Backlinks" <${process.env.SMTP_USER}>`,
+        to: customer.email,
+        subject: `Payment Receipt #${transactionId.slice(-8)} - Jasa Backlinks`,
+        html: clientHtml,
+      }),
+      transporter.sendMail({
+        from: `"Jasa Orders" <${process.env.SMTP_USER}>`,
+        to: adminEmail,
+        subject: `🔔 NEW ORDER: $${Number(totalAmount).toFixed(2)} from ${customer.fullName}`,
+        html: adminHtml,
+      }),
+    ]);
 
     res.json({ success: true, message: "Order recorded securely." });
   } catch (error) {
@@ -354,10 +358,11 @@ app.post("/api/contact", async (req, res) => {
       });
     }
 
+    const smtpPort = Number(process.env.SMTP_PORT || 465);
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT || 465,
-      secure: true,
+      port: smtpPort,
+      secure: smtpPort === 465,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
