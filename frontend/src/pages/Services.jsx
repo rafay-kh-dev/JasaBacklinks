@@ -131,11 +131,11 @@ const STRIPE_ELEMENT_OPTIONS = {
 };
 
 // --- PIECEWISE SLIDER MAPPING HELPERS (LOCKS THUMB TO EXACT VISUAL LABELS) ---
-const SLIDER_STOPS = [0, 50, 1000, 2000, 3000, 4000, 5000];
+const SLIDER_STOPS = [0, 1, 1000, 2000, 3000, 4000, 5000];
 
 function qtyToSliderPos(qty) {
   if (!qty || qty <= 0) return 0;
-  if (qty <= 50) return 100;
+  if (qty <= 1) return 100;
   if (qty <= 1000) {
     return 100 + (qty / 1000) * 100;
   }
@@ -145,7 +145,7 @@ function qtyToSliderPos(qty) {
 function sliderPosToQty(pos) {
   const numPos = Number(pos) || 0;
   if (numPos < 50) return 0;
-  if (numPos <= 105) return 50;
+  if (numPos <= 105) return 1;
 
   for (let i = 2; i <= 6; i++) {
     const targetPos = i * 100;
@@ -157,7 +157,7 @@ function sliderPosToQty(pos) {
   if (numPos <= 200) {
     const raw = ((numPos - 100) / 100) * 1000;
     const snapped = Math.round(raw / 50) * 50;
-    return Math.max(50, Math.min(1000, snapped));
+    return Math.max(1, Math.min(1000, snapped));
   }
 
   const rawAbove1k = 1000 + ((numPos - 200) / 100) * 1000;
@@ -887,19 +887,19 @@ export default function Services() {
 
   // Individual Service Card Quick Quantities
   const [selectedQtys, setSelectedQtys] = useState({
-    hp_post: 50,
-    sidebar: 50,
-    sticky: 50,
-    id_hp_post: 50,
-    id_sidebar: 50,
-    id_sticky: 50,
-    hidden_links: 50,
-    edu_post: 50,
-    edu_sidebar: 50,
+    hp_post: 1,
+    sidebar: 1,
+    sticky: 1,
+    id_hp_post: 1,
+    id_sidebar: 1,
+    id_sticky: 1,
+    hidden_links: 1,
+    edu_post: 1,
+    edu_sidebar: 1,
   });
 
   // Master Calculator & Bundle Cart State (Synced between Cards & Calculator)
-  const [checkoutCart, setCheckoutCart] = useState({ hp_post: 50 });
+  const [checkoutCart, setCheckoutCart] = useState({ hp_post: 1 });
 
   // Checkout Modal & Gateway States
   const [isCheckoutGatewayOpen, setIsCheckoutGatewayOpen] = useState(false);
@@ -982,7 +982,7 @@ export default function Services() {
 
   const updateCardQty = (id, val) => {
     let parsed = parseInt(val, 10);
-    if (isNaN(parsed) || parsed < 50) parsed = 50;
+    if (isNaN(parsed) || parsed < 1) parsed = 1;
     if (parsed > 5000) parsed = 5000;
     setSelectedQtys((prev) => ({ ...prev, [id]: parsed }));
     if (checkoutCart[id]) {
@@ -1001,7 +1001,6 @@ export default function Services() {
       });
       return;
     }
-    if (val > 0 && val < 50) val = 50;
     if (val > 5000) val = 5000;
 
     setCheckoutCart((prev) => ({ ...prev, [id]: val }));
@@ -1019,7 +1018,7 @@ export default function Services() {
 
   // Trigger Instant Checkout for a Single Service Card
   const handleInstantOrder = async (serviceId) => {
-    const qty = selectedQtys[serviceId] || 50;
+    const qty = selectedQtys[serviceId] || 1;
     const newCart = { [serviceId]: qty };
     setCheckoutCart(newCart);
     await openCheckoutModalWithCart(newCart);
@@ -1027,7 +1026,7 @@ export default function Services() {
 
   // Add/Toggle Service in Calculator Bundle
   const toggleBundleItem = (serviceId) => {
-    const qty = selectedQtys[serviceId] || 50;
+    const qty = selectedQtys[serviceId] || 1;
     setCheckoutCart((prev) => {
       const next = { ...prev };
       if (next[serviceId]) {
@@ -1478,7 +1477,7 @@ export default function Services() {
           {/* 9 Enhanced Service Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {filteredServices.map((service) => {
-              const currentQty = selectedQtys[service.id] || 50;
+              const currentQty = selectedQtys[service.id] || 1;
               const subtotal = currentQty * service.price;
               const inBundle = Boolean(checkoutCart[service.id]);
               const isSpecsOpen = Boolean(expandedSpecs[service.id]);
@@ -1615,7 +1614,7 @@ export default function Services() {
                           <button
                             type="button"
                             onClick={() =>
-                              updateCardQty(service.id, currentQty - 50)
+                              updateCardQty(service.id, currentQty - 1)
                             }
                             className="w-7 h-7 rounded-full text-[#5f6368] hover:bg-white active:bg-[#e8eaed] flex items-center justify-center font-bold text-[14px] cursor-pointer"
                           >
@@ -1623,9 +1622,9 @@ export default function Services() {
                           </button>
                           <input
                             type="number"
-                            min="50"
+                            min="1"
                             max="5000"
-                            step="50"
+                            step="1"
                             value={currentQty}
                             onChange={(e) =>
                               updateCardQty(service.id, e.target.value)
@@ -1635,7 +1634,7 @@ export default function Services() {
                           <button
                             type="button"
                             onClick={() =>
-                              updateCardQty(service.id, currentQty + 50)
+                              updateCardQty(service.id, currentQty + 1)
                             }
                             className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-white active:bg-[#e8f0fe] flex items-center justify-center font-bold text-[14px] cursor-pointer"
                           >
@@ -1802,7 +1801,7 @@ export default function Services() {
                     >
                       <div
                         onClick={() => {
-                          if (!isActive) setCalcServiceQty(service.id, 50);
+                          if (!isActive) setCalcServiceQty(service.id, 1);
                         }}
                         className={`flex justify-between items-center gap-2 ${
                           isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
@@ -1813,7 +1812,7 @@ export default function Services() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setCalcServiceQty(service.id, isActive ? 0 : 50);
+                              setCalcServiceQty(service.id, isActive ? 0 : 1);
                             }}
                             className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
                               isActive
@@ -1863,7 +1862,7 @@ export default function Services() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setCalcServiceQty(service.id, 50);
+                                setCalcServiceQty(service.id, 1);
                               }}
                               className="sm:hidden text-[11.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-1 rounded-full"
                             >
@@ -1952,9 +1951,9 @@ export default function Services() {
                                 >
                                   {stopVal === 0 ? (
                                     "Off"
-                                  ) : stopVal === 50 ? (
+                                  ) : stopVal === 1 ? (
                                     <>
-                                      50
+                                      1
                                       <span className="hidden sm:inline">
                                         {" "}
                                         (Min)
@@ -1976,7 +1975,7 @@ export default function Services() {
                               onClick={() =>
                                 setCalcServiceQty(
                                   service.id,
-                                  currentQty === 50 ? 0 : currentQty - 50,
+                                  currentQty <= 1 ? 0 : currentQty - 1,
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] active:bg-[#e8eaed] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
@@ -1987,7 +1986,7 @@ export default function Services() {
                               type="number"
                               min="0"
                               max="5000"
-                              step="50"
+                              step="1"
                               value={currentQty}
                               onChange={(e) =>
                                 setCalcServiceQty(service.id, e.target.value)
@@ -1999,7 +1998,7 @@ export default function Services() {
                               onClick={() =>
                                 setCalcServiceQty(
                                   service.id,
-                                  currentQty === 0 ? 50 : currentQty + 50,
+                                  currentQty === 0 ? 1 : currentQty + 1,
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#1a73e8] active:bg-[#d2e3fc] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"

@@ -58,11 +58,11 @@ const STRIPE_ELEMENT_OPTIONS = {
 };
 
 // --- PIECEWISE SLIDER MAPPING HELPERS (EXACT ALIGNMENT WITH LABELS) ---
-const SLIDER_STOPS = [0, 50, 1000, 2000, 3000, 4000, 5000];
+const SLIDER_STOPS = [0, 1, 1000, 2000, 3000, 4000, 5000];
 
 function qtyToSliderPos(qty) {
   if (!qty || qty <= 0) return 0;
-  if (qty <= 50) return 100;
+  if (qty <= 1) return 100;
   if (qty <= 1000) {
     return 100 + (qty / 1000) * 100;
   }
@@ -72,7 +72,7 @@ function qtyToSliderPos(qty) {
 function sliderPosToQty(pos) {
   const numPos = Number(pos) || 0;
   if (numPos < 50) return 0;
-  if (numPos <= 105) return 50;
+  if (numPos <= 105) return 1;
 
   for (let i = 2; i <= 6; i++) {
     const targetPos = i * 100;
@@ -84,7 +84,7 @@ function sliderPosToQty(pos) {
   if (numPos <= 200) {
     const raw = ((numPos - 100) / 100) * 1000;
     const snapped = Math.round(raw / 50) * 50;
-    return Math.max(50, Math.min(1000, snapped));
+    return Math.max(1, Math.min(1000, snapped));
   }
 
   const rawAbove1k = 1000 + ((numPos - 200) / 100) * 1000;
@@ -107,7 +107,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Aged DA/DR 50+ Domains.",
     price: 1.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".COM • .NET • .ORG",
     turnaround: "5–7 Days",
@@ -160,7 +160,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Sidebar Blogroll Links.",
     price: 2.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".COM • .NET • .ORG",
     turnaround: "3–5 Days",
@@ -213,7 +213,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Homepage Sticky Placements.",
     price: 2.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".COM • .NET • .ORG",
     turnaround: "5–7 Days",
@@ -266,7 +266,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Homepage Contextual Links.",
     price: 2.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".ID • .CO.ID • .WEB.ID",
     turnaround: "5–7 Days",
@@ -319,7 +319,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Sidebar Blogroll Placements.",
     price: 3.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".ID • .CO.ID • .OR.ID",
     turnaround: "3–5 Days",
@@ -372,7 +372,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: ".ID Sticky Post Placements.",
     price: 2.5,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".ID • .CO.ID • .WEB.ID",
     turnaround: "5–7 Days",
@@ -425,7 +425,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "EDU PBN Contextual Blogposts.",
     price: 3.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".EDU • .AC.ID • .SCH.ID",
     turnaround: "5–7 Days",
@@ -478,7 +478,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "EDU PBN Sidebar Blogroll.",
     price: 5.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA/DR 50+",
     tlds: ".EDU • .AC.ID • .SCH.ID",
     turnaround: "3–5 Days",
@@ -531,7 +531,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Stealth Authority Backlinks.",
     price: 20.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DA 50–85+ Trust",
     tlds: ".AC.ID • .SCH.ID • .GO.ID",
     turnaround: "5–7 Days",
@@ -584,7 +584,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Complete SEO Link Package.",
     price: 5.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "Multi-Tier DR 50+",
     tlds: ".COM • .ID • .EDU Mix",
     turnaround: "5–7 Days",
@@ -637,7 +637,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Rank on the First Page.",
     price: 8.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "DR 50–80+ Power",
     tlds: ".COM • .EDU • .AC.ID • .GO.ID",
     turnaround: "5–7 Days",
@@ -690,7 +690,7 @@ export const SERVICE_PAGES_DATA = [
     heroHighlight: "Custom SEO Solutions.",
     price: 4.0,
     unitLabel: "link",
-    minQty: 50,
+    minQty: 1,
     metric: "Custom DR 50+",
     tlds: "Custom TLD & Geo Selection",
     turnaround: "3–7 Days",
@@ -1256,11 +1256,11 @@ export default function ServiceDetail({ forcedSlug }) {
     ) || SERVICE_PAGES_DATA[0];
 
   // Dedicated Hero Configurator Quantity State
-  const [heroQty, setHeroQty] = useState(50);
+  const [heroQty, setHeroQty] = useState(1);
 
   // Master Bulk Calculator Cart State (Pre-populated with current service)
   const [checkoutCart, setCheckoutCart] = useState({
-    [currentService.id]: 50,
+    [currentService.id]: 1,
   });
   const [calcCategory, setCalcCategory] = useState("all");
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -1279,8 +1279,8 @@ export default function ServiceDetail({ forcedSlug }) {
   // Reset Hero & Calculator default selection when navigating between the 12 service pages
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setHeroQty(50);
-    setCheckoutCart({ [currentService.id]: 50 });
+    setHeroQty(1);
+    setCheckoutCart({ [currentService.id]: 1 });
     setOpenFaqIndex(0);
     setPaymentError("");
   }, [currentService.id]);
@@ -1314,7 +1314,7 @@ export default function ServiceDetail({ forcedSlug }) {
 
   const updateHeroQty = (rawVal) => {
     let parsed = parseInt(rawVal, 10);
-    if (isNaN(parsed) || parsed < 50) parsed = 50;
+    if (isNaN(parsed) || parsed < 1) parsed = 1;
     if (parsed > 5000) parsed = 5000;
     setHeroQty(parsed);
     setCheckoutCart((prev) => ({ ...prev, [currentService.id]: parsed }));
@@ -1322,7 +1322,7 @@ export default function ServiceDetail({ forcedSlug }) {
 
   const handleHeroSliderChange = (posVal) => {
     const mapped = sliderPosToQty(posVal);
-    updateHeroQty(mapped < 50 ? 50 : mapped);
+    updateHeroQty(mapped < 1 ? 1 : mapped);
   };
 
   // Master Calculator Quantity Setter
@@ -1336,7 +1336,6 @@ export default function ServiceDetail({ forcedSlug }) {
       });
       return;
     }
-    if (val > 0 && val < 50) val = 50;
     if (val > 5000) val = 5000;
     setCheckoutCart((prev) => ({ ...prev, [id]: val }));
     if (id === currentService.id) setHeroQty(val);
@@ -1948,7 +1947,7 @@ export default function ServiceDetail({ forcedSlug }) {
                     >
                       <div
                         onClick={() => {
-                          if (!isActive) setCalcServiceQty(service.id, 50);
+                          if (!isActive) setCalcServiceQty(service.id, 1);
                         }}
                         className={`flex justify-between items-center gap-2 ${
                           isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
@@ -1959,7 +1958,7 @@ export default function ServiceDetail({ forcedSlug }) {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setCalcServiceQty(service.id, isActive ? 0 : 50);
+                              setCalcServiceQty(service.id, isActive ? 0 : 1);
                             }}
                             className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
                               isActive
@@ -2086,9 +2085,9 @@ export default function ServiceDetail({ forcedSlug }) {
                                 >
                                   {stopVal === 0 ? (
                                     "Off"
-                                  ) : stopVal === 50 ? (
+                                  ) : stopVal === 1 ? (
                                     <>
-                                      50
+                                      1
                                       <span className="hidden sm:inline">
                                         {" "}
                                         (Min)
@@ -2110,7 +2109,7 @@ export default function ServiceDetail({ forcedSlug }) {
                               onClick={() =>
                                 setCalcServiceQty(
                                   service.id,
-                                  currentQty === 50 ? 0 : currentQty - 50,
+                                  currentQty <= 1 ? 0 : currentQty - 1,
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#5f6368] hover:bg-[#f1f3f4] flex items-center justify-center cursor-pointer font-medium"
@@ -2121,7 +2120,7 @@ export default function ServiceDetail({ forcedSlug }) {
                               type="number"
                               min="0"
                               max="5000"
-                              step="50"
+                              step="1"
                               value={currentQty}
                               onChange={(e) =>
                                 setCalcServiceQty(service.id, e.target.value)
@@ -2133,7 +2132,7 @@ export default function ServiceDetail({ forcedSlug }) {
                               onClick={() =>
                                 setCalcServiceQty(
                                   service.id,
-                                  currentQty === 0 ? 50 : currentQty + 50,
+                                  currentQty === 0 ? 1 : currentQty + 1,
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-[#e8f0fe] flex items-center justify-center cursor-pointer font-medium"

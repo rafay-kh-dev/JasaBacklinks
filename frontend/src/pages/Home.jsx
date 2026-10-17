@@ -60,12 +60,12 @@ const STRIPE_ELEMENT_OPTIONS = {
 };
 
 // --- PIECEWISE SLIDER MAPPING HELPERS (LOCKS THUMB TO EXACT VISUAL LABELS) ---
-// Visual stops: 0 -> Pos 0 | 50 -> Pos 100 | 1k -> Pos 200 | 2k -> Pos 300 | 3k -> Pos 400 | 4k -> Pos 500 | 5k -> Pos 600
-const SLIDER_STOPS = [0, 50, 1000, 2000, 3000, 4000, 5000];
+// Visual stops: 0 -> Pos 0 | 1 -> Pos 100 | 1k -> Pos 200 | 2k -> Pos 300 | 3k -> Pos 400 | 4k -> Pos 500 | 5k -> Pos 600
+const SLIDER_STOPS = [0, 1, 1000, 2000, 3000, 4000, 5000];
 
 function qtyToSliderPos(qty) {
   if (!qty || qty <= 0) return 0;
-  if (qty <= 50) return 100;
+  if (qty <= 1) return 100;
   if (qty <= 1000) {
     return 100 + (qty / 1000) * 100;
   }
@@ -75,7 +75,7 @@ function qtyToSliderPos(qty) {
 function sliderPosToQty(pos) {
   const numPos = Number(pos) || 0;
   if (numPos < 50) return 0;
-  if (numPos <= 105) return 50;
+  if (numPos <= 105) return 1;
 
   // Snap smoothly when user drags near any major milestone (1k, 2k, 3k, 4k, 5k)
   for (let i = 2; i <= 6; i++) {
@@ -88,7 +88,7 @@ function sliderPosToQty(pos) {
   if (numPos <= 200) {
     const raw = ((numPos - 100) / 100) * 1000;
     const snapped = Math.round(raw / 50) * 50;
-    return Math.max(50, Math.min(1000, snapped));
+    return Math.max(1, Math.min(1000, snapped));
   }
 
   const rawAbove1k = 1000 + ((numPos - 200) / 100) * 1000;
@@ -786,7 +786,7 @@ function OrderOnboardingFlowModal({
 
 // --- LIVE PACKAGE ESTIMATOR & CHECKOUT SECTION ---
 function PackageEstimator() {
-  const [cart, setCart] = useState({ hp_post: 50 });
+  const [cart, setCart] = useState({ hp_post: 1 });
   const [activeCategory, setActiveCategory] = useState("all");
 
   // Payment & Modal States
@@ -929,7 +929,6 @@ function PackageEstimator() {
       });
       return;
     }
-    if (val > 0 && val < 50) val = 50;
     if (val > 5000) val = 5000;
 
     setCart((prev) => ({ ...prev, [id]: val }));
@@ -1140,7 +1139,7 @@ function PackageEstimator() {
                     >
                       <div
                         onClick={() => {
-                          if (!isActive) setServiceQty(service.id, 50);
+                          if (!isActive) setServiceQty(service.id, 1);
                         }}
                         className={`flex justify-between items-center gap-2 ${
                           isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
@@ -1151,7 +1150,7 @@ function PackageEstimator() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setServiceQty(service.id, isActive ? 0 : 50);
+                              setServiceQty(service.id, isActive ? 0 : 1);
                             }}
                             className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
                               isActive
@@ -1203,7 +1202,7 @@ function PackageEstimator() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setServiceQty(service.id, 50);
+                                setServiceQty(service.id, 1);
                               }}
                               className="sm:hidden text-[11.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-1 rounded-full"
                             >
@@ -1292,9 +1291,9 @@ function PackageEstimator() {
                                 >
                                   {stopVal === 0 ? (
                                     "Off"
-                                  ) : stopVal === 50 ? (
+                                  ) : stopVal === 1 ? (
                                     <>
-                                      50
+                                      1
                                       <span className="hidden sm:inline">
                                         {" "}
                                         (Min)
@@ -1316,7 +1315,7 @@ function PackageEstimator() {
                               onClick={() =>
                                 setServiceQty(
                                   service.id,
-                                  currentQty === 50 ? 0 : currentQty - 50,
+                                  currentQty <= 1 ? 0 : currentQty - 1,
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] active:bg-[#e8eaed] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
@@ -1327,7 +1326,7 @@ function PackageEstimator() {
                               type="number"
                               min="0"
                               max="5000"
-                              step="50"
+                              step="1"
                               value={currentQty}
                               onChange={(e) =>
                                 setServiceQty(service.id, e.target.value)
@@ -1339,7 +1338,7 @@ function PackageEstimator() {
                               onClick={() =>
                                 setServiceQty(
                                   service.id,
-                                  currentQty === 0 ? 50 : currentQty + 50,
+                                  currentQty === 0 ? 1 : currentQty + 1,
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#1a73e8] active:bg-[#d2e3fc] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"
