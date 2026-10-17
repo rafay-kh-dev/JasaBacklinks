@@ -383,28 +383,28 @@ app.post("/api/contact", async (req, res) => {
     const escapedEnquiryType = escapeHtml(enquiryType || "General Enquiry");
     const escapedMessage = escapeHtml(message).replace(/\r?\n/g, "<br>");
 
-    await Promise.all([
+    const [adminDelivery, customerDelivery] = await Promise.allSettled([
       transporter.sendMail({
         from: `"Jasa Backlinks Desk" <${process.env.SMTP_USER}>`,
         to: adminEmail,
         replyTo: email,
-        subject: `📩 [${enquiryType}] New Enquiry from ${fullName}`,
+        subject: `📩 [${escapedEnquiryType}] New Enquiry from ${escapedName}`,
         html: `
           <div style="font-family: 'Google Sans', Roboto, Arial, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #dadce0; border-radius: 18px; overflow: hidden;">
             <div style="height: 4px; background: linear-gradient(90deg, #4285F4 25%, #EA4335 25% 50%, #FBBC04 50% 75%, #34A853 75%);"></div>
             <div style="padding: 24px 28px; background: #f8fbff; border-bottom: 1px solid #e8eaed;">
-              <span style="display: inline-block; background: #e8f0fe; color: #1a73e8; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 99px; margin-bottom: 8px;">${enquiryType}</span>
+              <span style="display: inline-block; background: #e8f0fe; color: #1a73e8; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 99px; margin-bottom: 8px;">${escapedEnquiryType}</span>
               <h2 style="margin: 0; font-size: 22px; color: #202124;">New Contact Enquiry Received</h2>
             </div>
             <div style="padding: 24px 28px; color: #3c4043; font-size: 14px; line-height: 1.6;">
-              <p><strong>Name / Agency:</strong> ${fullName}</p>
-              <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #1a73e8;">${email}</a></p>
-              <p><strong>Direct Contact (${contactPlatform || "N/A"}):</strong> <span style="color: #1e8e3e; font-weight: 600;">${contactHandle || "Not provided"}</span></p>
-              <p><strong>Estimated Volume:</strong> ${volumeTier || "N/A"}</p>
-              <p><strong>Target Website:</strong> ${websiteUrl || "N/A"}</p>
+              <p><strong>Name / Agency:</strong> ${escapedName}</p>
+              <p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}" style="color: #1a73e8;">${escapeHtml(email)}</a></p>
+              <p><strong>Direct Contact (${escapeHtml(contactPlatform || "N/A")}):</strong> <span style="color: #1e8e3e; font-weight: 600;">${escapeHtml(contactHandle || "Not provided")}</span></p>
+              <p><strong>Estimated Volume:</strong> ${escapeHtml(volumeTier || "N/A")}</p>
+              <p><strong>Target Website:</strong> ${escapeHtml(websiteUrl || "N/A")}</p>
               <div style="margin-top: 16px; padding: 16px; background: #f8f9fa; border: 1px solid #e8eaed; border-radius: 12px;">
                 <strong style="display: block; margin-bottom: 6px; color: #202124;">Message / Brief:</strong>
-                <div style="white-space: pre-wrap;">${message}</div>
+                <div style="white-space: pre-wrap;">${escapedMessage}</div>
               </div>
             </div>
           </div>
@@ -433,7 +433,16 @@ app.post("/api/contact", async (req, res) => {
       }),
     ]);
 
-    res.json({ success: true });
+    if (adminDelivery.status === "rejected") {
+      throw adminDelivery.reason;
+    }
+
+    const confirmationSent = customerDelivery.status === "fulfilled";
+    if (!confirmationSent) {
+      console.error("Contact confirmation email failed:", customerDelivery.reason);
+    }
+
+    res.json({ success: true, confirmationSent });
   } catch (error) {
     console.error("Contact Form Error:", error);
     res.status(500).json({ error: "Failed to dispatch contact enquiry." });

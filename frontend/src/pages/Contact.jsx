@@ -26,6 +26,7 @@ export default function Contact() {
   // Submission & UI States
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [copiedKey, setCopiedKey] = useState("");
   const [openFaq, setOpenFaq] = useState(0);
@@ -95,6 +96,7 @@ export default function Contact() {
           "The server did not confirm that your enquiry was sent.",
         );
       }
+      setConfirmationEmailSent(data.confirmationSent !== false);
       setIsSubmitted(true);
     } catch (err) {
       console.error("Contact form submission failed:", err);
@@ -381,6 +383,16 @@ export default function Contact() {
                       </strong>{" "}
                       shortly.
                     </p>
+                    {!confirmationEmailSent && (
+                      <p
+                        role="status"
+                        className="mb-6 rounded-[12px] border border-[#fde293] bg-[#fef7e0] p-3 text-[13px] text-[#6b5200]"
+                      >
+                        Your message was delivered to our team, but we could
+                        not send the confirmation email. Please check that your
+                        email address is correct; our team has your enquiry.
+                      </p>
+                    )}
 
                     <div className="bg-[#f8f9fa] rounded-[16px] p-4 border border-[#e8eaed] max-w-[440px] mx-auto mb-6 text-left text-[13px] text-[#3c4043] space-y-1.5">
                       <div className="flex justify-between">
@@ -412,6 +424,7 @@ export default function Contact() {
                         type="button"
                         onClick={() => {
                           setIsSubmitted(false);
+                          setConfirmationEmailSent(true);
                           setMessage("");
                         }}
                         className="gw-font-display w-full sm:w-auto px-6 h-[46px] rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white text-[14px] font-medium transition-colors cursor-pointer"
