@@ -388,8 +388,8 @@ export default function Contact() {
                         role="status"
                         className="mb-6 rounded-[12px] border border-[#fde293] bg-[#fef7e0] p-3 text-[13px] text-[#6b5200]"
                       >
-                        Your message was delivered to our team, but we could
-                        not send the confirmation email. Please check that your
+                        Your message was delivered to our team, but we could not
+                        send the confirmation email. Please check that your
                         email address is correct; our team has your enquiry.
                       </p>
                     )}
