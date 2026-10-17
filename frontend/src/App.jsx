@@ -9,6 +9,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Preloader from "./components/Preloader";
 import FloatingReviewWidget from "./components/FloatingReviewWidget";
+import FloatingContactWidget from "./components/FloatingContactWidget";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetail, { SERVICE_PAGES_DATA } from "./pages/ServiceDetail";
@@ -44,7 +45,7 @@ function RouteTitleManager() {
     // 1. Static Pages Title & Meta Description Map
     const staticSeoMap = {
       "/": {
-        title: "Jasa Backlinks — Enterprise PBN & DA/DR 50+ Link Building",
+        title: "Jasa Backlinks",
         description:
           "Scale your Google rankings with Jasa Backlinks (by SeoHub Ltd). Verified DA/DR 50+ Homepage PBN Posts, Sidebar Blogrolls, .ID Regional, and .EDU/.GOV backlinks starting at $1/link.",
       },
@@ -398,6 +399,7 @@ export default function App() {
           </Routes>
         </main>
         <FloatingReviewWidget />
+        <FloatingContactWidget />
         <Footer />
       </div>
     </Router>

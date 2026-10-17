@@ -2,14 +2,13 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 const TEAM_CONTACTS = {
-  whatsappUrl: "https://wa.me/6281234567890",
-  whatsappLabel: "+62 812-3456-7890",
-  telegramUrl: "https://t.me/jasabacklinks",
-  telegramLabel: "@jasabacklinks",
+  whatsappUrl: "https://wa.me/447598789693",
+  whatsappLabel: "+44 7598789693",
+  telegramUrl: "https://t.me/SEOHUBLTD",
+  telegramLabel: "@SEOHUBLTD",
   supportEmail: "jasa-backlinks@seohubltd.com",
 };
 
@@ -384,13 +383,17 @@ export default function Contact() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#5f6368]">Estimated Volume:</span>
+                        <span className="text-[#5f6368]">
+                          Estimated Volume:
+                        </span>
                         <span className="font-semibold text-[#1a73e8]">
                           {volumeTier}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#5f6368]">Registered Email:</span>
+                        <span className="text-[#5f6368]">
+                          Registered Email:
+                        </span>
                         <span className="font-medium text-[#202124]">
                           {email}
                         </span>
@@ -728,7 +731,8 @@ export default function Contact() {
               Support & Pre-Sales Questions
             </div>
             <h2 className="gw-font-display text-[24px] sm:text-[34px] font-medium text-[#202124]">
-              Frequently asked <span className="text-[#1a73e8]">questions.</span>
+              Frequently asked{" "}
+              <span className="text-[#1a73e8]">questions.</span>
             </h2>
           </div>
 
