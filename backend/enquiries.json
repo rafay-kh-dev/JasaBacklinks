@@ -1,0 +1,14 @@
+[
+  {
+    "id": "enq-1792259605654",
+    "enquiryType": "Test Enquiry",
+    "fullName": "Automated Tester",
+    "email": "test@jasabacklinks.net",
+    "contactPlatform": "WhatsApp",
+    "contactHandle": "+44000000000",
+    "volumeTier": "50-250 Links",
+    "websiteUrl": "https://test.com",
+    "message": "This is an automated test message from Jest.",
+    "createdAt": "2026-10-17T17:53:25.654Z"
+  }
+]
