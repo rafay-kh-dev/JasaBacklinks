@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -30,66 +29,54 @@ const PAYPAL_API_BASE =
   "https://api-m.sandbox.paypal.com";
 
 // ==========================================
-// CENTRALIZED BULLETPROOF SMTP TRANSPORTER
+// BULLETPROOF HTTP EMAIL GATEWAY (NO SMTP NEEDED)
 // ==========================================
-function createMailTransporter() {
-  const host = (process.env.SMTP_HOST || "").trim();
-  const user = (process.env.SMTP_USER || "").trim();
-  const pass = (process.env.SMTP_PASS || "").trim();
-  const port = Number((process.env.SMTP_PORT || "465").trim());
+const sendMailOverAPI = async ({ from, to, replyTo, subject, html }) => {
+  const apiKey = (process.env.RESEND_API_KEY || process.env.SMTP_PASS || "").trim();
+  if (!apiKey) throw new Error("Missing RESEND_API_KEY in .env file.");
 
-  if (!host || !user || !pass) {
-    return null;
-  }
+  const payload = {
+    from,
+    to: Array.isArray(to) ? to : [to],
+    subject,
+    html,
+  };
+  
+  if (replyTo) payload.reply_to = replyTo;
 
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
-    auth: { user, pass },
-    tls: {
-      rejectUnauthorized: false,
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-    debug: false,
-    logger: false,
-  });
-}
-
-// Live SMTP Diagnostic Route for Testing
-app.get("/api/verify-smtp", async (req, res) => {
   try {
-    const transporter = createMailTransporter();
-    if (!transporter) {
-      return res.status(503).json({
-        connected: false,
-        error: "Missing SMTP_HOST, SMTP_USER, or SMTP_PASS in your backend .env file.",
-      });
-    }
-
-    await transporter.verify();
-    return res.json({
-      connected: true,
-      message: "SMTP Server is authenticated and ready to dispatch emails!",
+    const response = await axios.post("https://api.resend.com/emails", payload, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      timeout: 10000, // 10 second timeout for API requests
     });
-  } catch (err) {
-    console.error("SMTP Verification Failed:", err);
-    return res.status(500).json({
+    return response.data;
+  } catch (error) {
+    console.error("Resend API Delivery Error:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to send email via API");
+  }
+};
+
+// Live API Diagnostic Route for Testing
+app.get("/api/verify-smtp", (req, res) => {
+  const apiKey = (process.env.RESEND_API_KEY || process.env.SMTP_PASS || "").trim();
+  if (!apiKey) {
+    return res.status(503).json({
       connected: false,
-      error: err.message,
+      error: "Missing RESEND_API_KEY in your backend .env file.",
     });
   }
+  return res.json({
+    connected: true,
+    message: "HTTP Email API Gateway is authenticated and ready to dispatch!",
+  });
 });
 
 // Email Testing Route
 app.get("/api/send-test-emails", async (req, res) => {
   try {
-    const transporter = createMailTransporter();
-    if (!transporter) return res.status(503).send("Error: SMTP incomplete.");
-
-    // NAYA LOGIC: SENDER EMAIL ALAG KAR DIYA
     const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
     const myEmailAddress = (process.env.ADMIN_EMAIL || senderEmail).trim();
 
@@ -124,13 +111,13 @@ app.get("/api/send-test-emails", async (req, res) => {
     });
 
     await Promise.all([
-      transporter.sendMail({
+      sendMailOverAPI({
         from: `"Jasa Backlinks" <${senderEmail}>`,
         to: myEmailAddress,
         subject: `[TEST] Payment Receipt #TXN-TEST - Jasa Backlinks`,
         html: clientHtml,
       }),
-      transporter.sendMail({
+      sendMailOverAPI({
         from: `"Jasa Orders" <${senderEmail}>`,
         to: myEmailAddress,
         subject: `[TEST] NEW ORDER: $100.00 from ${dummyCustomer.fullName}`,
@@ -138,10 +125,10 @@ app.get("/api/send-test-emails", async (req, res) => {
       }),
     ]);
 
-    res.send(`<h3 style="color: green;">Success! Test emails sent to <b>${myEmailAddress}</b>.</h3>`);
+    res.send(`<h3 style="color: green;">Success! Test emails sent via HTTP API to <b>${myEmailAddress}</b>.</h3>`);
   } catch (error) {
     console.error("Test Email Delivery Error:", error);
-    res.send(`<h3 style="color: red;">Failed to send emails: <br><br> ${error.message}</h3>`);
+    res.send(`<h3 style="color: red;">Failed to send emails via API: <br><br> ${error.message}</h3>`);
   }
 });
 
@@ -369,12 +356,6 @@ app.post("/api/submit-order", async (req, res) => {
       console.warn("Could not save order to orders.json:", fileErr.message);
     }
 
-    const transporter = createMailTransporter();
-    if (!transporter) {
-      return res.json({ success: true, message: "Order recorded securely." });
-    }
-
-    // NAYA LOGIC: SENDER EMAIL ALAG KAR DIYA
     const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
     const adminEmail = (process.env.ADMIN_EMAIL || senderEmail).trim();
 
@@ -396,19 +377,25 @@ app.post("/api/submit-order", async (req, res) => {
     });
 
     const emailResults = await Promise.allSettled([
-      transporter.sendMail({
+      sendMailOverAPI({
         from: `"Jasa Backlinks" <${senderEmail}>`,
         to: customer.email,
         subject: `Payment Receipt #${String(transactionId || "ORDER").slice(-8)} - Jasa Backlinks`,
         html: clientHtml,
       }),
-      transporter.sendMail({
+      sendMailOverAPI({
         from: `"Jasa Orders" <${senderEmail}>`,
         to: adminEmail,
         subject: `NEW ORDER: $${Number(totalAmount).toFixed(2)} from ${customer.fullName}`,
         html: adminHtml,
       }),
     ]);
+
+    emailResults.forEach((result, idx) => {
+      if (result.status === "rejected") {
+        console.error(`ORDER MAIL ERROR [${idx === 0 ? 'Client' : 'Admin'}]:`, result.reason);
+      }
+    });
 
     res.json({ success: true, message: "Order recorded securely." });
   } catch (error) {
@@ -447,14 +434,8 @@ app.post("/api/contact", async (req, res) => {
         createdAt: new Date().toISOString(),
       });
       fs.writeFileSync(ENQUIRIES_FILE, JSON.stringify(existingEnquiries, null, 2));
-    } catch (fileErr) { }
+    } catch (fileErr) {}
 
-    const transporter = createMailTransporter();
-    if (!transporter) {
-      return res.json({ success: true, confirmationSent: false });
-    }
-
-    // NAYA LOGIC: SENDER EMAIL ALAG KAR DIYA
     const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
     const adminEmail = (process.env.ADMIN_EMAIL || "hello@jasabacklinks.net").trim();
 
@@ -485,14 +466,14 @@ app.post("/api/contact", async (req, res) => {
     });
 
     const emailResults = await Promise.allSettled([
-      transporter.sendMail({
+      sendMailOverAPI({
         from: `"Jasa Backlinks Desk" <${senderEmail}>`,
         to: adminEmail,
         replyTo: email.trim(),
         subject: `[${escapedEnquiryType}] New Enquiry from ${escapedName}`,
         html: adminContactHtml,
       }),
-      transporter.sendMail({
+      sendMailOverAPI({
         from: `"Jasa Backlinks" <${senderEmail}>`,
         to: email.trim(),
         replyTo: adminEmail,
@@ -500,6 +481,12 @@ app.post("/api/contact", async (req, res) => {
         html: clientContactHtml,
       }),
     ]);
+
+    emailResults.forEach((result, idx) => {
+      if (result.status === "rejected") {
+        console.error(`CONTACT MAIL ERROR [${idx === 0 ? 'Admin' : 'Client'}]:`, result.reason);
+      }
+    });
 
     res.json({ success: true, confirmationSent: emailResults[1].status === "fulfilled" });
   } catch (error) {
@@ -588,7 +575,7 @@ function readJsonFile(filePath, defaultData) {
 function writeJsonFile(filePath, data) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  } catch (err) { }
+  } catch (err) {}
 }
 
 app.post("/api/admin/login", (req, res) => {
