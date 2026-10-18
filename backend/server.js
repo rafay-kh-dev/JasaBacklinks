@@ -48,13 +48,13 @@ function createMailTransporter() {
     secure: port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
     auth: { user, pass },
     tls: {
-      rejectUnauthorized: false, // Prevents SSL handshake blocks
+      rejectUnauthorized: false,
     },
     connectionTimeout: 15000,
     greetingTimeout: 15000,
     socketTimeout: 20000,
-    debug: false, // Production mode mein isay false rakhein
-    logger: false, // Production mode mein isay false rakhein
+    debug: false,
+    logger: false,
   });
 }
 
@@ -89,8 +89,9 @@ app.get("/api/send-test-emails", async (req, res) => {
     const transporter = createMailTransporter();
     if (!transporter) return res.status(503).send("Error: SMTP incomplete.");
 
-    const smtpUser = process.env.SMTP_USER.trim();
-    const myEmailAddress = (process.env.ADMIN_EMAIL || smtpUser).trim();
+    // NAYA LOGIC: SENDER EMAIL ALAG KAR DIYA
+    const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
+    const myEmailAddress = (process.env.ADMIN_EMAIL || senderEmail).trim();
 
     const dummyCustomer = {
       fullName: "Test Agency Profile",
@@ -124,13 +125,13 @@ app.get("/api/send-test-emails", async (req, res) => {
 
     await Promise.all([
       transporter.sendMail({
-        from: `"Jasa Backlinks" <${smtpUser}>`,
+        from: `"Jasa Backlinks" <${senderEmail}>`,
         to: myEmailAddress,
         subject: `[TEST] Payment Receipt #TXN-TEST - Jasa Backlinks`,
         html: clientHtml,
       }),
       transporter.sendMail({
-        from: `"Jasa Orders" <${smtpUser}>`,
+        from: `"Jasa Orders" <${senderEmail}>`,
         to: myEmailAddress,
         subject: `[TEST] NEW ORDER: $100.00 from ${dummyCustomer.fullName}`,
         html: adminHtml,
@@ -349,7 +350,6 @@ app.post("/api/submit-order", async (req, res) => {
       return res.status(400).json({ error: "Customer email and target URLs are required." });
     }
 
-    // 1. BULLETPROOF BACKUP: Always save order to disk first
     try {
       const existingOrders = fs.existsSync(ORDERS_FILE)
         ? JSON.parse(fs.readFileSync(ORDERS_FILE, "utf8") || "[]")
@@ -369,15 +369,14 @@ app.post("/api/submit-order", async (req, res) => {
       console.warn("Could not save order to orders.json:", fileErr.message);
     }
 
-    // 2. EMAIL DISPATCH (Graceful handling)
     const transporter = createMailTransporter();
     if (!transporter) {
-      console.warn("SMTP missing. Order saved locally, email skipped.");
       return res.json({ success: true, message: "Order recorded securely." });
     }
 
-    const smtpUser = process.env.SMTP_USER.trim();
-    const adminEmail = (process.env.ADMIN_EMAIL || smtpUser).trim();
+    // NAYA LOGIC: SENDER EMAIL ALAG KAR DIYA
+    const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || senderEmail).trim();
 
     const clientHtml = getClientEmailHtml({
       customer,
@@ -398,25 +397,18 @@ app.post("/api/submit-order", async (req, res) => {
 
     const emailResults = await Promise.allSettled([
       transporter.sendMail({
-        from: `"Jasa Backlinks" <${smtpUser}>`,
+        from: `"Jasa Backlinks" <${senderEmail}>`,
         to: customer.email,
         subject: `Payment Receipt #${String(transactionId || "ORDER").slice(-8)} - Jasa Backlinks`,
         html: clientHtml,
       }),
       transporter.sendMail({
-        from: `"Jasa Orders" <${smtpUser}>`,
+        from: `"Jasa Orders" <${senderEmail}>`,
         to: adminEmail,
         subject: `NEW ORDER: $${Number(totalAmount).toFixed(2)} from ${customer.fullName}`,
         html: adminHtml,
       }),
     ]);
-
-    // Error Logging for Diagnosis
-    emailResults.forEach((result, idx) => {
-      if (result.status === "rejected") {
-        console.error(`ORDER MAIL ERROR [${idx === 0 ? 'Client' : 'Admin'}]:`, result.reason);
-      }
-    });
 
     res.json({ success: true, message: "Order recorded securely." });
   } catch (error) {
@@ -438,7 +430,6 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ error: "Email and message are required." });
     }
 
-    // Backup Save
     try {
       const existingEnquiries = fs.existsSync(ENQUIRIES_FILE)
         ? JSON.parse(fs.readFileSync(ENQUIRIES_FILE, "utf8") || "[]")
@@ -456,15 +447,16 @@ app.post("/api/contact", async (req, res) => {
         createdAt: new Date().toISOString(),
       });
       fs.writeFileSync(ENQUIRIES_FILE, JSON.stringify(existingEnquiries, null, 2));
-    } catch (fileErr) {}
+    } catch (fileErr) { }
 
     const transporter = createMailTransporter();
     if (!transporter) {
       return res.json({ success: true, confirmationSent: false });
     }
 
-    const smtpUser = process.env.SMTP_USER.trim();
-    const adminEmail = (process.env.ADMIN_EMAIL || "hello@jasabacklinks.net" || smtpUser).trim();
+    // NAYA LOGIC: SENDER EMAIL ALAG KAR DIYA
+    const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "hello@jasabacklinks.net").trim();
 
     const escapeHtml = (value = "") =>
       String(value).replace(
@@ -476,7 +468,6 @@ app.post("/api/contact", async (req, res) => {
     const escapedEnquiryType = escapeHtml(enquiryType || "General Enquiry");
     const escapedMessage = escapeHtml(message).replace(/\r?\n/g, "<br>");
 
-    // PREMIUM HTML GENERATION
     const adminContactHtml = getContactAdminHtml({
       enquiryType: escapedEnquiryType,
       fullName: escapedName,
@@ -495,27 +486,20 @@ app.post("/api/contact", async (req, res) => {
 
     const emailResults = await Promise.allSettled([
       transporter.sendMail({
-        from: `"Jasa Backlinks Desk" <${smtpUser}>`,
+        from: `"Jasa Backlinks Desk" <${senderEmail}>`,
         to: adminEmail,
         replyTo: email.trim(),
         subject: `[${escapedEnquiryType}] New Enquiry from ${escapedName}`,
         html: adminContactHtml,
       }),
       transporter.sendMail({
-        from: `"Jasa Backlinks" <${smtpUser}>`,
+        from: `"Jasa Backlinks" <${senderEmail}>`,
         to: email.trim(),
         replyTo: adminEmail,
         subject: "We've received your enquiry - Jasa Backlinks",
         html: clientContactHtml,
       }),
     ]);
-
-    // Error Logging for Diagnosis
-    emailResults.forEach((result, idx) => {
-      if (result.status === "rejected") {
-        console.error(`CONTACT MAIL ERROR [${idx === 0 ? 'Admin' : 'Client'}]:`, result.reason);
-      }
-    });
 
     res.json({ success: true, confirmationSent: emailResults[1].status === "fulfilled" });
   } catch (error) {
@@ -604,7 +588,7 @@ function readJsonFile(filePath, defaultData) {
 function writeJsonFile(filePath, data) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  } catch (err) {}
+  } catch (err) { }
 }
 
 app.post("/api/admin/login", (req, res) => {
@@ -847,12 +831,10 @@ app.delete("/api/blogs/:id", verifyAdminAuth, (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Remove 'if (require.main === module)' condition temporarily to force execution
 const server = app.listen(PORT, () => {
   console.log(`Enterprise Backend running on port ${PORT}`);
 });
 
-// --- SILENT CRASH CATCHER ---
 server.on('error', (err) => {
   console.error('Server Port Error:', err);
 });
