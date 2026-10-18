@@ -274,11 +274,11 @@ app.post("/api/capture-paypal-order", async (req, res) => {
 });
 
 // ==========================================
-// 3. BOOMFI CRYPTO API
+// 3. BOOMFI CRYPTO API (WITH AUTO-REDIRECT)
 // ==========================================
 app.post("/api/create-boomfi-charge", async (req, res) => {
   try {
-    const { cart } = req.body;
+    const { cart, originUrl } = req.body;
     const totalAmount = calculateSecureTotal(cart);
     if (totalAmount <= 0) {
       return res.status(400).json({ error: "Invalid cart total." });
@@ -289,38 +289,72 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
     }
 
     const boomfiBaseUrl = process.env.BOOMFI_API_BASE || "https://mapi.boomfi.xyz/v1";
-    const planName = `Jasa Backlinks SEO Campaign ${crypto.randomBytes(6).toString("hex")}`;
+    const txReference = `BF-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+    const planName = `Jasa Backlinks SEO Campaign (${txReference})`;
 
-    const response = await axios.post(
-      `${boomfiBaseUrl}/paylinks`,
-      {
-        name: planName,
-        description: `Bulk Link Placement Order ($${totalAmount.toFixed(2)} USD)`,
-        amount: totalAmount.toFixed(2),
-        currency: "USD",
-        type: "OneTime",
-      },
-      {
-        headers: {
-          "X-API-KEY": process.env.BOOMFI_API_KEY.trim(),
-          "Content-Type": "application/json",
-          Accept: "application/json",
+    // Return URL jahan payment ke baad BoomFi user ko wapas bhejega
+    const frontendBase = (originUrl || process.env.FRONTEND_URL || "https://www.jasabacklinks.net").replace(/\/$/, "");
+    const returnUrl = `${frontendBase}/?boomfi_status=success&tx=${txReference}`;
+
+    let response;
+    try {
+      // Try with redirect_url first
+      response = await axios.post(
+        `${boomfiBaseUrl}/paylinks`,
+        {
+          name: planName,
+          description: `Bulk Link Placement Order ($${totalAmount.toFixed(2)} USD)`,
+          amount: totalAmount.toFixed(2),
+          currency: "USD",
+          type: "OneTime",
+          redirect_url: returnUrl,
         },
-      }
-    );
+        {
+          headers: {
+            "X-API-KEY": process.env.BOOMFI_API_KEY.trim(),
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+    } catch (firstErr) {
+      // Fallback agar BoomFi API version redirect_url field par error de
+      response = await axios.post(
+        `${boomfiBaseUrl}/paylinks`,
+        {
+          name: planName,
+          description: `Bulk Link Placement Order ($${totalAmount.toFixed(2)} USD)`,
+          amount: totalAmount.toFixed(2),
+          currency: "USD",
+          type: "OneTime",
+        },
+        {
+          headers: {
+            "X-API-KEY": process.env.BOOMFI_API_KEY.trim(),
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+    }
 
     const payload = response.data?.data || response.data || {};
     const paylinkId = payload.id || payload.paylink_id || payload.link_id;
-    const checkoutUrl = payload.url || payload.payment_link || payload.checkout_url || (paylinkId ? `https://pay.boomfi.xyz/${paylinkId}` : null);
+    const rawCheckoutUrl = payload.url || payload.payment_link || payload.checkout_url || (paylinkId ? `https://pay.boomfi.xyz/${paylinkId}` : null);
 
-    if (!checkoutUrl) {
+    if (!rawCheckoutUrl) {
       return res.status(500).json({ error: "BoomFi did not return a valid checkout URL." });
     }
 
-    return res.json({ checkoutUrl, total: totalAmount });
+    return res.json({
+      checkoutUrl: rawCheckoutUrl,
+      total: totalAmount,
+      transactionId: txReference,
+      returnUrl,
+    });
   } catch (error) {
     console.error("BoomFi API Error:", error.response?.data || error.message);
-    return res.status(500).json({ error: "Failed to initialize BoomFi Crypto Gateway." });
+    return res.status(500).json({ error: "Failed to initialise BoomFi Crypto Gateway." });
   }
 });
 
