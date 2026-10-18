@@ -51,6 +51,8 @@ function createMailTransporter() {
     connectionTimeout: 15000,
     greetingTimeout: 15000,
     socketTimeout: 20000,
+    debug: true, // Terminal mein SMTP errors show karega
+    logger: true, // Complete email transaction log terminal mein print karega
   });
 }
 
@@ -61,8 +63,7 @@ app.get("/api/verify-smtp", async (req, res) => {
     if (!transporter) {
       return res.status(503).json({
         connected: false,
-        error:
-          "Missing SMTP_HOST, SMTP_USER, or SMTP_PASS in your backend .env file.",
+        error: "Missing SMTP_HOST, SMTP_USER, or SMTP_PASS in your backend .env file.",
       });
     }
 
@@ -77,6 +78,67 @@ app.get("/api/verify-smtp", async (req, res) => {
       connected: false,
       error: err.message,
     });
+  }
+});
+
+// Email Testing Route
+app.get("/api/send-test-emails", async (req, res) => {
+  try {
+    const transporter = createMailTransporter();
+    if (!transporter) return res.status(503).send("Error: SMTP incomplete.");
+
+    const smtpUser = process.env.SMTP_USER.trim();
+    const myEmailAddress = (process.env.ADMIN_EMAIL || smtpUser).trim();
+
+    const dummyCustomer = {
+      fullName: "Test Agency Profile",
+      email: myEmailAddress,
+      contactPlatform: "Telegram",
+      contactHandle: "@test_agency_handle",
+      targetUrls: "https://example.com/page1",
+      anchorTexts: "best seo service",
+      notes: "Drip feed over 14 days please.",
+    };
+
+    const dummyPackages = [{ name: "Homepage Post", qty: 1000, subtotal: 100 }];
+
+    const clientHtml = getClientEmailHtml({
+      customer: dummyCustomer,
+      transactionId: "TXN-TEST-987654",
+      paymentMethod: "Stripe Card",
+      totalLinks: 1000,
+      totalAmount: 100.0,
+      packages: dummyPackages,
+    });
+
+    const adminHtml = getAdminEmailHtml({
+      customer: dummyCustomer,
+      transactionId: "TXN-TEST-987654",
+      paymentMethod: "Stripe Card",
+      totalLinks: 1000,
+      totalAmount: 100.0,
+      packages: dummyPackages,
+    });
+
+    await Promise.all([
+      transporter.sendMail({
+        from: `"Jasa Backlinks" <${smtpUser}>`,
+        to: myEmailAddress,
+        subject: `[TEST] Payment Receipt #TXN-TEST - Jasa Backlinks`,
+        html: clientHtml,
+      }),
+      transporter.sendMail({
+        from: `"Jasa Orders" <${smtpUser}>`,
+        to: myEmailAddress,
+        subject: `[TEST] 🔔 NEW ORDER: $100.00 from ${dummyCustomer.fullName}`,
+        html: adminHtml,
+      }),
+    ]);
+
+    res.send(`<h3 style="color: green;">✅ Success! Test emails sent to <b>${myEmailAddress}</b>.</h3>`);
+  } catch (error) {
+    console.error("Test Email Delivery Error:", error);
+    res.send(`<h3 style="color: red;">❌ Failed to send emails: <br><br> ${error.message}</h3>`);
   }
 });
 
@@ -119,8 +181,7 @@ app.post("/api/create-stripe-intent", async (req, res) => {
     const { cart } = req.body;
     if (hasUnpricedGuestPostingItems(cart)) {
       return res.status(503).json({
-        error:
-          "Guest Posting checkout is unavailable until final rates are configured.",
+        error: "Guest Posting checkout is unavailable until final rates are configured.",
       });
     }
     const totalAmount = calculateSecureTotal(cart);
@@ -168,8 +229,7 @@ app.post("/api/create-paypal-order", async (req, res) => {
     const { cart } = req.body;
     if (hasUnpricedGuestPostingItems(cart)) {
       return res.status(503).json({
-        error:
-          "Guest Posting checkout is unavailable until final rates are configured.",
+        error: "Guest Posting checkout is unavailable until final rates are configured.",
       });
     }
     const totalAmount = calculateSecureTotal(cart);
@@ -235,24 +295,17 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
     }
 
     if (!process.env.BOOMFI_API_KEY) {
-      return res
-        .status(500)
-        .json({ error: "BOOMFI_API_KEY is missing in .env file." });
+      return res.status(500).json({ error: "BOOMFI_API_KEY is missing in .env file." });
     }
 
-    const boomfiBaseUrl =
-      process.env.BOOMFI_API_BASE || "https://mapi.boomfi.xyz/v1";
-    const planName = `Jasa Backlinks SEO Campaign ${crypto
-      .randomBytes(6)
-      .toString("hex")}`;
+    const boomfiBaseUrl = process.env.BOOMFI_API_BASE || "https://mapi.boomfi.xyz/v1";
+    const planName = `Jasa Backlinks SEO Campaign ${crypto.randomBytes(6).toString("hex")}`;
 
     const response = await axios.post(
       `${boomfiBaseUrl}/paylinks`,
       {
         name: planName,
-        description: `Bulk Link Placement Order ($${totalAmount.toFixed(
-          2
-        )} USD)`,
+        description: `Bulk Link Placement Order ($${totalAmount.toFixed(2)} USD)`,
         amount: totalAmount.toFixed(2),
         currency: "USD",
         type: "OneTime",
@@ -268,24 +321,16 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
 
     const payload = response.data?.data || response.data || {};
     const paylinkId = payload.id || payload.paylink_id || payload.link_id;
-    const checkoutUrl =
-      payload.url ||
-      payload.payment_link ||
-      payload.checkout_url ||
-      (paylinkId ? `https://pay.boomfi.xyz/${paylinkId}` : null);
+    const checkoutUrl = payload.url || payload.payment_link || payload.checkout_url || (paylinkId ? `https://pay.boomfi.xyz/${paylinkId}` : null);
 
     if (!checkoutUrl) {
-      return res
-        .status(500)
-        .json({ error: "BoomFi did not return a valid checkout URL." });
+      return res.status(500).json({ error: "BoomFi did not return a valid checkout URL." });
     }
 
     return res.json({ checkoutUrl, total: totalAmount });
   } catch (error) {
     console.error("BoomFi API Error:", error.response?.data || error.message);
-    return res.status(500).json({
-      error: "Failed to initialize BoomFi Crypto Gateway.",
-    });
+    return res.status(500).json({ error: "Failed to initialize BoomFi Crypto Gateway." });
   }
 });
 
@@ -296,19 +341,10 @@ const ORDERS_FILE = path.join(__dirname, "orders.json");
 
 app.post("/api/submit-order", async (req, res) => {
   try {
-    const {
-      transactionId,
-      paymentMethod,
-      totalAmount,
-      totalLinks,
-      packages,
-      customer,
-    } = req.body;
+    const { transactionId, paymentMethod, totalAmount, totalLinks, packages, customer } = req.body;
 
     if (!customer?.email || !customer?.targetUrls) {
-      return res
-        .status(400)
-        .json({ error: "Customer email and target URLs are required." });
+      return res.status(400).json({ error: "Customer email and target URLs are required." });
     }
 
     // 1. BULLETPROOF BACKUP: Always save order to disk first
@@ -358,8 +394,7 @@ app.post("/api/submit-order", async (req, res) => {
       packages,
     });
 
-    // Use Promise.allSettled so an email failure doesn't block the frontend success screen
-    await Promise.allSettled([
+    const emailResults = await Promise.allSettled([
       transporter.sendMail({
         from: `"Jasa Backlinks" <${smtpUser}>`,
         to: customer.email,
@@ -374,11 +409,16 @@ app.post("/api/submit-order", async (req, res) => {
       }),
     ]);
 
-    // 3. ALWAYS RETURN SUCCESS TO FRONTEND
+    // Error Logging for Diagnosis
+    emailResults.forEach((result, idx) => {
+      if (result.status === "rejected") {
+        console.error(`❌ ORDER MAIL ERROR [${idx === 0 ? 'Client' : 'Admin'}]:`, result.reason);
+      }
+    });
+
     res.json({ success: true, message: "Order recorded securely." });
   } catch (error) {
     console.error("Order Submit Error:", error);
-    // Even if it fails, we want the frontend to proceed if possible
     res.json({ success: true, message: "Order saved with minor warnings." });
   }
 });
@@ -390,21 +430,10 @@ const ENQUIRIES_FILE = path.join(__dirname, "enquiries.json");
 
 app.post("/api/contact", async (req, res) => {
   try {
-    const {
-      enquiryType,
-      fullName,
-      email,
-      contactPlatform,
-      contactHandle,
-      volumeTier,
-      websiteUrl,
-      message,
-    } = req.body || {};
+    const { enquiryType, fullName, email, contactPlatform, contactHandle, volumeTier, websiteUrl, message } = req.body || {};
 
     if (!email || !message) {
-      return res
-        .status(400)
-        .json({ error: "Email and message are required." });
+      return res.status(400).json({ error: "Email and message are required." });
     }
 
     // Backup Save
@@ -424,10 +453,7 @@ app.post("/api/contact", async (req, res) => {
         message,
         createdAt: new Date().toISOString(),
       });
-      fs.writeFileSync(
-        ENQUIRIES_FILE,
-        JSON.stringify(existingEnquiries, null, 2)
-      );
+      fs.writeFileSync(ENQUIRIES_FILE, JSON.stringify(existingEnquiries, null, 2));
     } catch (fileErr) {}
 
     const transporter = createMailTransporter();
@@ -436,30 +462,19 @@ app.post("/api/contact", async (req, res) => {
     }
 
     const smtpUser = process.env.SMTP_USER.trim();
-    const adminEmail = (
-      process.env.ADMIN_EMAIL ||
-      "hello@jasabacklinks.net" ||
-      smtpUser
-    ).trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || "hello@jasabacklinks.net" || smtpUser).trim();
 
     const escapeHtml = (value = "") =>
       String(value).replace(
         /[&<>"']/g,
-        (c) =>
-          ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;",
-          })[c]
+        (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
       );
 
     const escapedName = escapeHtml(fullName || "there");
     const escapedEnquiryType = escapeHtml(enquiryType || "General Enquiry");
     const escapedMessage = escapeHtml(message).replace(/\r?\n/g, "<br>");
 
-    await Promise.allSettled([
+    const emailResults = await Promise.allSettled([
       transporter.sendMail({
         from: `"Jasa Backlinks Desk" <${smtpUser}>`,
         to: adminEmail,
@@ -502,10 +517,17 @@ app.post("/api/contact", async (req, res) => {
       }),
     ]);
 
-    return res.json({ success: true, confirmationSent: true });
+    // Error Logging for Diagnosis
+    emailResults.forEach((result, idx) => {
+      if (result.status === "rejected") {
+        console.error(`❌ CONTACT MAIL ERROR [${idx === 0 ? 'Admin' : 'Client'}]:`, result.reason);
+      }
+    });
+
+    res.json({ success: true, confirmationSent: emailResults[1].status === "fulfilled" });
   } catch (error) {
     console.error("Contact Form Error:", error);
-    return res.json({ success: true, confirmationSent: false });
+    res.json({ success: true, confirmationSent: false });
   }
 });
 
@@ -831,11 +853,27 @@ app.delete("/api/blogs/:id", verifyAdminAuth, (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`✅ Enterprise Backend running on port ${PORT}`);
-  });
-}
 
-// Export for Jest Tests
+// Remove 'if (require.main === module)' condition temporarily to force execution
+const server = app.listen(PORT, () => {
+  console.log(`✅ Enterprise Backend running on port ${PORT}`);
+});
+
+// --- SILENT CRASH CATCHER ---
+server.on('error', (err) => {
+  console.error('❌ Server Port Error:', err);
+});
+
+process.on('exit', (code) => {
+  console.log(`⚠️ Terminal closed automatically with exit code: ${code}`);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception (Silent Crash):', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection (Silent Crash):', reason);
+});
+
 module.exports = app;
