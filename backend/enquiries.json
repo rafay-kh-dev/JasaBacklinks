@@ -1,5 +1,53 @@
 [
   {
+    "id": "enq-1792316623443",
+    "enquiryType": "Bulk / Agency Partnership",
+    "fullName": "Rafay Outreach",
+    "email": "rafayoutreach@gmail.com",
+    "contactPlatform": "WhatsApp",
+    "contactHandle": "Pakistan",
+    "volumeTier": "250 – 1,000 Links",
+    "websiteUrl": "",
+    "message": "d",
+    "createdAt": "2026-10-18T09:43:43.443Z"
+  },
+  {
+    "id": "enq-1792314882015",
+    "enquiryType": "Bulk / Agency Partnership",
+    "fullName": "Rafay Outreach",
+    "email": "rafayoutreach@gmail.com",
+    "contactPlatform": "WhatsApp",
+    "contactHandle": "Pakistan",
+    "volumeTier": "250 – 1,000 Links",
+    "websiteUrl": "",
+    "message": "q",
+    "createdAt": "2026-10-18T09:14:42.015Z"
+  },
+  {
+    "id": "enq-1792314821428",
+    "enquiryType": "Bulk / Agency Partnership",
+    "fullName": "Rafay Outreach",
+    "email": "rafayoutreach@gmail.com",
+    "contactPlatform": "Telegram",
+    "contactHandle": "rafay",
+    "volumeTier": "250 – 1,000 Links",
+    "websiteUrl": "http://localhost:5173/contact",
+    "message": "Launch your campaign via our self-serve calculator or custom agency invoice with live tracking.\n\n",
+    "createdAt": "2026-10-18T09:13:41.428Z"
+  },
+  {
+    "id": "enq-1792314624212",
+    "enquiryType": "Bulk / Agency Partnership",
+    "fullName": "Rafay Outreach",
+    "email": "rafayoutreach@gmail.com",
+    "contactPlatform": "Telegram",
+    "contactHandle": "rafay",
+    "volumeTier": "250 – 1,000 Links",
+    "websiteUrl": "",
+    "message": "Launch your campaign via our self-serve calculator or custom agency invoice with live tracking.\n\n",
+    "createdAt": "2026-10-18T09:10:24.213Z"
+  },
+  {
     "id": "enq-1792312087544",
     "enquiryType": "Bulk / Agency Partnership",
     "fullName": "Rafay Outreach",

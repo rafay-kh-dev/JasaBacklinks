@@ -11,6 +11,8 @@ require("dotenv").config();
 const {
   getClientEmailHtml,
   getAdminEmailHtml,
+  getContactAdminHtml,
+  getContactClientHtml
 } = require("./templates/emailTemplates");
 
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -51,8 +53,8 @@ function createMailTransporter() {
     connectionTimeout: 15000,
     greetingTimeout: 15000,
     socketTimeout: 20000,
-    debug: true, // Terminal mein SMTP errors show karega
-    logger: true, // Complete email transaction log terminal mein print karega
+    debug: false, // Production mode mein isay false rakhein
+    logger: false, // Production mode mein isay false rakhein
   });
 }
 
@@ -130,15 +132,15 @@ app.get("/api/send-test-emails", async (req, res) => {
       transporter.sendMail({
         from: `"Jasa Orders" <${smtpUser}>`,
         to: myEmailAddress,
-        subject: `[TEST] 🔔 NEW ORDER: $100.00 from ${dummyCustomer.fullName}`,
+        subject: `[TEST] NEW ORDER: $100.00 from ${dummyCustomer.fullName}`,
         html: adminHtml,
       }),
     ]);
 
-    res.send(`<h3 style="color: green;">✅ Success! Test emails sent to <b>${myEmailAddress}</b>.</h3>`);
+    res.send(`<h3 style="color: green;">Success! Test emails sent to <b>${myEmailAddress}</b>.</h3>`);
   } catch (error) {
     console.error("Test Email Delivery Error:", error);
-    res.send(`<h3 style="color: red;">❌ Failed to send emails: <br><br> ${error.message}</h3>`);
+    res.send(`<h3 style="color: red;">Failed to send emails: <br><br> ${error.message}</h3>`);
   }
 });
 
@@ -404,7 +406,7 @@ app.post("/api/submit-order", async (req, res) => {
       transporter.sendMail({
         from: `"Jasa Orders" <${smtpUser}>`,
         to: adminEmail,
-        subject: `🔔 NEW ORDER: $${Number(totalAmount).toFixed(2)} from ${customer.fullName}`,
+        subject: `NEW ORDER: $${Number(totalAmount).toFixed(2)} from ${customer.fullName}`,
         html: adminHtml,
       }),
     ]);
@@ -412,7 +414,7 @@ app.post("/api/submit-order", async (req, res) => {
     // Error Logging for Diagnosis
     emailResults.forEach((result, idx) => {
       if (result.status === "rejected") {
-        console.error(`❌ ORDER MAIL ERROR [${idx === 0 ? 'Client' : 'Admin'}]:`, result.reason);
+        console.error(`ORDER MAIL ERROR [${idx === 0 ? 'Client' : 'Admin'}]:`, result.reason);
       }
     });
 
@@ -474,53 +476,44 @@ app.post("/api/contact", async (req, res) => {
     const escapedEnquiryType = escapeHtml(enquiryType || "General Enquiry");
     const escapedMessage = escapeHtml(message).replace(/\r?\n/g, "<br>");
 
+    // PREMIUM HTML GENERATION
+    const adminContactHtml = getContactAdminHtml({
+      enquiryType: escapedEnquiryType,
+      fullName: escapedName,
+      email: escapeHtml(email),
+      contactPlatform: escapeHtml(contactPlatform),
+      contactHandle: escapeHtml(contactHandle),
+      volumeTier: escapeHtml(volumeTier),
+      websiteUrl: escapeHtml(websiteUrl),
+      message: escapedMessage
+    });
+
+    const clientContactHtml = getContactClientHtml({
+      fullName: escapedName,
+      message: escapedMessage
+    });
+
     const emailResults = await Promise.allSettled([
       transporter.sendMail({
         from: `"Jasa Backlinks Desk" <${smtpUser}>`,
         to: adminEmail,
         replyTo: email.trim(),
-        subject: `📩 [${escapedEnquiryType}] New Enquiry from ${escapedName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; border: 1px solid #dadce0; border-radius: 12px; overflow: hidden;">
-            <div style="padding: 24px; background: #f8f9fa; border-bottom: 1px solid #e8eaed;">
-              <h2 style="margin: 0; color: #202124;">New Enquiry Received</h2>
-            </div>
-            <div style="padding: 24px; color: #3c4043; line-height: 1.6;">
-              <p><strong>Name:</strong> ${escapedName}</p>
-              <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-              <p><strong>Contact (${escapeHtml(contactPlatform)}):</strong> ${escapeHtml(contactHandle)}</p>
-              <p><strong>Volume:</strong> ${escapeHtml(volumeTier)}</p>
-              <p><strong>Website:</strong> ${escapeHtml(websiteUrl)}</p>
-              <p><strong>Message:</strong><br>${escapedMessage}</p>
-            </div>
-          </div>
-        `,
+        subject: `[${escapedEnquiryType}] New Enquiry from ${escapedName}`,
+        html: adminContactHtml,
       }),
       transporter.sendMail({
         from: `"Jasa Backlinks" <${smtpUser}>`,
         to: email.trim(),
         replyTo: adminEmail,
-        subject: "We received your message - Jasa Backlinks",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; border: 1px solid #dadce0; border-radius: 12px; overflow: hidden;">
-            <div style="padding: 24px; background: #f8f9fa; border-bottom: 1px solid #e8eaed;">
-              <h2 style="margin: 0; color: #202124;">Thanks, ${escapedName}.</h2>
-            </div>
-            <div style="padding: 24px; color: #3c4043; line-height: 1.6;">
-              <p>We received your enquiry. Our team will get back to you shortly.</p>
-              <div style="margin-top: 16px; padding: 16px; background: #f1f3f4; border-radius: 8px;">
-                <strong>Your message:</strong><br>${escapedMessage}
-              </div>
-            </div>
-          </div>
-        `,
+        subject: "We've received your enquiry - Jasa Backlinks",
+        html: clientContactHtml,
       }),
     ]);
 
     // Error Logging for Diagnosis
     emailResults.forEach((result, idx) => {
       if (result.status === "rejected") {
-        console.error(`❌ CONTACT MAIL ERROR [${idx === 0 ? 'Admin' : 'Client'}]:`, result.reason);
+        console.error(`CONTACT MAIL ERROR [${idx === 0 ? 'Admin' : 'Client'}]:`, result.reason);
       }
     });
 
@@ -856,24 +849,24 @@ const PORT = process.env.PORT || 5000;
 
 // Remove 'if (require.main === module)' condition temporarily to force execution
 const server = app.listen(PORT, () => {
-  console.log(`✅ Enterprise Backend running on port ${PORT}`);
+  console.log(`Enterprise Backend running on port ${PORT}`);
 });
 
 // --- SILENT CRASH CATCHER ---
 server.on('error', (err) => {
-  console.error('❌ Server Port Error:', err);
+  console.error('Server Port Error:', err);
 });
 
 process.on('exit', (code) => {
-  console.log(`⚠️ Terminal closed automatically with exit code: ${code}`);
+  console.log(`Terminal closed automatically with exit code: ${code}`);
 });
 
 process.on('uncaughtException', (err) => {
-  console.error('❌ Uncaught Exception (Silent Crash):', err);
+  console.error('Uncaught Exception (Silent Crash):', err);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection (Silent Crash):', reason);
+  console.error('Unhandled Rejection (Silent Crash):', reason);
 });
 
 module.exports = app;

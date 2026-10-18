@@ -1,4 +1,4 @@
-// 📧 1. CLIENT EMAIL TEMPLATE (Dedicated Jasa Backlinks / Google Workspace Theme)
+// 1. CLIENT EMAIL TEMPLATE (Order Receipt - Signature Jasa Backlinks Theme)
 const getClientEmailHtml = ({
   customer,
   transactionId,
@@ -39,7 +39,7 @@ const getClientEmailHtml = ({
           })}
         </td>
       </tr>
-    `,
+    `
     )
     .join("");
 
@@ -57,10 +57,8 @@ const getClientEmailHtml = ({
       <tr>
         <td align="center">
           
-          <!-- Main Card Container -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #dadce0; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 36px rgba(60, 64, 67, 0.08);">
             
-            <!-- Signature 4-Colour Top Bar -->
             <tr>
               <td style="padding: 0;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -74,7 +72,6 @@ const getClientEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Top Brand Header -->
             <tr>
               <td style="padding: 28px 32px 20px; border-bottom: 1px solid #e8eaed;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -90,7 +87,7 @@ const getClientEmailHtml = ({
                     </td>
                     <td align="right" valign="middle">
                       <span style="display: inline-block; background-color: #e6f4ea; color: #1e8e3e; border: 1px solid #ceead6; font-size: 11.5px; font-weight: 600; padding: 4px 12px; border-radius: 999px;">
-                        ● Payment Verified
+                        Payment Verified
                       </span>
                     </td>
                   </tr>
@@ -98,7 +95,6 @@ const getClientEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Hero Status Banner -->
             <tr>
               <td style="padding: 28px 32px 24px; background-color: #f8fbff; border-bottom: 1px solid #e8eaed;">
                 <div style="display: inline-block; background-color: #e8f0fe; color: #1a73e8; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px;">
@@ -113,11 +109,9 @@ const getClientEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Main Body Content -->
             <tr>
               <td style="padding: 28px 32px;">
                 
-                <!-- Payment & Contact Metadata Box -->
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; border: 1px solid #e8eaed; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
                   <tr>
                     <td width="50%" valign="top" style="padding-bottom: 14px; border-bottom: 1px solid #e8eaed;">
@@ -143,13 +137,12 @@ const getClientEmailHtml = ({
                     <td width="50%" valign="top" align="right" style="padding-top: 14px;">
                       <p style="margin: 0; font-size: 11.5px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Estimated Turnaround</p>
                       <p style="margin: 4px 0 0; font-size: 13.5px; color: #1e8e3e; font-weight: 600;">
-                        5–7 Business Days
+                        5 to 7 Business Days
                       </p>
                     </td>
                   </tr>
                 </table>
 
-                <!-- Order Summary Breakdown -->
                 <div style="margin-bottom: 12px;">
                   <span style="font-size: 15px; font-weight: 600; color: #202124;">Order Summary</span>
                   <span style="float: right; font-size: 12px; font-weight: 600; color: #1a73e8; background-color: #e8f0fe; padding: 2px 10px; border-radius: 999px;">
@@ -169,7 +162,7 @@ const getClientEmailHtml = ({
                     <tr style="background-color: #f8fbff;">
                       <td style="padding: 16px; font-size: 15px; font-weight: 600; color: #202124;">
                         Total Amount Paid
-                        <span style="display: block; font-size: 11.5px; font-weight: 500; color: #1e8e3e; margin-top: 2px;">● Instant Setup & White-Label Report Included</span>
+                        <span style="display: block; font-size: 11.5px; font-weight: 500; color: #1e8e3e; margin-top: 2px;">Instant Setup & White-Label Report Included</span>
                       </td>
                       <td align="right" style="padding: 16px; font-size: 22px; font-weight: 700; color: #1a73e8; white-space: nowrap;">
                         $${Number(totalAmount || 0).toLocaleString("en-US", {
@@ -181,34 +174,31 @@ const getClientEmailHtml = ({
                   </tbody>
                 </table>
 
-                <!-- Direct Team Contacts Box (Matches Popup 3) -->
+                <!-- NEW: Updated Contact Desks -->
                 <div style="background-color: #f8f9fa; border: 1px solid #e8eaed; border-radius: 16px; padding: 20px; text-align: center;">
-                  <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #202124;">
-                    Need Instant Assistance or Custom Drip-Feed Adjustments?
-                  </p>
-                  <p style="margin: 0 0 16px; font-size: 12.5px; color: #5f6368;">
-                    Connect with your dedicated campaign manager on any of our 3 official channels:
+                  <p style="margin: 0 0 16px; font-size: 14px; font-weight: 600; color: #202124;">
+                    Connect with your dedicated campaign manager:
                   </p>
                   <table border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                      <td width="32%" align="center" style="background-color: #ffffff; border: 1px solid #dadce0; border-radius: 12px; padding: 10px 6px;">
-                        <a href="https://wa.me/6281234567890" style="text-decoration: none; display: block;">
-                          <span style="display: block; font-size: 11px; color: #5f6368; font-weight: 500;">WhatsApp</span>
-                          <span style="display: block; font-size: 12.5px; color: #1e8e3e; font-weight: 600; margin-top: 2px;">Chat Now ↗</span>
+                      <td width="32%" align="center" style="background-color: #ffffff; border: 1px solid #dadce0; border-radius: 12px; padding: 12px 6px;">
+                        <a href="https://wa.me/447598789693" style="text-decoration: none; display: block;">
+                          <span style="display: block; font-size: 10px; color: #5f6368; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">WhatsApp Priority</span>
+                          <span style="display: block; font-size: 12px; color: #1e8e3e; font-weight: 700; margin-top: 4px;">+44 7598789693</span>
                         </a>
                       </td>
                       <td width="2%"></td>
-                      <td width="32%" align="center" style="background-color: #ffffff; border: 1px solid #dadce0; border-radius: 12px; padding: 10px 6px;">
-                        <a href="https://t.me/jasabacklinks" style="text-decoration: none; display: block;">
-                          <span style="display: block; font-size: 11px; color: #5f6368; font-weight: 500;">Telegram</span>
-                          <span style="display: block; font-size: 12.5px; color: #1a73e8; font-weight: 600; margin-top: 2px;">@jasabacklinks</span>
+                      <td width="32%" align="center" style="background-color: #ffffff; border: 1px solid #dadce0; border-radius: 12px; padding: 12px 6px;">
+                        <a href="https://t.me/SEOHUBLTD" style="text-decoration: none; display: block;">
+                          <span style="display: block; font-size: 10px; color: #5f6368; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">Telegram Agency</span>
+                          <span style="display: block; font-size: 12px; color: #1a73e8; font-weight: 700; margin-top: 4px;">@SEOHUBLTD</span>
                         </a>
                       </td>
                       <td width="2%"></td>
-                      <td width="32%" align="center" style="background-color: #ffffff; border: 1px solid #dadce0; border-radius: 12px; padding: 10px 6px;">
-                        <a href="mailto:jasa-backlinks@seohubltd.com" style="text-decoration: none; display: block;">
-                          <span style="display: block; font-size: 11px; color: #5f6368; font-weight: 500;">Support Desk</span>
-                          <span style="display: block; font-size: 12.5px; color: #f29900; font-weight: 600; margin-top: 2px;">Email Team</span>
+                      <td width="32%" align="center" style="background-color: #ffffff; border: 1px solid #dadce0; border-radius: 12px; padding: 12px 6px;">
+                        <a href="mailto:hello@jasabacklinks.net" style="text-decoration: none; display: block;">
+                          <span style="display: block; font-size: 10px; color: #5f6368; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">Enterprise Support</span>
+                          <span style="display: block; font-size: 11px; color: #f29900; font-weight: 700; margin-top: 4px; word-break: break-all;">hello@jasabacklinks.net</span>
                         </a>
                       </td>
                     </tr>
@@ -218,11 +208,10 @@ const getClientEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Footer -->
             <tr>
               <td align="center" style="background-color: #f8f9fa; padding: 20px 32px; border-top: 1px solid #e8eaed;">
                 <p style="margin: 0; font-size: 12px; color: #5f6368;">
-                  &copy; ${new Date().getFullYear()} Jasa Backlinks • Enterprise Link Infrastructure (DA/DR 50+)
+                  &copy; ${new Date().getFullYear()} Jasa Backlinks | Enterprise Link Infrastructure (DA/DR 50+)
                 </p>
                 <p style="margin: 4px 0 0; font-size: 12px; color: #9aa0a6;">
                   Powered by <a href="https://seohub.ltd" style="color: #1a73e8; text-decoration: none; font-weight: 600;">SeoHub Ltd</a>
@@ -239,7 +228,7 @@ const getClientEmailHtml = ({
   </html>`;
 };
 
-// 📧 2. ADMIN EMAIL TEMPLATE (Exact Same Website Theme - Clean Executive Dispatch)
+// 2. ADMIN EMAIL TEMPLATE (Order Dispatch - Signature Jasa Backlinks Theme)
 const getAdminEmailHtml = ({
   customer,
   transactionId,
@@ -269,7 +258,7 @@ const getAdminEmailHtml = ({
           })}
         </td>
       </tr>
-    `,
+    `
     )
     .join("");
 
@@ -287,10 +276,8 @@ const getAdminEmailHtml = ({
       <tr>
         <td align="center">
           
-          <!-- Main Card Container -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border: 1px solid #dadce0; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 36px rgba(60, 64, 67, 0.08);">
             
-            <!-- Signature 4-Colour Top Bar -->
             <tr>
               <td style="padding: 0;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -304,7 +291,6 @@ const getAdminEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Top Brand & Admin Alert Header -->
             <tr>
               <td style="padding: 26px 32px 20px; border-bottom: 1px solid #e8eaed;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -320,7 +306,7 @@ const getAdminEmailHtml = ({
                     </td>
                     <td align="right" valign="middle">
                       <span style="display: inline-block; background-color: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; font-size: 11.5px; font-weight: 600; padding: 4px 12px; border-radius: 999px;">
-                        ● New Campaign Order
+                        New Campaign Order
                       </span>
                     </td>
                   </tr>
@@ -328,14 +314,13 @@ const getAdminEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Revenue & Volume Banner -->
             <tr>
               <td style="padding: 26px 32px; background-color: #f8fbff; border-bottom: 1px solid #e8eaed;">
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
                     <td valign="middle">
                       <p style="margin: 0 0 4px; font-size: 12px; font-weight: 600; color: #1e8e3e; text-transform: uppercase; letter-spacing: 0.5px;">
-                        ● Payment Captured (${paymentMethod})
+                        Payment Captured (${paymentMethod})
                       </p>
                       <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #202124; letter-spacing: -0.5px;">
                         +$${Number(totalAmount || 0).toLocaleString("en-US", {
@@ -360,11 +345,9 @@ const getAdminEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Main Admin Content -->
             <tr>
               <td style="padding: 28px 32px;">
                 
-                <!-- Client & Mandatory Contact Cards -->
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
                   <tr>
                     <td width="48%" valign="top" style="background-color: #f8f9fa; border: 1px solid #e8eaed; border-radius: 16px; padding: 18px;">
@@ -393,7 +376,6 @@ const getAdminEmailHtml = ({
                   </tr>
                 </table>
 
-                <!-- Target URLs Box -->
                 <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
                   Submitted Target URLs
                 </p>
@@ -401,7 +383,6 @@ const getAdminEmailHtml = ({
                   <pre style="margin: 0; font-size: 13.5px; color: #1a73e8; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.55;">${customer?.targetUrls || "No URLs provided"}</pre>
                 </div>
 
-                <!-- Target Keywords / Anchor Texts Box -->
                 <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
                   Submitted Keywords / Anchor Texts
                 </p>
@@ -409,17 +390,15 @@ const getAdminEmailHtml = ({
                   <pre style="margin: 0; font-size: 13.5px; color: #202124; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.55;">${customer?.anchorTexts || "No keywords provided"}</pre>
                 </div>
 
-                <!-- Special Instructions Box -->
                 <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
                   Special Instructions / Drip-Feed Notes
                 </p>
                 <div style="background-color: #f8fbff; border: 1px solid #d2e3fc; border-radius: 14px; padding: 14px 16px; margin-bottom: 24px;">
                   <p style="margin: 0; font-size: 13.5px; color: #3c4043; line-height: 1.5;">
-                    ${customer?.notes ? customer.notes : "Standard 5–7 days turnaround (No custom notes submitted)."}
+                    ${customer?.notes ? customer.notes : "Standard 5 to 7 days turnaround (No custom notes submitted)."}
                   </p>
                 </div>
 
-                <!-- Ordered Packages Table -->
                 <p style="margin: 0 0 10px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
                   Ordered Placements Breakdown
                 </p>
@@ -449,7 +428,6 @@ const getAdminEmailHtml = ({
               </td>
             </tr>
 
-            <!-- Footer -->
             <tr>
               <td align="center" style="background-color: #f8f9fa; padding: 18px 32px; border-top: 1px solid #e8eaed;">
                 <p style="margin: 0; font-size: 12px; color: #5f6368;">
@@ -467,4 +445,245 @@ const getAdminEmailHtml = ({
   </html>`;
 };
 
-module.exports = { getClientEmailHtml, getAdminEmailHtml };
+// 3. CONTACT FORM - CLIENT RECEIPT TEMPLATE (Signature Jasa Backlinks Theme)
+const getContactClientHtml = ({ fullName, message }) => {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enquiry Received - Jasa Backlinks</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #202124;">
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; padding: 36px 16px;">
+      <tr>
+        <td align="center">
+          
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #dadce0; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 36px rgba(60, 64, 67, 0.08);">
+            
+            <tr>
+              <td style="padding: 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td width="25%" height="4" style="background-color: #4285F4; font-size: 0; line-height: 0;">&nbsp;</td>
+                    <td width="25%" height="4" style="background-color: #EA4335; font-size: 0; line-height: 0;">&nbsp;</td>
+                    <td width="25%" height="4" style="background-color: #FBBC04; font-size: 0; line-height: 0;">&nbsp;</td>
+                    <td width="25%" height="4" style="background-color: #34A853; font-size: 0; line-height: 0;">&nbsp;</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 28px 32px 20px; border-bottom: 1px solid #e8eaed;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td valign="middle">
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #4285F4; margin-right: 3px;"></span>
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #EA4335; margin-right: 3px;"></span>
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #FBBC04; margin-right: 3px;"></span>
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #34A853; margin-right: 8px;"></span>
+                      <span style="font-size: 18px; font-weight: 700; color: #202124; letter-spacing: -0.3px; vertical-align: middle;">
+                        Jasa Backlinks
+                      </span>
+                    </td>
+                    <td align="right" valign="middle">
+                      <span style="display: inline-block; background-color: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; font-size: 11.5px; font-weight: 600; padding: 4px 12px; border-radius: 999px;">
+                        Message Received
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 28px 32px 24px; background-color: #f8fbff; border-bottom: 1px solid #e8eaed;">
+                <h1 style="margin: 0 0 8px; font-size: 26px; font-weight: 600; color: #202124; letter-spacing: -0.5px; line-height: 1.25;">
+                  We have received your <span style="color: #1a73e8;">enquiry.</span>
+                </h1>
+                <p style="margin: 0; font-size: 14.5px; color: #5f6368; line-height: 1.6;">
+                  Hi <strong style="color: #202124;">${fullName || "there"}</strong>, thank you for reaching out to Jasa Backlinks. Our SEO experts are reviewing your details and will get back to you shortly.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 28px 32px;">
+                <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
+                  Copy of your message
+                </p>
+                <div style="background-color: #f8f9fa; border: 1px solid #dadce0; border-radius: 14px; padding: 16px; margin-bottom: 24px;">
+                  <p style="margin: 0; font-size: 14px; color: #3c4043; line-height: 1.6;">
+                    ${message}
+                  </p>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="background-color: #f8f9fa; padding: 20px 32px; border-top: 1px solid #e8eaed;">
+                <p style="margin: 0; font-size: 12px; color: #5f6368;">
+                  &copy; ${new Date().getFullYear()} Jasa Backlinks • Enterprise Link Infrastructure
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>`;
+};
+
+// 4. CONTACT FORM - ADMIN DISPATCH TEMPLATE (Signature Jasa Backlinks Theme)
+const getContactAdminHtml = ({ enquiryType, fullName, email, contactPlatform, contactHandle, volumeTier, websiteUrl, message }) => {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Enquiry Dispatch - Jasa Backlinks</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #202124;">
+    
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; padding: 36px 16px;">
+      <tr>
+        <td align="center">
+          
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border: 1px solid #dadce0; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 36px rgba(60, 64, 67, 0.08);">
+            
+            <tr>
+              <td style="padding: 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td width="25%" height="4" style="background-color: #4285F4; font-size: 0; line-height: 0;">&nbsp;</td>
+                    <td width="25%" height="4" style="background-color: #EA4335; font-size: 0; line-height: 0;">&nbsp;</td>
+                    <td width="25%" height="4" style="background-color: #FBBC04; font-size: 0; line-height: 0;">&nbsp;</td>
+                    <td width="25%" height="4" style="background-color: #34A853; font-size: 0; line-height: 0;">&nbsp;</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 26px 32px 20px; border-bottom: 1px solid #e8eaed;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td valign="middle">
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #4285F4; margin-right: 3px;"></span>
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #EA4335; margin-right: 3px;"></span>
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #FBBC04; margin-right: 3px;"></span>
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #34A853; margin-right: 8px;"></span>
+                      <span style="font-size: 18px; font-weight: 700; color: #202124; letter-spacing: -0.3px; vertical-align: middle;">
+                        Jasa Backlinks Admin
+                      </span>
+                    </td>
+                    <td align="right" valign="middle">
+                      <span style="display: inline-block; background-color: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; font-size: 11.5px; font-weight: 600; padding: 4px 12px; border-radius: 999px;">
+                        Action Required
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 28px 32px 24px; background-color: #f8fbff; border-bottom: 1px solid #e8eaed;">
+                <div style="display: inline-block; background-color: #e8f0fe; color: #1a73e8; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; margin-bottom: 12px;">
+                  New Lead / Enquiry
+                </div>
+                <h1 style="margin: 0; font-size: 26px; font-weight: 600; color: #202124; letter-spacing: -0.5px; line-height: 1.25;">
+                  A new <span style="color: #1a73e8;">${enquiryType}</span> was received.
+                </h1>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 28px 32px;">
+                
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+                  <tr>
+                    <td width="48%" valign="top" style="background-color: #f8f9fa; border: 1px solid #e8eaed; border-radius: 16px; padding: 18px;">
+                      <p style="margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.6px;">
+                        Prospect Name
+                      </p>
+                      <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #202124;">
+                        ${fullName}
+                      </p>
+                      <p style="margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.6px;">
+                        Email Address
+                      </p>
+                      <a href="mailto:${email}" style="font-size: 14px; color: #1a73e8; text-decoration: none; font-weight: 500; word-break: break-all;">
+                        ${email}
+                      </a>
+                    </td>
+                    <td width="4%"></td>
+                    <td width="48%" valign="top" style="background-color: #fef7e0; border: 1px solid #fde293; border-radius: 16px; padding: 18px;">
+                      <p style="margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #b06000; text-transform: uppercase; letter-spacing: 0.6px;">
+                        Contact (${contactPlatform})
+                      </p>
+                      <p style="margin: 0 0 12px; font-size: 15px; font-weight: 700; color: #202124; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
+                        ${contactHandle}
+                      </p>
+                      <p style="margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #b06000; text-transform: uppercase; letter-spacing: 0.6px;">
+                        Website
+                      </p>
+                      <a href="${websiteUrl}" target="_blank" style="font-size: 14px; color: #1a73e8; text-decoration: none; font-weight: 500; word-break: break-all;">
+                        ${websiteUrl}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa; border: 1px solid #e8eaed; border-radius: 16px; padding: 16px; margin-bottom: 24px;">
+                  <tr>
+                    <td valign="top" style="padding-bottom: 0;">
+                      <p style="margin: 0; font-size: 11.5px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Expected Volume Tier</p>
+                      <p style="margin: 4px 0 0; font-size: 14px; color: #1a73e8; font-weight: 600;">
+                        ${volumeTier}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
+                  Message / Details
+                </p>
+                <div style="background-color: #f8f9fa; border: 1px solid #dadce0; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+                  <p style="margin: 0; font-size: 14px; color: #202124; line-height: 1.6;">
+                    ${message}
+                  </p>
+                </div>
+
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="background-color: #f8f9fa; padding: 18px 32px; border-top: 1px solid #e8eaed;">
+                <p style="margin: 0; font-size: 12px; color: #5f6368;">
+                  Jasa Backlinks Automated Enquiry Dispatch
+                </p>
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>`;
+};
+
+module.exports = {
+  getClientEmailHtml,
+  getAdminEmailHtml,
+  getContactAdminHtml,
+  getContactClientHtml
+};
