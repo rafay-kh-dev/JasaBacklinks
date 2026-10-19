@@ -59,7 +59,6 @@ const STRIPE_ELEMENT_OPTIONS = {
 };
 
 // PIECEWISE SLIDER MAPPING HELPERS (LOCKS THUMB TO EXACT VISUAL LABELS)
-// Visual stops: 0 -> Pos 0 | 1 -> Pos 100 | 1k -> Pos 200 | 2k -> Pos 300 | 3k -> Pos 400 | 4k -> Pos 500 | 5k -> Pos 600
 const SLIDER_STOPS = [0, 1, 1000, 2000, 3000, 4000, 5000];
 
 function qtyToSliderPos(qty) {
@@ -76,7 +75,6 @@ function sliderPosToQty(pos) {
   if (numPos < 50) return 0;
   if (numPos <= 105) return 1;
 
-  // Snap smoothly when user drags near any major milestone (1k, 2k, 3k, 4k, 5k)
   for (let i = 2; i <= 6; i++) {
     const targetPos = i * 100;
     if (Math.abs(numPos - targetPos) <= 6) {
@@ -378,8 +376,6 @@ function OrderOnboardingFlowModal({
 
   if (!isOpen || !paymentData) return null;
 
-  const isBoomFiFlow = Boolean(paymentData.checkoutUrl);
-
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     setSubmissionError("");
@@ -408,9 +404,8 @@ function OrderOnboardingFlowModal({
           "The server did not confirm that your order details were received.",
         );
       }
-      // Clear saved BoomFi state once order is submitted
       localStorage.removeItem("jasa_pending_boomfi_cart");
-      localStorage.removeItem("jasa_pending_boomfi_payment");
+      localStorage.removeItem("jasa_pending_boomfi_tx");
       setIsStep3ThankYou(true);
     } catch (err) {
       console.error("Order details submission failed:", err);
@@ -593,27 +588,8 @@ function OrderOnboardingFlowModal({
           </div>
         ) : (
           <>
-            {/* Top Premium Payment Status Banner */}
-            <div className="bg-gradient-to-r from-[#e6f4ea] via-[#f1faf4] to-[#e8f0fe] px-6 py-5 border-b border-[#ceead6] relative">
-              {isBoomFiFlow && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  title="Close window"
-                  className="absolute top-4 right-4 p-1.5 rounded-full bg-white/80 hover:bg-white text-[#5f6368] hover:text-[#202124] border border-[#dadce0] transition-colors cursor-pointer"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2.2"
-                  >
-                    <path d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-
+            {/* Top Premium Payment Successful Banner */}
+            <div className="bg-gradient-to-r from-[#e6f4ea] via-[#f1faf4] to-[#e8f0fe] px-6 py-5 border-b border-[#ceead6]">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-full bg-[#34a853] text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -628,18 +604,16 @@ function OrderOnboardingFlowModal({
                     </svg>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
                       <span className="gw-font-display text-[18px] sm:text-[20px] font-medium text-[#137333]">
-                        {isBoomFiFlow
-                          ? "Crypto Checkout Ready"
-                          : "Payment Successful"}
+                        Payment Successful
                       </span>
                       <span className="text-[11px] font-semibold bg-white text-[#1e8e3e] px-2.5 py-0.5 rounded-full border border-[#ceead6]">
                         Step 2 of 3
                       </span>
                     </div>
                     <p className="text-[12.5px] text-[#3c4043] mt-0.5">
-                      Order Total:{" "}
+                      Paid{" "}
                       <strong>
                         $
                         {finalTotal.toLocaleString("en-US", {
@@ -657,25 +631,6 @@ function OrderOnboardingFlowModal({
                   </div>
                 </div>
               </div>
-
-              {/* Extra Helper Bar for BoomFi Crypto Users */}
-              {isBoomFiFlow && (
-                <div className="mt-3.5 pt-3 border-t border-[#ceead6]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-[#3c4043]">
-                  <span>
-                    Complete your crypto transfer in the BoomFi tab, then submit
-                    your campaign URLs below:
-                  </span>
-                  <a
-                    href={paymentData.checkoutUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-[#202124] hover:bg-[#3c4043] text-[#d5ff2e] font-medium text-[11.5px] shrink-0 transition-colors"
-                  >
-                    <span>Open BoomFi Payment Page</span>
-                    <span>↗</span>
-                  </a>
-                </div>
-              )}
             </div>
 
             <div className="p-6 sm:p-7">
@@ -964,17 +919,34 @@ function PackageEstimator() {
     },
   ];
 
-  // Restore BoomFi Cart & Open Step 2 Modal on Return or Page Reload
+  // Auto-Detect Return from BoomFi in the Same Tab & Open Step 2 Popup
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const isUrlSuccess =
-      params.get("payment") === "crypto_success" ||
-      params.get("boomfi_status") === "success";
+    const status = params.get("boomfi_status");
+    const pid = params.get("pid") || params.get("payment_id");
 
+    // Restore saved cart if returning from BoomFi
     const savedCartRaw = localStorage.getItem("jasa_pending_boomfi_cart");
-    const savedPaymentRaw = localStorage.getItem("jasa_pending_boomfi_payment");
+    const savedTx = localStorage.getItem("jasa_pending_boomfi_tx");
 
-    if (isUrlSuccess || savedPaymentRaw) {
+    if (status === "failed") {
+      if (savedCartRaw) {
+        try {
+          setCart(JSON.parse(savedCartRaw));
+        } catch (err) {}
+      }
+      setPaymentError(
+        "Crypto payment was cancelled or expired. You can try again below.",
+      );
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (
+      status === "success" ||
+      params.get("payment") === "crypto_success" ||
+      Boolean(pid)
+    ) {
       if (savedCartRaw) {
         try {
           const parsedCart = JSON.parse(savedCartRaw);
@@ -984,33 +956,19 @@ function PackageEstimator() {
         } catch (err) {}
       }
 
-      let paymentInfo = null;
-      if (savedPaymentRaw) {
-        try {
-          paymentInfo = JSON.parse(savedPaymentRaw);
-        } catch (err) {}
-      }
-
       const txId =
+        pid ||
         params.get("tx") ||
-        params.get("payment_id") ||
-        paymentInfo?.transactionId ||
+        savedTx ||
         `BF-${Date.now().toString().slice(-8)}`;
 
       setCompletedPayment({
         transactionId: txId,
         method: "BoomFi Crypto Gateway",
-        checkoutUrl: paymentInfo?.checkoutUrl || null,
       });
       setIsOrderModalOpen(true);
-
-      if (isUrlSuccess) {
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname,
-        );
-      }
+      document.body.style.overflow = "hidden";
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
@@ -1029,7 +987,6 @@ function PackageEstimator() {
     setCart((prev) => ({ ...prev, [id]: val }));
   };
 
-  // Uses Piecewise Mapping so Slider Thumb Matches Visual Labels 100%
   const handleSliderPosChange = (id, sliderPosValue) => {
     const mappedQty = sliderPosToQty(sliderPosValue);
     setServiceQty(id, mappedQty);
@@ -1086,14 +1043,10 @@ function PackageEstimator() {
     }
   };
 
-  // 2. BOOMFI CRYPTO GATEWAY (OPENS NEW TAB + UNLOCKS STEP 2 FORM IMMEDIATELY)
+  // 2. BOOMFI CRYPTO GATEWAY (SAME-TAB REDIRECT -> AUTO RETURN -> STEP 2 POPUP)
   const handleBoomFiSubmit = async () => {
     setIsRedirectingBoomFi(true);
     setPaymentError("");
-
-    // Open blank tab synchronously on click so mobile browsers don't block it
-    const boomfiTab = window.open("about:blank", "_blank");
-
     try {
       const { data } = await axios.post(
         `${BACKEND_URL}/api/create-boomfi-charge`,
@@ -1106,44 +1059,25 @@ function PackageEstimator() {
       if (data && data.checkoutUrl) {
         const txId =
           data.transactionId || `BF-${Date.now().toString().slice(-8)}`;
-        const paymentInfo = {
-          transactionId: txId,
-          method: "BoomFi Crypto Gateway",
-          checkoutUrl: data.checkoutUrl,
-        };
 
-        // Persist cart & payment info so user never loses their session
+        // Save selected cart & transaction ID before leaving page
         localStorage.setItem("jasa_pending_boomfi_cart", JSON.stringify(cart));
-        localStorage.setItem(
-          "jasa_pending_boomfi_payment",
-          JSON.stringify(paymentInfo),
-        );
+        localStorage.setItem("jasa_pending_boomfi_tx", txId);
 
-        // Navigate the new tab to BoomFi Checkout
-        if (boomfiTab) {
-          boomfiTab.location.href = data.checkoutUrl;
-        } else {
-          window.open(data.checkoutUrl, "_blank");
-        }
-
-        // Immediately open Step 2 Order Details Modal on our website
-        setCompletedPayment(paymentInfo);
-        setIsOrderModalOpen(true);
-        document.body.style.overflow = "hidden";
+        // Open BoomFi in the exact same tab
+        window.location.href = data.checkoutUrl;
       } else {
-        if (boomfiTab) boomfiTab.close();
         setPaymentError(
           "BoomFi gateway did not return a payment link. Please verify BOOMFI_API_KEY on backend.",
         );
+        setIsRedirectingBoomFi(false);
       }
     } catch (error) {
-      if (boomfiTab) boomfiTab.close();
       console.error("BoomFi Gateway Error:", error);
       setPaymentError(
         error.response?.data?.error ||
           "Unable to initialise BoomFi Crypto Checkout. Please verify your BoomFi API key in backend .env.",
       );
-    } finally {
       setIsRedirectingBoomFi(false);
     }
   };
@@ -1169,7 +1103,7 @@ function PackageEstimator() {
 
   const closeOrderModal = () => {
     localStorage.removeItem("jasa_pending_boomfi_cart");
-    localStorage.removeItem("jasa_pending_boomfi_payment");
+    localStorage.removeItem("jasa_pending_boomfi_tx");
     setIsOrderModalOpen(false);
     setCompletedPayment(null);
     document.body.style.overflow = "auto";
@@ -1503,7 +1437,7 @@ function PackageEstimator() {
               </div>
             </div>
 
-            {/* Right Column: Sticky Order Summary on Desktop (Viewport-Fit Optimised) */}
+            {/* Right Column: Sticky Order Summary on Desktop */}
             <aside
               id="order-summary-card"
               className="w-full lg:w-[390px] xl:w-[420px] shrink-0 lg:sticky lg:top-[96px] self-start transition-all duration-300 mt-2 lg:mt-0"
@@ -1760,7 +1694,7 @@ function PackageEstimator() {
                       )}
                     </div>
 
-                    {/* 3. BoomFi Crypto Gateway Button */}
+                    {/* 3. BoomFi Crypto Gateway Button (Same-Tab Redirect) */}
                     <button
                       type="button"
                       onClick={handleBoomFiSubmit}
@@ -1774,7 +1708,7 @@ function PackageEstimator() {
                       {isRedirectingBoomFi ? (
                         <>
                           <span className="w-4 h-4 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin" />
-                          <span>Opening BoomFi Crypto...</span>
+                          <span>Redirecting to BoomFi Gateway...</span>
                         </>
                       ) : (
                         <>
@@ -1938,7 +1872,7 @@ function PackageEstimator() {
   );
 }
 
-// TRUST METRICS SECTION (2x2 MOBILE GRID, 4-COL DESKTOP)
+// TRUST METRICS SECTION
 function TrustMetricsSection() {
   const metrics = [
     {
@@ -2363,7 +2297,7 @@ function HowItWorksSection() {
   );
 }
 
-// REVIEWS SECTION (SMOOTH MOBILE SLIDER + 4-COL DESKTOP)
+// REVIEWS SECTION
 function ReviewsSection() {
   const sliderRef = useRef(null);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -2427,7 +2361,6 @@ function ReviewsSection() {
   return (
     <section className="relative w-full bg-[#f8f9fa] py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed]">
       <div className="max-w-[1200px] mx-auto">
-        {/* Top Header */}
         <div className="text-center mb-8 sm:mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-white border border-[#e8eaed] text-[#5f6368] text-[11.5px] sm:text-[12.5px] font-medium mb-3 sm:mb-4">
             <span className="w-2 h-2 rounded-full bg-[#fbbc04]" />
@@ -2442,7 +2375,6 @@ function ReviewsSection() {
           </p>
         </div>
 
-        {/* Top Rating Analytics Banner */}
         <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-[#e8eaed] shadow-[0_2px_14px_rgba(60,64,67,0.03)] p-5 sm:p-7 lg:p-10 mb-6 sm:mb-8 grid grid-cols-1 lg:grid-cols-3 items-center gap-5 sm:gap-8">
           <div className="flex items-center justify-between sm:justify-center lg:justify-start gap-4 border-b lg:border-b-0 pb-4 lg:pb-0 border-[#e8eaed]">
             <div>
@@ -2524,7 +2456,6 @@ function ReviewsSection() {
           </div>
         </div>
 
-        {/* Smooth Horizontal Slider on Mobile, 4-Col Grid on Desktop */}
         <div
           ref={sliderRef}
           onScroll={handleScroll}
@@ -2587,7 +2518,6 @@ function ReviewsSection() {
           ))}
         </div>
 
-        {/* Mobile Slider Controls */}
         <div className="flex lg:hidden items-center justify-between mt-4 px-1">
           <div className="flex items-center gap-1.5">
             {reviews.map((_, idx) => (
@@ -2892,7 +2822,6 @@ function CTASection() {
 // MAIN HOME COMPONENT
 export default function Home() {
   return (
-    /* IMPORTANT: overflow-x-clip prevents horizontal scroll WITHOUT breaking position:sticky on desktop */
     <main className="w-full bg-[#fcfcfc] relative overflow-x-clip">
       <style>{`
         .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 28px 28px; }
@@ -2908,7 +2837,6 @@ export default function Home() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Custom Touch-Friendly Slider Styling */
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%;
           background: #ffffff; border: 3px solid #1a73e8; cursor: pointer;
@@ -2926,7 +2854,7 @@ export default function Home() {
         input[type=range]::-moz-range-thumb:active { transform: scale(1.2); background: #e8f0fe; }
       `}</style>
 
-      {/* Hero Section (Compact Height so Calculator is Reached Immediately) */}
+      {/* Hero Section */}
       <section className="relative z-10 min-h-[70vh] sm:min-h-[76vh] flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-10 sm:pb-14 pt-[76px] sm:pt-[84px] overflow-hidden">
         <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-50" />

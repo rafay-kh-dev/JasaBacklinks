@@ -295,7 +295,7 @@ app.post("/api/capture-paypal-order", async (req, res) => {
 });
 
 // ==========================================
-// 3. BOOMFI CRYPTO API (WITH AUTO-REDIRECT)
+// 3. BOOMFI CRYPTO API (SAME-TAB AUTO REDIRECT)
 // ==========================================
 app.post("/api/create-boomfi-charge", async (req, res) => {
   try {
@@ -323,17 +323,19 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
     const txReference = `BF-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
     const planName = `Jasa Backlinks SEO Campaign (${txReference})`;
 
-    // Automatically detects originUrl from body, request header, or fallback domain
     const frontendBase = (
       originUrl ||
       req.headers.origin ||
       process.env.FRONTEND_URL ||
       "https://www.jasabacklinks.net"
     ).replace(/\/$/, "");
+
     const returnUrl = `${frontendBase}/?boomfi_status=success&tx=${txReference}`;
+    const failureUrl = `${frontendBase}/?boomfi_status=failed`;
 
     let response;
     try {
+      // Official BoomFi after_completion redirect schema
       response = await axios.post(
         `${boomfiBaseUrl}/paylinks`,
         {
@@ -342,7 +344,11 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
           amount: totalAmount.toFixed(2),
           currency: "USD",
           type: "OneTime",
-          redirect_url: returnUrl,
+          after_completion: {
+            type: "redirect",
+            redirect_url: returnUrl,
+            failure_redirect_url: failureUrl,
+          },
         },
         {
           headers: {
@@ -353,6 +359,7 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
         }
       );
     } catch (firstErr) {
+      // Fallback if after_completion has strict validation on test environment
       response = await axios.post(
         `${boomfiBaseUrl}/paylinks`,
         {
