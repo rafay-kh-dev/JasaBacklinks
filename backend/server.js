@@ -11,7 +11,7 @@ const {
   getClientEmailHtml,
   getAdminEmailHtml,
   getContactAdminHtml,
-  getContactClientHtml
+  getContactClientHtml,
 } = require("./templates/emailTemplates");
 
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -32,7 +32,11 @@ const PAYPAL_API_BASE =
 // BULLETPROOF HTTP EMAIL GATEWAY (NO SMTP NEEDED)
 // ==========================================
 const sendMailOverAPI = async ({ from, to, replyTo, subject, html }) => {
-  const apiKey = (process.env.RESEND_API_KEY || process.env.SMTP_PASS || "").trim();
+  const apiKey = (
+    process.env.RESEND_API_KEY ||
+    process.env.SMTP_PASS ||
+    ""
+  ).trim();
   if (!apiKey) throw new Error("Missing RESEND_API_KEY in .env file.");
 
   const payload = {
@@ -41,7 +45,7 @@ const sendMailOverAPI = async ({ from, to, replyTo, subject, html }) => {
     subject,
     html,
   };
-  
+
   if (replyTo) payload.reply_to = replyTo;
 
   try {
@@ -50,18 +54,27 @@ const sendMailOverAPI = async ({ from, to, replyTo, subject, html }) => {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      timeout: 10000, // 10 second timeout for API requests
+      timeout: 10000,
     });
     return response.data;
   } catch (error) {
-    console.error("Resend API Delivery Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || "Failed to send email via API");
+    console.error(
+      "Resend API Delivery Error:",
+      error.response?.data || error.message
+    );
+    throw new Error(
+      error.response?.data?.message || "Failed to send email via API"
+    );
   }
 };
 
 // Live API Diagnostic Route for Testing
 app.get("/api/verify-smtp", (req, res) => {
-  const apiKey = (process.env.RESEND_API_KEY || process.env.SMTP_PASS || "").trim();
+  const apiKey = (
+    process.env.RESEND_API_KEY ||
+    process.env.SMTP_PASS ||
+    ""
+  ).trim();
   if (!apiKey) {
     return res.status(503).json({
       connected: false,
@@ -77,7 +90,9 @@ app.get("/api/verify-smtp", (req, res) => {
 // Email Testing Route
 app.get("/api/send-test-emails", async (req, res) => {
   try {
-    const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
+    const senderEmail = (
+      process.env.SENDER_EMAIL || "hello@jasabacklinks.net"
+    ).trim();
     const myEmailAddress = (process.env.ADMIN_EMAIL || senderEmail).trim();
 
     const dummyCustomer = {
@@ -125,10 +140,14 @@ app.get("/api/send-test-emails", async (req, res) => {
       }),
     ]);
 
-    res.send(`<h3 style="color: green;">Success! Test emails sent via HTTP API to <b>${myEmailAddress}</b>.</h3>`);
+    res.send(
+      `<h3 style="color: green;">Success! Test emails sent via HTTP API to <b>${myEmailAddress}</b>.</h3>`
+    );
   } catch (error) {
     console.error("Test Email Delivery Error:", error);
-    res.send(`<h3 style="color: red;">Failed to send emails via API: <br><br> ${error.message}</h3>`);
+    res.send(
+      `<h3 style="color: red;">Failed to send emails via API: <br><br> ${error.message}</h3>`
+    );
   }
 });
 
@@ -171,7 +190,8 @@ app.post("/api/create-stripe-intent", async (req, res) => {
     const { cart } = req.body;
     if (hasUnpricedGuestPostingItems(cart)) {
       return res.status(503).json({
-        error: "Guest Posting checkout is unavailable until final rates are configured.",
+        error:
+          "Guest Posting checkout is unavailable until final rates are configured.",
       });
     }
     const totalAmount = calculateSecureTotal(cart);
@@ -219,7 +239,8 @@ app.post("/api/create-paypal-order", async (req, res) => {
     const { cart } = req.body;
     if (hasUnpricedGuestPostingItems(cart)) {
       return res.status(503).json({
-        error: "Guest Posting checkout is unavailable until final rates are configured.",
+        error:
+          "Guest Posting checkout is unavailable until final rates are configured.",
       });
     }
     const totalAmount = calculateSecureTotal(cart);
@@ -279,26 +300,40 @@ app.post("/api/capture-paypal-order", async (req, res) => {
 app.post("/api/create-boomfi-charge", async (req, res) => {
   try {
     const { cart, originUrl } = req.body;
+    if (hasUnpricedGuestPostingItems(cart)) {
+      return res.status(503).json({
+        error:
+          "Guest Posting checkout is unavailable until final rates are configured.",
+      });
+    }
+
     const totalAmount = calculateSecureTotal(cart);
     if (totalAmount <= 0) {
       return res.status(400).json({ error: "Invalid cart total." });
     }
 
     if (!process.env.BOOMFI_API_KEY) {
-      return res.status(500).json({ error: "BOOMFI_API_KEY is missing in .env file." });
+      return res
+        .status(500)
+        .json({ error: "BOOMFI_API_KEY is missing in .env file." });
     }
 
-    const boomfiBaseUrl = process.env.BOOMFI_API_BASE || "https://mapi.boomfi.xyz/v1";
+    const boomfiBaseUrl =
+      process.env.BOOMFI_API_BASE || "https://mapi.boomfi.xyz/v1";
     const txReference = `BF-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
     const planName = `Jasa Backlinks SEO Campaign (${txReference})`;
 
-    // Return URL jahan payment ke baad BoomFi user ko wapas bhejega
-    const frontendBase = (originUrl || process.env.FRONTEND_URL || "https://www.jasabacklinks.net").replace(/\/$/, "");
+    // Automatically detects originUrl from body, request header, or fallback domain
+    const frontendBase = (
+      originUrl ||
+      req.headers.origin ||
+      process.env.FRONTEND_URL ||
+      "https://www.jasabacklinks.net"
+    ).replace(/\/$/, "");
     const returnUrl = `${frontendBase}/?boomfi_status=success&tx=${txReference}`;
 
     let response;
     try {
-      // Try with redirect_url first
       response = await axios.post(
         `${boomfiBaseUrl}/paylinks`,
         {
@@ -318,7 +353,6 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
         }
       );
     } catch (firstErr) {
-      // Fallback agar BoomFi API version redirect_url field par error de
       response = await axios.post(
         `${boomfiBaseUrl}/paylinks`,
         {
@@ -340,10 +374,16 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
 
     const payload = response.data?.data || response.data || {};
     const paylinkId = payload.id || payload.paylink_id || payload.link_id;
-    const rawCheckoutUrl = payload.url || payload.payment_link || payload.checkout_url || (paylinkId ? `https://pay.boomfi.xyz/${paylinkId}` : null);
+    const rawCheckoutUrl =
+      payload.url ||
+      payload.payment_link ||
+      payload.checkout_url ||
+      (paylinkId ? `https://pay.boomfi.xyz/${paylinkId}` : null);
 
     if (!rawCheckoutUrl) {
-      return res.status(500).json({ error: "BoomFi did not return a valid checkout URL." });
+      return res
+        .status(500)
+        .json({ error: "BoomFi did not return a valid checkout URL." });
     }
 
     return res.json({
@@ -354,7 +394,9 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
     });
   } catch (error) {
     console.error("BoomFi API Error:", error.response?.data || error.message);
-    return res.status(500).json({ error: "Failed to initialise BoomFi Crypto Gateway." });
+    return res
+      .status(500)
+      .json({ error: "Failed to initialise BoomFi Crypto Gateway." });
   }
 });
 
@@ -365,10 +407,19 @@ const ORDERS_FILE = path.join(__dirname, "orders.json");
 
 app.post("/api/submit-order", async (req, res) => {
   try {
-    const { transactionId, paymentMethod, totalAmount, totalLinks, packages, customer } = req.body;
+    const {
+      transactionId,
+      paymentMethod,
+      totalAmount,
+      totalLinks,
+      packages,
+      customer,
+    } = req.body;
 
     if (!customer?.email || !customer?.targetUrls) {
-      return res.status(400).json({ error: "Customer email and target URLs are required." });
+      return res
+        .status(400)
+        .json({ error: "Customer email and target URLs are required." });
     }
 
     try {
@@ -390,7 +441,9 @@ app.post("/api/submit-order", async (req, res) => {
       console.warn("Could not save order to orders.json:", fileErr.message);
     }
 
-    const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
+    const senderEmail = (
+      process.env.SENDER_EMAIL || "hello@jasabacklinks.net"
+    ).trim();
     const adminEmail = (process.env.ADMIN_EMAIL || senderEmail).trim();
 
     const clientHtml = getClientEmailHtml({
@@ -427,7 +480,10 @@ app.post("/api/submit-order", async (req, res) => {
 
     emailResults.forEach((result, idx) => {
       if (result.status === "rejected") {
-        console.error(`ORDER MAIL ERROR [${idx === 0 ? 'Client' : 'Admin'}]:`, result.reason);
+        console.error(
+          `ORDER MAIL ERROR [${idx === 0 ? "Client" : "Admin"}]:`,
+          result.reason
+        );
       }
     });
 
@@ -445,7 +501,16 @@ const ENQUIRIES_FILE = path.join(__dirname, "enquiries.json");
 
 app.post("/api/contact", async (req, res) => {
   try {
-    const { enquiryType, fullName, email, contactPlatform, contactHandle, volumeTier, websiteUrl, message } = req.body || {};
+    const {
+      enquiryType,
+      fullName,
+      email,
+      contactPlatform,
+      contactHandle,
+      volumeTier,
+      websiteUrl,
+      message,
+    } = req.body || {};
 
     if (!email || !message) {
       return res.status(400).json({ error: "Email and message are required." });
@@ -467,16 +532,30 @@ app.post("/api/contact", async (req, res) => {
         message,
         createdAt: new Date().toISOString(),
       });
-      fs.writeFileSync(ENQUIRIES_FILE, JSON.stringify(existingEnquiries, null, 2));
+      fs.writeFileSync(
+        ENQUIRIES_FILE,
+        JSON.stringify(existingEnquiries, null, 2)
+      );
     } catch (fileErr) {}
 
-    const senderEmail = (process.env.SENDER_EMAIL || "hello@jasabacklinks.net").trim();
-    const adminEmail = (process.env.ADMIN_EMAIL || "hello@jasabacklinks.net").trim();
+    const senderEmail = (
+      process.env.SENDER_EMAIL || "hello@jasabacklinks.net"
+    ).trim();
+    const adminEmail = (
+      process.env.ADMIN_EMAIL || "hello@jasabacklinks.net"
+    ).trim();
 
     const escapeHtml = (value = "") =>
       String(value).replace(
         /[&<>"']/g,
-        (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+        (c) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[c]
       );
 
     const escapedName = escapeHtml(fullName || "there");
@@ -491,12 +570,12 @@ app.post("/api/contact", async (req, res) => {
       contactHandle: escapeHtml(contactHandle),
       volumeTier: escapeHtml(volumeTier),
       websiteUrl: escapeHtml(websiteUrl),
-      message: escapedMessage
+      message: escapedMessage,
     });
 
     const clientContactHtml = getContactClientHtml({
       fullName: escapedName,
-      message: escapedMessage
+      message: escapedMessage,
     });
 
     const emailResults = await Promise.allSettled([
@@ -518,11 +597,17 @@ app.post("/api/contact", async (req, res) => {
 
     emailResults.forEach((result, idx) => {
       if (result.status === "rejected") {
-        console.error(`CONTACT MAIL ERROR [${idx === 0 ? 'Admin' : 'Client'}]:`, result.reason);
+        console.error(
+          `CONTACT MAIL ERROR [${idx === 0 ? "Admin" : "Client"}]:`,
+          result.reason
+        );
       }
     });
 
-    res.json({ success: true, confirmationSent: emailResults[1].status === "fulfilled" });
+    res.json({
+      success: true,
+      confirmationSent: emailResults[1].status === "fulfilled",
+    });
   } catch (error) {
     console.error("Contact Form Error:", error);
     res.json({ success: true, confirmationSent: false });
@@ -856,20 +941,20 @@ const server = app.listen(PORT, () => {
   console.log(`Enterprise Backend running on port ${PORT}`);
 });
 
-server.on('error', (err) => {
-  console.error('Server Port Error:', err);
+server.on("error", (err) => {
+  console.error("Server Port Error:", err);
 });
 
-process.on('exit', (code) => {
+process.on("exit", (code) => {
   console.log(`Terminal closed automatically with exit code: ${code}`);
 });
 
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception (Silent Crash):', err);
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception (Silent Crash):", err);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection (Silent Crash):', reason);
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection (Silent Crash):", reason);
 });
 
 module.exports = app;

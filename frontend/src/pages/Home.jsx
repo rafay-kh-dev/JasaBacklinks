@@ -11,20 +11,19 @@ import {
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
 
-// --- ENVIRONMENT & API CONFIGURATION ---
+// ENVIRONMENT & API CONFIGURATION
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
-// --- YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3) ---
+// YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3)
 const TEAM_CONTACTS = {
-  whatsappUrl: "https://wa.me/6281234567890",
-  whatsappLabel: "+62 812-3456-7890",
-  telegramUrl: "https://t.me/jasabacklinks",
-  telegramLabel: "@jasabacklinks",
-  supportEmail: "jasa-backlinks@seohubltd.com",
+  whatsappUrl: "https://wa.me/447598789693",
+  whatsappLabel: "+44 7598789693",
+  telegramUrl: "https://t.me/SEOHUBLTD",
+  telegramLabel: "@SEOHUBLTD",
+  supportEmail: "hello@jasabacklinks.net",
 };
 
 let stripePromise;
@@ -59,7 +58,7 @@ const STRIPE_ELEMENT_OPTIONS = {
   },
 };
 
-// --- PIECEWISE SLIDER MAPPING HELPERS (LOCKS THUMB TO EXACT VISUAL LABELS) ---
+// PIECEWISE SLIDER MAPPING HELPERS (LOCKS THUMB TO EXACT VISUAL LABELS)
 // Visual stops: 0 -> Pos 0 | 1 -> Pos 100 | 1k -> Pos 200 | 2k -> Pos 300 | 3k -> Pos 400 | 4k -> Pos 500 | 5k -> Pos 600
 const SLIDER_STOPS = [0, 1, 1000, 2000, 3000, 4000, 5000];
 
@@ -96,7 +95,7 @@ function sliderPosToQty(pos) {
   return Math.max(1000, Math.min(5000, snappedAbove1k));
 }
 
-// --- POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM ---
+// POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM
 function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -349,7 +348,7 @@ function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
   );
 }
 
-// --- POPUP 2 & POPUP 3: POST-PAYMENT ORDER DETAILS + THANK YOU & TEAM CONTACTS ---
+// POPUP 2 & POPUP 3: POST-PAYMENT ORDER DETAILS + THANK YOU & TEAM CONTACTS
 function OrderOnboardingFlowModal({
   isOpen,
   paymentData,
@@ -379,6 +378,8 @@ function OrderOnboardingFlowModal({
 
   if (!isOpen || !paymentData) return null;
 
+  const isBoomFiFlow = Boolean(paymentData.checkoutUrl);
+
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     setSubmissionError("");
@@ -403,8 +404,13 @@ function OrderOnboardingFlowModal({
         },
       });
       if (!data?.success) {
-        throw new Error("The server did not confirm that your order details were received.");
+        throw new Error(
+          "The server did not confirm that your order details were received.",
+        );
       }
+      // Clear saved BoomFi state once order is submitted
+      localStorage.removeItem("jasa_pending_boomfi_cart");
+      localStorage.removeItem("jasa_pending_boomfi_payment");
       setIsStep3ThankYou(true);
     } catch (err) {
       console.error("Order details submission failed:", err);
@@ -519,7 +525,7 @@ function OrderOnboardingFlowModal({
                     </svg>
                   </div>
                   <span className="gw-font-display text-[13.5px] font-medium text-[#202124]">
-                    WhatsApp
+                    WhatsApp Priority
                   </span>
                   <span className="text-[11.5px] text-[#1e8e3e] font-medium mt-0.5">
                     {TEAM_CONTACTS.whatsappLabel}
@@ -543,7 +549,7 @@ function OrderOnboardingFlowModal({
                     </svg>
                   </div>
                   <span className="gw-font-display text-[13.5px] font-medium text-[#202124]">
-                    Telegram
+                    Telegram Agency
                   </span>
                   <span className="text-[11.5px] text-[#1a73e8] font-medium mt-0.5">
                     {TEAM_CONTACTS.telegramLabel}
@@ -568,9 +574,9 @@ function OrderOnboardingFlowModal({
                     </svg>
                   </div>
                   <span className="gw-font-display text-[13.5px] font-medium text-[#202124]">
-                    Support Team
+                    Enterprise Support
                   </span>
-                  <span className="text-[11.5px] text-[#f29900] font-medium mt-0.5">
+                  <span className="text-[11.5px] text-[#f29900] font-medium mt-0.5 break-all">
                     {TEAM_CONTACTS.supportEmail}
                   </span>
                 </a>
@@ -587,8 +593,27 @@ function OrderOnboardingFlowModal({
           </div>
         ) : (
           <>
-            {/* Top Premium Payment Successful Banner */}
-            <div className="bg-gradient-to-r from-[#e6f4ea] via-[#f1faf4] to-[#e8f0fe] px-6 py-5 border-b border-[#ceead6]">
+            {/* Top Premium Payment Status Banner */}
+            <div className="bg-gradient-to-r from-[#e6f4ea] via-[#f1faf4] to-[#e8f0fe] px-6 py-5 border-b border-[#ceead6] relative">
+              {isBoomFiFlow && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  title="Close window"
+                  className="absolute top-4 right-4 p-1.5 rounded-full bg-white/80 hover:bg-white text-[#5f6368] hover:text-[#202124] border border-[#dadce0] transition-colors cursor-pointer"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.2"
+                  >
+                    <path d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-full bg-[#34a853] text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -603,16 +628,18 @@ function OrderOnboardingFlowModal({
                     </svg>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="gw-font-display text-[18px] sm:text-[20px] font-medium text-[#137333]">
-                        Payment Successful
+                        {isBoomFiFlow
+                          ? "Crypto Checkout Ready"
+                          : "Payment Successful"}
                       </span>
                       <span className="text-[11px] font-semibold bg-white text-[#1e8e3e] px-2.5 py-0.5 rounded-full border border-[#ceead6]">
                         Step 2 of 3
                       </span>
                     </div>
                     <p className="text-[12.5px] text-[#3c4043] mt-0.5">
-                      Paid{" "}
+                      Order Total:{" "}
                       <strong>
                         $
                         {finalTotal.toLocaleString("en-US", {
@@ -630,6 +657,25 @@ function OrderOnboardingFlowModal({
                   </div>
                 </div>
               </div>
+
+              {/* Extra Helper Bar for BoomFi Crypto Users */}
+              {isBoomFiFlow && (
+                <div className="mt-3.5 pt-3 border-t border-[#ceead6]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-[#3c4043]">
+                  <span>
+                    Complete your crypto transfer in the BoomFi tab, then submit
+                    your campaign URLs below:
+                  </span>
+                  <a
+                    href={paymentData.checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-[#202124] hover:bg-[#3c4043] text-[#d5ff2e] font-medium text-[11.5px] shrink-0 transition-colors"
+                  >
+                    <span>Open BoomFi Payment Page</span>
+                    <span>↗</span>
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="p-6 sm:p-7">
@@ -725,7 +771,7 @@ function OrderOnboardingFlowModal({
                     onChange={(e) => setContactHandle(e.target.value)}
                     placeholder={
                       contactPlatform === "WhatsApp"
-                        ? "e.g. +1 234 567 8900 (with country code)"
+                        ? "e.g. +44 7598 789693 (with country code)"
                         : "e.g. @yourusername"
                     }
                     className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-[10px] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#e8f0fe] text-[14px] text-[#202124]"
@@ -802,7 +848,7 @@ function OrderOnboardingFlowModal({
   );
 }
 
-// --- LIVE PACKAGE ESTIMATOR & CHECKOUT SECTION ---
+// LIVE PACKAGE ESTIMATOR & CHECKOUT SECTION
 function PackageEstimator() {
   const [cart, setCart] = useState({ hp_post: 1 });
   const [activeCategory, setActiveCategory] = useState("all");
@@ -918,22 +964,53 @@ function PackageEstimator() {
     },
   ];
 
+  // Restore BoomFi Cart & Open Step 2 Modal on Return or Page Reload
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (
+    const isUrlSuccess =
       params.get("payment") === "crypto_success" ||
-      params.get("boomfi_status") === "success"
-    ) {
+      params.get("boomfi_status") === "success";
+
+    const savedCartRaw = localStorage.getItem("jasa_pending_boomfi_cart");
+    const savedPaymentRaw = localStorage.getItem("jasa_pending_boomfi_payment");
+
+    if (isUrlSuccess || savedPaymentRaw) {
+      if (savedCartRaw) {
+        try {
+          const parsedCart = JSON.parse(savedCartRaw);
+          if (parsedCart && Object.keys(parsedCart).length > 0) {
+            setCart(parsedCart);
+          }
+        } catch (err) {}
+      }
+
+      let paymentInfo = null;
+      if (savedPaymentRaw) {
+        try {
+          paymentInfo = JSON.parse(savedPaymentRaw);
+        } catch (err) {}
+      }
+
       const txId =
         params.get("tx") ||
         params.get("payment_id") ||
-        `BOOMFI-${Date.now().toString().slice(-8)}`;
+        paymentInfo?.transactionId ||
+        `BF-${Date.now().toString().slice(-8)}`;
+
       setCompletedPayment({
         transactionId: txId,
         method: "BoomFi Crypto Gateway",
+        checkoutUrl: paymentInfo?.checkoutUrl || null,
       });
       setIsOrderModalOpen(true);
-      window.history.replaceState({}, document.title, window.location.pathname);
+
+      if (isUrlSuccess) {
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+      }
     }
   }, []);
 
@@ -1009,28 +1086,62 @@ function PackageEstimator() {
     }
   };
 
-  // 2. BOOMFI CRYPTO GATEWAY REDIRECT (LIKE PAYPAL / NOWPAYMENTS - NO CUSTOM POPUP)
+  // 2. BOOMFI CRYPTO GATEWAY (OPENS NEW TAB + UNLOCKS STEP 2 FORM IMMEDIATELY)
   const handleBoomFiSubmit = async () => {
     setIsRedirectingBoomFi(true);
     setPaymentError("");
+
+    // Open blank tab synchronously on click so mobile browsers don't block it
+    const boomfiTab = window.open("about:blank", "_blank");
+
     try {
       const { data } = await axios.post(
         `${BACKEND_URL}/api/create-boomfi-charge`,
-        { cart },
+        {
+          cart,
+          originUrl: window.location.origin,
+        },
       );
 
       if (data && data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+        const txId =
+          data.transactionId || `BF-${Date.now().toString().slice(-8)}`;
+        const paymentInfo = {
+          transactionId: txId,
+          method: "BoomFi Crypto Gateway",
+          checkoutUrl: data.checkoutUrl,
+        };
+
+        // Persist cart & payment info so user never loses their session
+        localStorage.setItem("jasa_pending_boomfi_cart", JSON.stringify(cart));
+        localStorage.setItem(
+          "jasa_pending_boomfi_payment",
+          JSON.stringify(paymentInfo),
+        );
+
+        // Navigate the new tab to BoomFi Checkout
+        if (boomfiTab) {
+          boomfiTab.location.href = data.checkoutUrl;
+        } else {
+          window.open(data.checkoutUrl, "_blank");
+        }
+
+        // Immediately open Step 2 Order Details Modal on our website
+        setCompletedPayment(paymentInfo);
+        setIsOrderModalOpen(true);
+        document.body.style.overflow = "hidden";
       } else {
+        if (boomfiTab) boomfiTab.close();
         setPaymentError(
           "BoomFi gateway did not return a payment link. Please verify BOOMFI_API_KEY on backend.",
         );
       }
     } catch (error) {
+      if (boomfiTab) boomfiTab.close();
       console.error("BoomFi Gateway Error:", error);
       setPaymentError(
         error.response?.data?.error ||
-          "Unable to initialize BoomFi Crypto Checkout. Please verify your BoomFi API key in backend .env.",
+          "Unable to initialise BoomFi Crypto Checkout. Please verify your BoomFi API key in backend .env.",
       );
     } finally {
       setIsRedirectingBoomFi(false);
@@ -1057,6 +1168,8 @@ function PackageEstimator() {
   };
 
   const closeOrderModal = () => {
+    localStorage.removeItem("jasa_pending_boomfi_cart");
+    localStorage.removeItem("jasa_pending_boomfi_payment");
     setIsOrderModalOpen(false);
     setCompletedPayment(null);
     document.body.style.overflow = "auto";
@@ -1511,7 +1624,7 @@ function PackageEstimator() {
                           Estimated Total
                         </span>
                         <span className="text-[10.5px] sm:text-[11px] text-[#1e8e3e] font-medium">
-                          ● Instant Setup Included
+                          Instant Setup Included
                         </span>
                       </div>
                       <div className="text-right">
@@ -1538,43 +1651,49 @@ function PackageEstimator() {
                   {/* API Checkout Buttons */}
                   <div className="space-y-2 shrink-0">
                     {/* 1. Stripe Card Checkout Button */}
-                    {/* --- ORIGINAL STRIPE BUTTON --- */}
-<button
-  type="button"
-  onClick={handleStripeCheckoutClick}
-  disabled={
-    totalLinks === 0 ||
-    isInitializingPayment ||
-    isRedirectingBoomFi
-  }
-  className="gw-font-display w-full h-[44px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
->
-  {isInitializingPayment ? (
-    "Opening Secure Card Checkout..."
-  ) : (
-    <>
-      <svg
-        className="w-8 h-4"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 468 222.5"
-        fill="white"
-        role="img"
-        aria-label="Stripe"
-      >
-        <g>
-          <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
-          <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
-          <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
-          <rect x="223.8" y="69.3" width="25.1" height="87.5" />
-          <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
-          <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
-          <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
-        </g>
-      </svg>
-      <span className="tracking-wide">Pay with Card (Instant)</span>
-    </>
-  )}
-</button>
+                    <button
+                      type="button"
+                      onClick={handleStripeCheckoutClick}
+                      disabled={
+                        totalLinks === 0 ||
+                        isInitializingPayment ||
+                        isRedirectingBoomFi
+                      }
+                      className="gw-font-display w-full h-[44px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14px] sm:text-[14.5px] hover:bg-[#635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {isInitializingPayment ? (
+                        "Opening Secure Card Checkout..."
+                      ) : (
+                        <>
+                          <svg
+                            className="w-8 h-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 468 222.5"
+                            fill="white"
+                            role="img"
+                            aria-label="Stripe"
+                          >
+                            <g>
+                              <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
+                              <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
+                              <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
+                              <rect
+                                x="223.8"
+                                y="69.3"
+                                width="25.1"
+                                height="87.5"
+                              />
+                              <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
+                              <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
+                              <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
+                            </g>
+                          </svg>
+                          <span className="tracking-wide">
+                            Pay with Card (Instant)
+                          </span>
+                        </>
+                      )}
+                    </button>
 
                     {/* 2. PayPal Smart Buttons */}
                     <div className="w-full relative z-0">
@@ -1641,7 +1760,7 @@ function PackageEstimator() {
                       )}
                     </div>
 
-                    {/* 3. BoomFi Crypto Gateway Button (Direct Gateway Redirect) */}
+                    {/* 3. BoomFi Crypto Gateway Button */}
                     <button
                       type="button"
                       onClick={handleBoomFiSubmit}
@@ -1655,7 +1774,7 @@ function PackageEstimator() {
                       {isRedirectingBoomFi ? (
                         <>
                           <span className="w-4 h-4 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin" />
-                          <span>Redirecting to BoomFi Gateway...</span>
+                          <span>Opening BoomFi Crypto...</span>
                         </>
                       ) : (
                         <>
@@ -1692,7 +1811,7 @@ function PackageEstimator() {
         </div>
       </section>
 
-      {/* --- FLOATING MOBILE QUICK-SUMMARY BAR --- */}
+      {/* FLOATING MOBILE QUICK-SUMMARY BAR */}
       {totalLinks > 0 && !isStripeModalOpen && !isOrderModalOpen && (
         <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
           <div>
@@ -1738,7 +1857,7 @@ function PackageEstimator() {
         </div>
       )}
 
-      {/* --- POPUP 1: CUSTOM 3-FIELD STRIPE CARD MODAL --- */}
+      {/* POPUP 1: CUSTOM 3-FIELD STRIPE CARD MODAL */}
       {isStripeModalOpen && clientSecret && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
@@ -1806,7 +1925,7 @@ function PackageEstimator() {
         </div>
       )}
 
-      {/* --- POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & CONTACTS --- */}
+      {/* POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & CONTACTS */}
       <OrderOnboardingFlowModal
         isOpen={isOrderModalOpen}
         paymentData={completedPayment}
@@ -1819,7 +1938,7 @@ function PackageEstimator() {
   );
 }
 
-// --- TRUST METRICS SECTION (2x2 MOBILE GRID, 4-COL DESKTOP) ---
+// TRUST METRICS SECTION (2x2 MOBILE GRID, 4-COL DESKTOP)
 function TrustMetricsSection() {
   const metrics = [
     {
@@ -1966,7 +2085,7 @@ function TrustMetricsSection() {
   );
 }
 
-// --- BENTO GRID SECTION ---
+// BENTO GRID SECTION
 function AudienceBentoSection() {
   return (
     <section className="relative w-full bg-[#f8f9fa] py-12 sm:py-20 lg:py-28 px-4 sm:px-6 border-t border-[#e8eaed] overflow-hidden">
@@ -2166,7 +2285,7 @@ function AudienceBentoSection() {
   );
 }
 
-// --- 3-STEP WORKFLOW (HOW IT WORKS) ---
+// 3-STEP WORKFLOW (HOW IT WORKS)
 function HowItWorksSection() {
   const steps = [
     {
@@ -2244,7 +2363,7 @@ function HowItWorksSection() {
   );
 }
 
-// --- REVIEWS SECTION (SMOOTH MOBILE SLIDER + 4-COL DESKTOP) ---
+// REVIEWS SECTION (SMOOTH MOBILE SLIDER + 4-COL DESKTOP)
 function ReviewsSection() {
   const sliderRef = useRef(null);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -2525,7 +2644,7 @@ function ReviewsSection() {
   );
 }
 
-// --- GOOGLE WORKSPACE STYLE FAQ ACCORDION ---
+// GOOGLE WORKSPACE STYLE FAQ ACCORDION
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);
 
@@ -2614,7 +2733,7 @@ function FAQSection() {
   );
 }
 
-// --- COMPACT & ON-THEME GOOGLE WORKSPACE CTA SECTION ---
+// COMPACT & ON-THEME GOOGLE WORKSPACE CTA SECTION
 function CTASection() {
   return (
     <section className="w-full bg-[#f8f9fa] py-12 sm:py-20 px-4 sm:px-6 border-t border-[#e8eaed]">
@@ -2694,7 +2813,7 @@ function CTASection() {
                         Authority Campaign
                       </p>
                       <p className="text-[11px] sm:text-[11.5px] text-[#1e8e3e] font-medium">
-                        ● Live Indexing Active
+                        Live Indexing Active
                       </p>
                     </div>
                   </div>
@@ -2770,7 +2889,7 @@ function CTASection() {
   );
 }
 
-// --- MAIN HOME COMPONENT ---
+// MAIN HOME COMPONENT
 export default function Home() {
   return (
     /* IMPORTANT: overflow-x-clip prevents horizontal scroll WITHOUT breaking position:sticky on desktop */
@@ -2981,25 +3100,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- 1. PACKAGE ESTIMATOR SECTION (MOVED DIRECTLY BELOW HERO FOR IMMEDIATE ACCESS) --- */}
+      {/* 1. TRUST METRICS SECTION */}
       <TrustMetricsSection />
 
-      {/* --- 2. 3-STEP WORKFLOW SECTION --- */}
+      {/* 2. PACKAGE ESTIMATOR SECTION */}
       <PackageEstimator />
 
-      {/* --- 3. TRUST METRICS SECTION --- */}
+      {/* 3. 3-STEP WORKFLOW SECTION */}
       <HowItWorksSection />
 
-      {/* --- 4. BENTO GRID SECTION --- */}
+      {/* 4. BENTO GRID SECTION */}
       <AudienceBentoSection />
 
-      {/* --- 5. REVIEWS SECTION --- */}
+      {/* 5. REVIEWS SECTION */}
       <ReviewsSection />
 
-      {/* --- 6. FAQ ACCORDION SECTION --- */}
+      {/* 6. FAQ ACCORDION SECTION */}
       <FAQSection />
 
-      {/* --- 7. COMPACT CTA SECTION --- */}
+      {/* 7. COMPACT CTA SECTION */}
       <CTASection />
     </main>
   );
