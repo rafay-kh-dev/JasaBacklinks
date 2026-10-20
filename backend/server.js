@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 // MONGODB CONNECTION & SCHEMAS
 const dbURI =
   process.env.MONGODB_URI ||
-  "mongodb+srv://rafayoutreach_db_user:KEkvLMCSt71UokgN@cluster0.9plzeku.mongodb.net/jasabacklinks?retryWrites=true&w=majority";
+  "mongodb://rafayoutreach_db_user:KEkvLMCSt71UokgN@ac-asn7yxx-shard-00-00.9plzeku.mongodb.net:27017,ac-asn7yxx-shard-00-01.9plzeku.mongodb.net:27017,ac-asn7yxx-shard-00-02.9plzeku.mongodb.net:27017/?ssl=true&replicaSet=atlas-n69017-shard-0&authSource=admin";
 
 const Order = mongoose.model(
   "Order",
