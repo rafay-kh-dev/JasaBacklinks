@@ -11,19 +11,43 @@ import {
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
 
-// --- ENVIRONMENT & API CONFIGURATION ---
+// ENVIRONMENT & API CONFIGURATION
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BOOMFI_ORDER_STORAGE_KEY = "jasa_pending_boomfi_order";
 
-// --- YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3) ---
+function readBoomFiReturnState() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get("boomfi_status");
+  let savedOrder = null;
+
+  try {
+    const rawOrder = localStorage.getItem(BOOMFI_ORDER_STORAGE_KEY);
+    savedOrder = rawOrder ? JSON.parse(rawOrder) : null;
+  } catch (error) {
+    console.warn("Could not restore pending BoomFi order:", error);
+  }
+
+  return {
+    status,
+    savedOrder,
+    transactionId:
+      params.get("tx") ||
+      params.get("payment_id") ||
+      savedOrder?.transactionId ||
+      null,
+  };
+}
+
+// YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3)
 const TEAM_CONTACTS = {
   whatsappUrl: "https://wa.me/447598789693",
   whatsappLabel: "+44 7598789693",
   telegramUrl: "https://t.me/SEOHUBLTD",
   telegramLabel: "@SEOHUBLTD",
-  supportEmail: "jasa-backlinks@seohubltd.com",
+  supportEmail: "hello@jasabacklinks.net",
 };
 
 let stripePromise;
@@ -57,7 +81,7 @@ const STRIPE_ELEMENT_OPTIONS = {
   },
 };
 
-// --- PIECEWISE SLIDER MAPPING HELPERS (EXACT ALIGNMENT WITH LABELS) ---
+// PIECEWISE SLIDER MAPPING HELPERS (EXACT ALIGNMENT WITH LABELS)
 const SLIDER_STOPS = [0, 1, 1000, 2000, 3000, 4000, 5000];
 
 function qtyToSliderPos(qty) {
@@ -92,7 +116,7 @@ function sliderPosToQty(pos) {
   return Math.max(1000, Math.min(5000, snappedAbove1k));
 }
 
-// --- COMPLETE 12 DEDICATED SERVICE PAGES CATALOGUE ---
+// eslint-disable-next-line react-refresh/only-export-components -- route metadata is imported by App.jsx.
 export const SERVICE_PAGES_DATA = [
   // 1. HOMEPAGE POST
   {
@@ -595,7 +619,7 @@ export const SERVICE_PAGES_DATA = [
     features: [
       "Balanced mix of Homepage, Sticky & EDU placements",
       "Natural anchor text diversification (Branded, Exact, Partial)",
-      " Drip-feed velocity tailored to your domain age",
+      "Drip-feed velocity tailored to your domain age",
       "Dedicated campaign manager & white-label master report",
     ],
     deliverables: [
@@ -731,7 +755,7 @@ export const SERVICE_PAGES_DATA = [
   },
 ];
 
-// --- POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM ---
+// POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM
 function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -896,7 +920,7 @@ function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
   );
 }
 
-// --- POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & 3 TEAM CONTACTS ---
+// POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & 3 TEAM CONTACTS
 function OrderOnboardingFlowModal({
   isOpen,
   paymentData,
@@ -916,13 +940,6 @@ function OrderOnboardingFlowModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
   const [isStep3ThankYou, setIsStep3ThankYou] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsStep3ThankYou(false);
-      setSubmissionError("");
-    }
-  }, [isOpen, paymentData]);
 
   if (!isOpen || !paymentData) return null;
 
@@ -949,8 +966,11 @@ function OrderOnboardingFlowModal({
         },
       });
       if (!data?.success) {
-        throw new Error("The server did not confirm that your order details were received.");
+        throw new Error(
+          "The server did not confirm that your order details were received.",
+        );
       }
+      localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
       setIsStep3ThankYou(true);
     } catch (err) {
       console.error("Order details submission failed:", err);
@@ -1255,7 +1275,7 @@ function OrderOnboardingFlowModal({
   );
 }
 
-// --- MAIN DYNAMIC SERVICE DETAIL PAGE COMPONENT ---
+// MAIN DYNAMIC SERVICE DETAIL PAGE COMPONENT
 export default function ServiceDetail({ forcedSlug }) {
   const { slug: routeSlug } = useParams();
   const location = useLocation();
@@ -1275,13 +1295,37 @@ export default function ServiceDetail({ forcedSlug }) {
         (s.aliases && s.aliases.includes(rawSlug.toLowerCase())),
     ) || SERVICE_PAGES_DATA[0];
 
+  return (
+    <ServiceDetailPage
+      key={currentService.id}
+      currentService={currentService}
+    />
+  );
+}
+
+function ServiceDetailPage({ currentService }) {
   // Dedicated Hero Configurator Quantity State
-  const [heroQty, setHeroQty] = useState(1);
+  const [boomfiReturn] = useState(readBoomFiReturnState);
+  const restoredCart =
+    boomfiReturn.savedOrder?.cart &&
+    Object.keys(boomfiReturn.savedOrder.cart).length > 0
+      ? boomfiReturn.savedOrder.cart
+      : { [currentService.id]: 1 };
+  const restoredHeroQty =
+    restoredCart[currentService.id] ||
+    boomfiReturn.savedOrder?.heroQty ||
+    1;
+  const returnPayment =
+    boomfiReturn.status === "success" && boomfiReturn.transactionId
+      ? {
+          transactionId: boomfiReturn.transactionId,
+          method: "BoomFi Crypto Gateway",
+        }
+      : null;
+  const [heroQty, setHeroQty] = useState(restoredHeroQty);
 
   // Master Bulk Calculator Cart State (Pre-populated with current service)
-  const [checkoutCart, setCheckoutCart] = useState({
-    [currentService.id]: 1,
-  });
+  const [checkoutCart, setCheckoutCart] = useState(restoredCart);
   const [calcCategory, setCalcCategory] = useState("all");
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
@@ -1290,46 +1334,32 @@ export default function ServiceDetail({ forcedSlug }) {
   const [clientSecret, setClientSecret] = useState("");
   const [isInitializing, setIsInitializing] = useState(false);
   const [isRedirectingBoomFi, setIsRedirectingBoomFi] = useState(false);
-  const [paymentError, setPaymentError] = useState("");
+  const [paymentError, setPaymentError] = useState(
+    boomfiReturn.status === "failed"
+      ? "Crypto payment was cancelled or not completed. Your selected package has been restored."
+      : boomfiReturn.status === "success" && !boomfiReturn.transactionId
+        ? "Could not identify the BoomFi transaction. Please contact support before submitting an order."
+        : "",
+  );
 
   // Post-Payment Onboarding Flow (Popup 2 & 3)
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [completedPayment, setCompletedPayment] = useState(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(Boolean(returnPayment));
+  const [completedPayment, setCompletedPayment] = useState(returnPayment);
 
-  // Reset Hero & Calculator default selection when navigating between the 12 service pages
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setHeroQty(1);
-    setCheckoutCart({ [currentService.id]: 1 });
-    setOpenFaqIndex(0);
-    setPaymentError("");
-  }, [currentService.id]);
-
-  // Handle BoomFi Redirect Return
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (
-      params.get("payment") === "crypto_success" ||
-      params.get("boomfi_status") === "success"
-    ) {
-      const txId =
-        params.get("tx") ||
-        params.get("payment_id") ||
-        `BOOMFI-${Date.now().toString().slice(-8)}`;
-      setCompletedPayment({
-        transactionId: txId,
-        method: "BoomFi Crypto Gateway",
-      });
-      setIsOrderModalOpen(true);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
   }, []);
 
+  useEffect(() => {
+    if (boomfiReturn.status === "success" && boomfiReturn.transactionId) {
+      document.body.style.overflow = "hidden";
+    }
+    if (boomfiReturn.status === "success" || boomfiReturn.status === "failed") {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [boomfiReturn.status, boomfiReturn.transactionId]);
+
   const heroSliderPos = qtyToSliderPos(heroQty);
-  const heroFillPercent = Math.min(
-    100,
-    Math.max(0, (heroSliderPos / 600) * 100),
-  );
   const heroTotalAmount = heroQty * currentService.price;
 
   const updateHeroQty = (rawVal) => {
@@ -1374,7 +1404,9 @@ export default function ServiceDetail({ forcedSlug }) {
 
     try {
       const [{ data }] = await Promise.all([
-        axios.post(`${BACKEND_URL}/api/create-stripe-intent`, { cart: cartObj }),
+        axios.post(`${BACKEND_URL}/api/create-stripe-intent`, {
+          cart: cartObj,
+        }),
         getStripePromise(),
       ]);
       setClientSecret(data.clientSecret);
@@ -1397,16 +1429,40 @@ export default function ServiceDetail({ forcedSlug }) {
   const handleBoomFiDirectCheckout = async (cartToUse) => {
     setIsRedirectingBoomFi(true);
     setPaymentError("");
+    setCheckoutCart(cartToUse);
     try {
+      const currentPageOrigin = `${window.location.origin}${window.location.pathname}`;
       const { data } = await axios.post(
         `${BACKEND_URL}/api/create-boomfi-charge`,
-        { cart: cartToUse },
+        {
+          cart: cartToUse,
+          originUrl: currentPageOrigin,
+        },
       );
-      if (data && data.checkoutUrl) {
+      if (data?.checkoutUrl && data.transactionId) {
+        try {
+          localStorage.setItem(
+            BOOMFI_ORDER_STORAGE_KEY,
+            JSON.stringify({
+              cart: cartToUse,
+              heroQty,
+              serviceId: currentService.id,
+              transactionId: data.transactionId,
+              timestamp: Date.now(),
+            }),
+          );
+        } catch (storageErr) {
+          console.error("Could not save pending BoomFi state:", storageErr);
+          setPaymentError(
+            "Your browser could not save this order for the return flow. Enable local storage and try again.",
+          );
+          setIsRedirectingBoomFi(false);
+          return;
+        }
         window.location.href = data.checkoutUrl;
       } else {
         setPaymentError(
-          "BoomFi gateway did not return a payment link. Please verify BOOMFI_API_KEY on backend.",
+          "BoomFi did not return a valid payment link and transaction reference. Please verify the backend configuration.",
         );
       }
     } catch (err) {
@@ -1492,7 +1548,7 @@ export default function ServiceDetail({ forcedSlug }) {
         }
       `}</style>
 
-      {/* --- 1. DEDICATED 2-COLUMN SERVICE HERO & INSTANT ORDER CONFIGURATOR --- */}
+      {/* 1. DEDICATED 2-COLUMN SERVICE HERO & INSTANT ORDER CONFIGURATOR */}
       <section className="relative w-full bg-white py-8 sm:py-14 lg:py-20 px-4 sm:px-6 border-b border-[#e8eaed] overflow-hidden">
         <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-45 pointer-events-none" />
 
@@ -1711,9 +1767,9 @@ export default function ServiceDetail({ forcedSlug }) {
                         </button>
                         <input
                           type="number"
-                          min="50"
+                          min="1"
                           max="5000"
-                          step="50"
+                          step="1"
                           value={heroQty}
                           onChange={(e) => updateHeroQty(e.target.value)}
                           className="w-[58px] text-center bg-transparent text-[13.5px] font-bold text-[#202124] focus:outline-none"
@@ -1745,16 +1801,22 @@ export default function ServiceDetail({ forcedSlug }) {
                     </div>
                   </div>
 
+                  {paymentError && (
+                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12px] font-medium">
+                      {paymentError}
+                    </div>
+                  )}
+
                   {/* Direct Instant Checkout Gateways */}
                   <div className="space-y-2.5">
                     <button
                       type="button"
                       onClick={handleHeroDirectOrder}
                       disabled={isInitializing || isRedirectingBoomFi}
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] hover:bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] shadow-[0_6px_20px_rgba(26,115,232,0.25)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] hover:bg-[#5249f5] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] shadow-[0_6px_20px_rgba(26,115,232,0.25)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <svg
-                        className="w-8   h-4"
+                        className="w-8 h-4"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 468 222.5"
                         fill="white"
@@ -1798,9 +1860,12 @@ export default function ServiceDetail({ forcedSlug }) {
                         }}
                         forceReRender={[currentService.id, heroQty]}
                         createOrder={async () => {
+                          setPaymentError("");
+                          const singleCart = { [currentService.id]: heroQty };
+                          setCheckoutCart(singleCart);
                           const { data } = await axios.post(
                             `${BACKEND_URL}/api/create-paypal-order`,
-                            { cart: { [currentService.id]: heroQty } },
+                            { cart: singleCart },
                           );
                           return data.id;
                         }}
@@ -1825,7 +1890,7 @@ export default function ServiceDetail({ forcedSlug }) {
                         })
                       }
                       disabled={isInitializing || isRedirectingBoomFi}
-                      className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed1] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed15] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <svg
                         className="w-4 h-4 text-black"
@@ -1860,7 +1925,7 @@ export default function ServiceDetail({ forcedSlug }) {
         </div>
       </section>
 
-      {/* --- 2. SERVICE DELIVERABLES & TECHNICAL ARCHITECTURE SECTION --- */}
+      {/* 2. SERVICE DELIVERABLES & TECHNICAL ARCHITECTURE SECTION */}
       <section className="w-full bg-white py-12 sm:py-16 px-4 sm:px-6 border-b border-[#e8eaed]">
         <div className="max-w-[1200px] mx-auto">
           <div className="text-center max-w-[720px] mx-auto mb-8 sm:mb-12">
@@ -1894,7 +1959,7 @@ export default function ServiceDetail({ forcedSlug }) {
         </div>
       </section>
 
-      {/* --- 3. INTERACTIVE BULK COST CALCULATOR (COMBINE WITH OTHER SERVICES) --- */}
+      {/* 3. INTERACTIVE BULK COST CALCULATOR (COMBINE WITH OTHER SERVICES) */}
       <section
         id="estimator"
         className="w-full bg-[#f8f9fa] py-12 sm:py-20 px-4 sm:px-6 border-b border-[#e8eaed]"
@@ -2269,12 +2334,22 @@ export default function ServiceDetail({ forcedSlug }) {
                     </div>
                   </div>
 
+                  {paymentError && (
+                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12px] font-medium">
+                      {paymentError}
+                    </div>
+                  )}
+
                   <div className="space-y-2.5">
                     <button
                       type="button"
                       onClick={() => openCheckoutModalWithCart(checkoutCart)}
-                      disabled={totalLinks === 0 || isInitializing}
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[#635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      disabled={
+                        totalLinks === 0 ||
+                        isInitializing ||
+                        isRedirectingBoomFi
+                      }
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[#5249f5] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       Pay with Card (Instant)
                     </button>
@@ -2296,6 +2371,7 @@ export default function ServiceDetail({ forcedSlug }) {
                             tagline: false,
                           }}
                           createOrder={async () => {
+                            setPaymentError("");
                             const { data } = await axios.post(
                               `${BACKEND_URL}/api/create-paypal-order`,
                               { cart: checkoutCart },
@@ -2319,9 +2395,34 @@ export default function ServiceDetail({ forcedSlug }) {
                     <button
                       type="button"
                       onClick={() => handleBoomFiDirectCheckout(checkoutCart)}
-                      disabled={totalLinks === 0 || isRedirectingBoomFi}
-                      className="gw-font-display w-full h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#f8f9fa] text-[#202124] font-medium text-[14px] cursor-pointer disabled:opacity-50"
+                      disabled={
+                        totalLinks === 0 ||
+                        isInitializing ||
+                        isRedirectingBoomFi
+                      }
+                      className="gw-font-display w-full h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed15] text-[#202124] font-medium text-[14px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
+                      <svg
+                        className="w-4 h-4 text-black"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+                        <path d="M8 6v12" />
+                        <path d="M8 12h6" />
+                        <path d="M9 3v3" />
+                        <path d="M13 3v3" />
+                        <path d="M9 18v3" />
+                        <path d="M13 18v3" />
+                      </svg>
                       {isRedirectingBoomFi
                         ? "Redirecting to BoomFi Gateway..."
                         : "Pay with Crypto (BoomFi)"}
@@ -2334,7 +2435,7 @@ export default function ServiceDetail({ forcedSlug }) {
         </div>
       </section>
 
-      {/* --- 4. SERVICE-SPECIFIC FAQ SECTION --- */}
+      {/* 4. SERVICE-SPECIFIC FAQ SECTION */}
       <section className="w-full bg-white py-12 sm:py-16 px-4 sm:px-6 border-b border-[#e8eaed]">
         <div className="max-w-[860px] mx-auto">
           <div className="text-center mb-8">
@@ -2379,7 +2480,7 @@ export default function ServiceDetail({ forcedSlug }) {
         </div>
       </section>
 
-      {/* --- 5. EXPLORE ALL 12 DEDICATED SERVICES DIRECTORY --- */}
+      {/* 5. EXPLORE ALL 12 DEDICATED SERVICES DIRECTORY */}
       <section className="w-full bg-[#f8f9fa] py-12 sm:py-16 px-4 sm:px-6">
         <div className="max-w-[1200px] mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7">
@@ -2437,7 +2538,7 @@ export default function ServiceDetail({ forcedSlug }) {
         </div>
       </section>
 
-      {/* --- POPUP 1: UNIFIED CHECKOUT GATEWAY MODAL --- */}
+      {/* POPUP 1: UNIFIED CHECKOUT GATEWAY MODAL */}
       {isCheckoutGatewayOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
@@ -2586,8 +2687,9 @@ export default function ServiceDetail({ forcedSlug }) {
         </div>
       )}
 
-      {/* --- POPUP 2 & POPUP 3: ORDER INTAKE + THANK YOU & 3 TEAM CONTACTS --- */}
+      {/* POPUP 2 & POPUP 3: ORDER INTAKE + THANK YOU & 3 TEAM CONTACTS */}
       <OrderOnboardingFlowModal
+        key={completedPayment?.transactionId || "no-payment"}
         isOpen={isOrderModalOpen}
         paymentData={completedPayment}
         selectedPackages={selectedPackagesDetailed}
@@ -2596,6 +2698,7 @@ export default function ServiceDetail({ forcedSlug }) {
         onClose={() => {
           setIsOrderModalOpen(false);
           setCompletedPayment(null);
+          localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
           document.body.style.overflow = "auto";
         }}
       />

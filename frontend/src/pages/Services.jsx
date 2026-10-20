@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   Elements,
@@ -15,16 +14,39 @@ import axios from "axios";
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BOOMFI_ORDER_STORAGE_KEY = "jasa_pending_boomfi_order";
+
+function readBoomFiReturnState() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get("boomfi_status");
+  let savedOrder = null;
+
+  try {
+    const rawOrder = localStorage.getItem(BOOMFI_ORDER_STORAGE_KEY);
+    savedOrder = rawOrder ? JSON.parse(rawOrder) : null;
+  } catch (error) {
+    console.warn("Could not restore pending BoomFi order:", error);
+  }
+
+  return {
+    status,
+    savedOrder,
+    transactionId:
+      params.get("tx") ||
+      params.get("payment_id") ||
+      savedOrder?.transactionId ||
+      null,
+  };
+}
 
 // --- YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3) ---
 const TEAM_CONTACTS = {
-  whatsappUrl: "https://wa.me/6281234567890",
-  whatsappLabel: "+62 812-3456-7890",
-  telegramUrl: "https://t.me/jasabacklinks",
-  telegramLabel: "@jasabacklinks",
-  supportEmail: "jasa-backlinks@seohubltd.com",
+  whatsappUrl: "https://wa.me/447598789693",
+  whatsappLabel: "+44 7598789693",
+  telegramUrl: "https://t.me/SEOHUBLTD",
+  telegramLabel: "@SEOHUBLTD",
+  supportEmail: "hello@jasabacklinks.net",
 };
 
 const GUEST_POSTING_OPTIONS = {
@@ -75,9 +97,8 @@ const getGuestPostingPrice = ({ da, dr, niche, extension }) =>
   GUEST_POSTING_SAMPLE_RATES.extension[extension];
 
 const getGuestPostingItem = (id) => {
-  const match = /^guestpost_(30|40|50|60)_(30|40|50|60)_([a-z]+)_([a-z_]+)$/.exec(
-    id,
-  );
+  const match =
+    /^guestpost_(30|40|50|60)_(30|40|50|60)_([a-z]+)_([a-z_]+)$/.exec(id);
   if (!match) return null;
 
   const [, da, dr, niche, extension] = match;
@@ -553,13 +574,6 @@ function OrderOnboardingFlowModal({
   const [submissionError, setSubmissionError] = useState("");
   const [isStep3ThankYou, setIsStep3ThankYou] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsStep3ThankYou(false);
-      setSubmissionError("");
-    }
-  }, [isOpen, paymentData]);
-
   if (!isOpen || !paymentData) return null;
 
   const handleOrderSubmit = async (e) => {
@@ -585,8 +599,11 @@ function OrderOnboardingFlowModal({
         },
       });
       if (!data?.success) {
-        throw new Error("The server did not confirm that your order details were received.");
+        throw new Error(
+          "The server did not confirm that your order details were received.",
+        );
       }
+      localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
       setIsStep3ThankYou(true);
     } catch (err) {
       console.error("Order details submission failed:", err);
@@ -906,7 +923,13 @@ export default function Services() {
   const [guestPostQty, setGuestPostQty] = useState(1);
 
   // Individual Service Card Quick Quantities
-  const [selectedQtys, setSelectedQtys] = useState({
+  const [boomfiReturn] = useState(readBoomFiReturnState);
+  const restoredCart =
+    boomfiReturn.savedOrder?.cart &&
+    Object.keys(boomfiReturn.savedOrder.cart).length > 0
+      ? boomfiReturn.savedOrder.cart
+      : { hp_post: 1 };
+  const restoredQtys = {
     hp_post: 1,
     sidebar: 1,
     sticky: 1,
@@ -916,21 +939,34 @@ export default function Services() {
     hidden_links: 1,
     edu_post: 1,
     edu_sidebar: 1,
-  });
+    ...(boomfiReturn.savedOrder?.selectedQtys || {}),
+  };
+  const returnPayment =
+    boomfiReturn.status === "success" && boomfiReturn.transactionId
+      ? {
+          transactionId: boomfiReturn.transactionId,
+          method: "BoomFi Crypto Gateway",
+        }
+      : null;
 
-  // Master Calculator & Bundle Cart State (Synced between Cards & Calculator)
-  const [checkoutCart, setCheckoutCart] = useState({ hp_post: 1 });
+  const [selectedQtys, setSelectedQtys] = useState(restoredQtys);
 
-  // Checkout Modal & Gateway States
+  const [checkoutCart, setCheckoutCart] = useState(restoredCart);
+
   const [isCheckoutGatewayOpen, setIsCheckoutGatewayOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
   const [isInitializing, setIsInitializing] = useState(false);
   const [isRedirectingBoomFi, setIsRedirectingBoomFi] = useState(false);
-  const [paymentError, setPaymentError] = useState("");
+  const [paymentError, setPaymentError] = useState(
+    boomfiReturn.status === "failed"
+      ? "Crypto payment was cancelled or not completed. Your selected packages have been restored."
+      : boomfiReturn.status === "success" && !boomfiReturn.transactionId
+        ? "Could not identify the BoomFi transaction. Please contact support before submitting an order."
+        : "",
+  );
 
-  // Post-Payment Onboarding Flow (Popup 2 & 3)
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [completedPayment, setCompletedPayment] = useState(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(Boolean(returnPayment));
+  const [completedPayment, setCompletedPayment] = useState(returnPayment);
 
   const categories = [
     { id: "all", label: "All Services", shortLabel: "All", count: 10 },
@@ -971,24 +1007,15 @@ export default function Services() {
 
   const volumePresets = [50, 100, 250, 500, 1000];
 
+  // Clean return parameters after the state has been initialized from storage.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (
-      params.get("payment") === "crypto_success" ||
-      params.get("boomfi_status") === "success"
-    ) {
-      const txId =
-        params.get("tx") ||
-        params.get("payment_id") ||
-        `BOOMFI-${Date.now().toString().slice(-8)}`;
-      setCompletedPayment({
-        transactionId: txId,
-        method: "BoomFi Crypto Gateway",
-      });
-      setIsOrderModalOpen(true);
+    if (boomfiReturn.status === "success" && boomfiReturn.transactionId) {
+      document.body.style.overflow = "hidden";
+    }
+    if (boomfiReturn.status === "success" || boomfiReturn.status === "failed") {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+  }, [boomfiReturn.status, boomfiReturn.transactionId]);
 
   const filteredServices =
     activeCategory === "all"
@@ -1066,7 +1093,9 @@ export default function Services() {
 
     try {
       const [{ data }] = await Promise.all([
-        axios.post(`${BACKEND_URL}/api/create-stripe-intent`, { cart: cartObj }),
+        axios.post(`${BACKEND_URL}/api/create-stripe-intent`, {
+          cart: cartObj,
+        }),
         getStripePromise(),
       ]);
       setClientSecret(data.clientSecret);
@@ -1133,20 +1162,42 @@ export default function Services() {
     document.body.style.overflow = "hidden";
   };
 
-  // Direct BoomFi Hosted Redirect (No Manual Crypto Wallet Popup)
+  // Direct BoomFi Same-Tab Auto-Return Redirect
   const handleBoomFiCheckout = async () => {
     setIsRedirectingBoomFi(true);
     setPaymentError("");
     try {
+      const currentPageOrigin = `${window.location.origin}${window.location.pathname}`;
       const { data } = await axios.post(
         `${BACKEND_URL}/api/create-boomfi-charge`,
-        { cart: checkoutCart },
+        {
+          cart: checkoutCart,
+          originUrl: currentPageOrigin,
+        },
       );
-      if (data && data.checkoutUrl) {
+      if (data?.checkoutUrl && data.transactionId) {
+        try {
+          localStorage.setItem(
+            BOOMFI_ORDER_STORAGE_KEY,
+            JSON.stringify({
+              cart: checkoutCart,
+              selectedQtys,
+              transactionId: data.transactionId,
+              timestamp: Date.now(),
+            }),
+          );
+        } catch (storageErr) {
+          console.error("Could not save pending BoomFi state:", storageErr);
+          setPaymentError(
+            "Your browser could not save this order for the return flow. Enable local storage and try again.",
+          );
+          setIsRedirectingBoomFi(false);
+          return;
+        }
         window.location.href = data.checkoutUrl;
       } else {
         setPaymentError(
-          "BoomFi gateway did not return a payment link. Please verify BOOMFI_API_KEY on backend.",
+          "BoomFi did not return a valid payment link and transaction reference. Please verify the backend configuration.",
         );
       }
     } catch (err) {
@@ -1353,8 +1404,8 @@ export default function Services() {
                   ))}
                 </ul>
                 <p className="mt-4 text-[11.5px] leading-relaxed text-[#5f6368]">
-                  Publisher availability and final placement requirements
-                  should be confirmed before an order is placed.
+                  Publisher availability and final placement requirements should
+                  be confirmed before an order is placed.
                 </p>
               </div>
 
@@ -2251,7 +2302,7 @@ export default function Services() {
                   </div>
 
                   {paymentError && (
-                    <div className="mb-3 p-3 rounded-[12px] bg-[#635bff] border border-[#f6f9fc] text-[#d93025] text-[12.5px] font-medium">
+                    <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12.5px] font-medium">
                       {paymentError}
                     </div>
                   )}
@@ -2277,30 +2328,35 @@ export default function Services() {
                         isRedirectingBoomFi ||
                         hasGuestPostItems
                       }
-                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[635bff] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[#5249f5] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {isInitializing ? (
                         "Opening Secure Card Checkout..."
                       ) : (
                         <>
                           <svg
-  className="w-8   h-4"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 468 222.5"
-  fill="white"
-  role="img"
-  aria-label="Stripe"
->
-  <g>
-    <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
-    <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
-    <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
-    <rect x="223.8" y="69.3" width="25.1" height="87.5" />
-    <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
-    <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
-    <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
-  </g>
-</svg>
+                            className="w-8 h-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 468 222.5"
+                            fill="white"
+                            role="img"
+                            aria-label="Stripe"
+                          >
+                            <g>
+                              <path d="M414,113.4c0-25.6-12.4-45.8-36.1-45.8c-23.8,0-38.2,20.2-38.2,45.6c0,30.1,17,45.3,41.4,45.3c11.9,0,20.9-2.7,27.7-6.5v-20c-6.8,3.4-14.6,5.5-24.5,5.5c-9.7,0-18.3-3.4-19.4-15.2h48.9C413.8,121,414,115.8,414,113.4z M364.6,103.9c0-11.3,6.9-16,13.2-16c6.1,0,12.6,4.7,12.6,16H364.6z" />
+                              <path d="M301.1,67.6c-9.8,0-16.1,4.6-19.6,7.8l-1.3-6.2h-22v116.6l25-5.3l0.1-28.3c3.6,2.6,8.9,6.3,17.7,6.3c17.9,0,34.2-14.4,34.2-46.1C335.1,83.4,318.6,67.6,301.1,67.6z M295.1,136.5c-5.9,0-9.4-2.1-11.8-4.7l-0.1-37.1c2.6-2.9,6.2-4.9,11.9-4.9c9.1,0,15.4,10.2,15.4,23.3C310.5,126.5,304.3,136.5,295.1,136.5z" />
+                              <polygon points="223.8,61.7 248.9,56.3 248.9,36 223.8,41.3" />
+                              <rect
+                                x="223.8"
+                                y="69.3"
+                                width="25.1"
+                                height="87.5"
+                              />
+                              <path d="M196.9,76.7l-1.6-7.4h-21.6v87.5h25V97.5c5.9-7.7,15.9-6.3,19-5.2v-23C214.5,68.1,202.8,65.9,196.9,76.7z" />
+                              <path d="M146.9,47.6l-24.4,5.2l-0.1,80.1c0,14.8,11.1,25.7,25.9,25.7c8.2,0,14.2-1.5,17.5-3.3V135c-3.2,1.3-19,5.9-19-8.9V90.6h19V69.3h-19L146.9,47.6z" />
+                              <path d="M79.3,94.7c0-3.9,3.2-5.4,8.5-5.4c7.6,0,17.2,2.3,24.8,6.4V72.2c-8.3-3.3-16.5-4.6-24.8-4.6C67.5,67.6,54,78.2,54,95.9c0,27.6,38,23.2,38,35.1c0,4.6-4,6.1-9.6,6.1c-8.3,0-18.9-3.4-27.3-8v23.8c9.3,4,18.7,5.7,27.3,5.7c20.8,0,35.1-10.3,35.1-28.2C117.4,100.6,79.3,105.9,79.3,94.7z" />
+                            </g>
+                          </svg>
                           <span className="tracking-wide">
                             Pay with Card (Instant)
                           </span>
@@ -2379,26 +2435,26 @@ export default function Services() {
                       ) : (
                         <>
                           <svg
-  className="w-4 h-4 text-black"
-  xmlns="http://www.w3.org/2000/svg"
-  width="100%"
-  height="100%"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth={2}
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
-  <path d="M8 6v12" />
-  <path d="M8 12h6" />
-  <path d="M9 3v3" />
-  <path d="M13 3v3" />
-  <path d="M9 18v3" />
-  <path d="M13 18v3" />
-</svg>
+                            className="w-4 h-4 text-black"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="100%"
+                            height="100%"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+                            <path d="M8 6v12" />
+                            <path d="M8 12h6" />
+                            <path d="M9 3v3" />
+                            <path d="M13 3v3" />
+                            <path d="M9 18v3" />
+                            <path d="M13 18v3" />
+                          </svg>
                           <span>Pay with Crypto (BoomFi)</span>
                         </>
                       )}
@@ -2549,9 +2605,7 @@ export default function Services() {
               <span className="w-2 h-2 rounded-full bg-[#34a853] shrink-0" />
               <span className="truncate">
                 {selectedPackagesDetailed.length}{" "}
-                {selectedPackagesDetailed.length === 1
-                  ? "Service"
-                  : "Services"}{" "}
+                {selectedPackagesDetailed.length === 1 ? "Service" : "Services"}{" "}
                 • {totalLinks.toLocaleString()} Links
               </span>
             </div>
@@ -2714,29 +2768,29 @@ export default function Services() {
                   type="button"
                   onClick={handleBoomFiCheckout}
                   disabled={isRedirectingBoomFi || hasGuestPostItems}
-                  className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed1] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="gw-font-display w-full h-[44px] sm:h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed15] text-[#202124] font-medium text-[13.5px] sm:text-[14px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <svg
-  className="w-4 h-4 text-black"
-  xmlns="http://www.w3.org/2000/svg"
-  width="100%"
-  height="100%"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth={2}
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
-  <path d="M8 6v12" />
-  <path d="M8 12h6" />
-  <path d="M9 3v3" />
-  <path d="M13 3v3" />
-  <path d="M9 18v3" />
-  <path d="M13 18v3" />
-</svg>
+                    className="w-4 h-4 text-black"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M6 6h8a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-8" />
+                    <path d="M8 6v12" />
+                    <path d="M8 12h6" />
+                    <path d="M9 3v3" />
+                    <path d="M13 3v3" />
+                    <path d="M9 18v3" />
+                    <path d="M13 18v3" />
+                  </svg>
                   {isRedirectingBoomFi
                     ? "Redirecting to BoomFi Gateway..."
                     : "Pay with Crypto (BoomFi)"}
@@ -2749,6 +2803,7 @@ export default function Services() {
 
       {/* --- POPUP 2 & POPUP 3: ORDER INTAKE + THANK YOU & 3 TEAM CONTACTS --- */}
       <OrderOnboardingFlowModal
+        key={completedPayment?.transactionId || "no-payment"}
         isOpen={isOrderModalOpen}
         paymentData={completedPayment}
         selectedPackages={selectedPackagesDetailed}
@@ -2758,6 +2813,7 @@ export default function Services() {
           setIsOrderModalOpen(false);
           setCompletedPayment(null);
           setCheckoutCart({});
+          localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
           document.body.style.overflow = "auto";
         }}
       />

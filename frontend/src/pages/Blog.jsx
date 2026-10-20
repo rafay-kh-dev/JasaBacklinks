@@ -5,6 +5,7 @@ import axios from "axios";
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
+// eslint-disable-next-line react-refresh/only-export-components -- shared fallback data is used by blog detail and admin pages.
 export const FALLBACK_BLOGS = [
   {
     id: "blog-1",

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import axios from "axios";
 import { FALLBACK_BLOGS } from "./Blog";
 
@@ -142,7 +142,7 @@ export default function AdminBlog() {
   }, [lockoutUntil]);
 
   // Verify token & load CMS data on mount
-  const fetchCmsData = async (tokenToUse) => {
+  const fetchCmsData = useCallback(async (tokenToUse) => {
     const headers = { Authorization: `Bearer ${tokenToUse || authToken}` };
     try {
       const [blogsRes, catsRes, mediaRes] = await Promise.allSettled([
@@ -167,7 +167,7 @@ export default function AdminBlog() {
     } catch {
       // Fallback to local cache if offline
     }
-  };
+  }, [authToken]);
 
   useEffect(() => {
     if (!authToken) return;
@@ -184,7 +184,7 @@ export default function AdminBlog() {
         setAuthToken("");
         setIsAuthenticated(false);
       });
-  }, [authToken]);
+  }, [authToken, fetchCmsData]);
 
   // --- SECURE LOGIN HANDLER ---
   const handleLogin = async (e) => {

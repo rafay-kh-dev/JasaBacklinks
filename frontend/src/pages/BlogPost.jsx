@@ -35,6 +35,10 @@ function getCategoryStyle(category) {
 
 export default function BlogPost() {
   const { slug } = useParams();
+  return <BlogPostContent key={slug} slug={slug} />;
+}
+
+function BlogPostContent({ slug }) {
   const [post, setPost] = useState(null);
   const [allBlogs, setAllBlogs] = useState(FALLBACK_BLOGS);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +68,6 @@ export default function BlogPost() {
   // Fetch Article & Merge with Fallback Catalogue
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setIsMobileTocOpen(false);
 
     const loadArticle = async () => {
       setIsLoading(true);

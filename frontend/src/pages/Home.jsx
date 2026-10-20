@@ -16,6 +16,29 @@ const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BOOMFI_ORDER_STORAGE_KEY = "jasa_pending_boomfi_order";
+
+function readBoomFiReturnState() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get("boomfi_status");
+  let savedOrder = null;
+
+  try {
+    const rawOrder = localStorage.getItem(BOOMFI_ORDER_STORAGE_KEY);
+    savedOrder = rawOrder ? JSON.parse(rawOrder) : null;
+  } catch (error) {
+    console.warn("Could not restore pending BoomFi order:", error);
+  }
+
+  const transactionId =
+    params.get("tx") ||
+    params.get("payment_id") ||
+    params.get("pid") ||
+    savedOrder?.transactionId ||
+    null;
+
+  return { status, savedOrder, transactionId };
+}
 
 // YOUR 3 OFFICIAL TEAM CONTACTS (SHOWN IN POPUP 3)
 const TEAM_CONTACTS = {
@@ -367,13 +390,6 @@ function OrderOnboardingFlowModal({
   const [submissionError, setSubmissionError] = useState("");
   const [isStep3ThankYou, setIsStep3ThankYou] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsStep3ThankYou(false);
-      setSubmissionError("");
-    }
-  }, [isOpen, paymentData]);
-
   if (!isOpen || !paymentData) return null;
 
   const handleOrderSubmit = async (e) => {
@@ -404,8 +420,7 @@ function OrderOnboardingFlowModal({
           "The server did not confirm that your order details were received.",
         );
       }
-      localStorage.removeItem("jasa_pending_boomfi_cart");
-      localStorage.removeItem("jasa_pending_boomfi_tx");
+      localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
       setIsStep3ThankYou(true);
     } catch (err) {
       console.error("Order details submission failed:", err);
@@ -805,7 +820,20 @@ function OrderOnboardingFlowModal({
 
 // LIVE PACKAGE ESTIMATOR & CHECKOUT SECTION
 function PackageEstimator() {
-  const [cart, setCart] = useState({ hp_post: 1 });
+  const [boomfiReturn] = useState(readBoomFiReturnState);
+  const restoredCart =
+    boomfiReturn.savedOrder?.cart &&
+    Object.keys(boomfiReturn.savedOrder.cart).length > 0
+      ? boomfiReturn.savedOrder.cart
+      : { hp_post: 1 };
+  const returnPayment =
+    boomfiReturn.status === "success" && boomfiReturn.transactionId
+      ? {
+          transactionId: boomfiReturn.transactionId,
+          method: "BoomFi Crypto Gateway",
+        }
+      : null;
+  const [cart, setCart] = useState(restoredCart);
   const [activeCategory, setActiveCategory] = useState("all");
 
   // Payment & Modal States
@@ -813,11 +841,17 @@ function PackageEstimator() {
   const [clientSecret, setClientSecret] = useState("");
   const [isInitializingPayment, setIsInitializingPayment] = useState(false);
   const [isRedirectingBoomFi, setIsRedirectingBoomFi] = useState(false);
-  const [paymentError, setPaymentError] = useState("");
+  const [paymentError, setPaymentError] = useState(
+    boomfiReturn.status === "failed"
+      ? "Crypto payment was cancelled or expired. You can try again below."
+      : boomfiReturn.status === "success" && !boomfiReturn.transactionId
+        ? "Could not identify the BoomFi transaction. Please contact support before submitting an order."
+        : "",
+  );
 
   // Post-Payment Order Form Modal State (Popup 2 & Popup 3)
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [completedPayment, setCompletedPayment] = useState(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(Boolean(returnPayment));
+  const [completedPayment, setCompletedPayment] = useState(returnPayment);
 
   const services = [
     {
@@ -919,58 +953,15 @@ function PackageEstimator() {
     },
   ];
 
-  // Auto-Detect Return from BoomFi in the Same Tab & Open Step 2 Popup
+  // Clean the return parameters after initializing restored state.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get("boomfi_status");
-    const pid = params.get("pid") || params.get("payment_id");
-
-    // Restore saved cart if returning from BoomFi
-    const savedCartRaw = localStorage.getItem("jasa_pending_boomfi_cart");
-    const savedTx = localStorage.getItem("jasa_pending_boomfi_tx");
-
-    if (status === "failed") {
-      if (savedCartRaw) {
-        try {
-          setCart(JSON.parse(savedCartRaw));
-        } catch (err) {}
-      }
-      setPaymentError(
-        "Crypto payment was cancelled or expired. You can try again below.",
-      );
-      window.history.replaceState({}, document.title, window.location.pathname);
-      return;
-    }
-
-    if (
-      status === "success" ||
-      params.get("payment") === "crypto_success" ||
-      Boolean(pid)
-    ) {
-      if (savedCartRaw) {
-        try {
-          const parsedCart = JSON.parse(savedCartRaw);
-          if (parsedCart && Object.keys(parsedCart).length > 0) {
-            setCart(parsedCart);
-          }
-        } catch (err) {}
-      }
-
-      const txId =
-        pid ||
-        params.get("tx") ||
-        savedTx ||
-        `BF-${Date.now().toString().slice(-8)}`;
-
-      setCompletedPayment({
-        transactionId: txId,
-        method: "BoomFi Crypto Gateway",
-      });
-      setIsOrderModalOpen(true);
+    if (boomfiReturn.status === "success" && boomfiReturn.transactionId) {
       document.body.style.overflow = "hidden";
+    }
+    if (boomfiReturn.status === "success" || boomfiReturn.status === "failed") {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+  }, [boomfiReturn.status, boomfiReturn.transactionId]);
 
   const setServiceQty = (id, rawVal) => {
     let val = parseInt(rawVal, 10);
@@ -1056,19 +1047,33 @@ function PackageEstimator() {
         },
       );
 
-      if (data && data.checkoutUrl) {
-        const txId =
-          data.transactionId || `BF-${Date.now().toString().slice(-8)}`;
+      if (data?.checkoutUrl && data.transactionId) {
+        const txId = data.transactionId;
 
         // Save selected cart & transaction ID before leaving page
-        localStorage.setItem("jasa_pending_boomfi_cart", JSON.stringify(cart));
-        localStorage.setItem("jasa_pending_boomfi_tx", txId);
+        try {
+          localStorage.setItem(
+            BOOMFI_ORDER_STORAGE_KEY,
+            JSON.stringify({
+              cart,
+              transactionId: txId,
+              timestamp: Date.now(),
+            }),
+          );
+        } catch (error) {
+          console.error("Could not save pending BoomFi order:", error);
+          setPaymentError(
+            "Your browser could not save this order for the return flow. Enable local storage and try again.",
+          );
+          setIsRedirectingBoomFi(false);
+          return;
+        }
 
         // Open BoomFi in the exact same tab
         window.location.href = data.checkoutUrl;
       } else {
         setPaymentError(
-          "BoomFi gateway did not return a payment link. Please verify BOOMFI_API_KEY on backend.",
+          "BoomFi did not return a valid payment link and transaction reference. Please verify the backend configuration.",
         );
         setIsRedirectingBoomFi(false);
       }
@@ -1102,8 +1107,7 @@ function PackageEstimator() {
   };
 
   const closeOrderModal = () => {
-    localStorage.removeItem("jasa_pending_boomfi_cart");
-    localStorage.removeItem("jasa_pending_boomfi_tx");
+    localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
     setIsOrderModalOpen(false);
     setCompletedPayment(null);
     document.body.style.overflow = "auto";
@@ -1673,7 +1677,7 @@ function PackageEstimator() {
                                   res.data?.captureId || data.orderID,
                                   "PayPal Checkout",
                                 );
-                              } catch (err) {
+                              } catch {
                                 setPaymentError(
                                   "Failed to capture PayPal payment.",
                                 );
@@ -1861,6 +1865,7 @@ function PackageEstimator() {
 
       {/* POPUP 2 & POPUP 3: ORDER DETAILS + THANK YOU & CONTACTS */}
       <OrderOnboardingFlowModal
+        key={completedPayment?.transactionId || "no-payment"}
         isOpen={isOrderModalOpen}
         paymentData={completedPayment}
         selectedPackages={selectedPackagesDetailed}
