@@ -24,7 +24,7 @@ const serviceRows = [
       icon: "graduation",
     },
   ],
-  // Row 2 (Badge removed)
+  // Row 2
   [
     {
       label: "Sidebar Blogroll",
@@ -67,6 +67,17 @@ const serviceRows = [
     },
   ],
 ];
+
+// Featured Flagship Service (Positioned at the bottom of the Mega Menu)
+const featuredGuestPosting = {
+  label: "Guest Posting",
+  badge: "★ #1 Flagship Service",
+  priceTag: "From $15/link",
+  metricsTag: "DA/DR 30+ to 50+",
+  description:
+    "Contextual dofollow placements on real authority websites with verified monthly organic traffic.",
+  to: "/services",
+};
 
 const sidebarLinks = [
   { label: "Complete SEO Package", to: "/services/complete-seo-package" },
@@ -220,6 +231,19 @@ function MinimalSEOIcon({ name }) {
         <path d="M8 14h.01"></path>
       </svg>
     ),
+    sparkle: (
+      <svg
+        className="w-[22px] h-[22px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z" />
+      </svg>
+    ),
   };
 
   const colors = {
@@ -232,6 +256,7 @@ function MinimalSEOIcon({ name }) {
     graduation: "text-[#A142F4]",
     book: "text-[#A142F4]",
     building: "text-[#EA4335]",
+    sparkle: "text-white",
   };
 
   return (
@@ -242,7 +267,7 @@ function MinimalSEOIcon({ name }) {
 export default function Header() {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false); // New state for scroll detection
+  const [isScrolled, setIsScrolled] = useState(false);
   const headerRef = useRef(null);
 
   const closeMenu = () => {
@@ -318,7 +343,7 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation Links (Aligned to Center vertically by removing arbitrary margins) */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-9 h-full ml-8 xl:ml-12 text-[14px] font-medium text-[#5f6368]">
             <Link
               to="/"
@@ -432,9 +457,10 @@ export default function Header() {
       {/* Desktop Mega Menu */}
       {isServicesOpen && (
         <div className="hidden lg:flex absolute top-[64px] left-0 w-full bg-white border-b border-[#dadce0] shadow-[0_10px_20px_rgba(60,64,67,0.06)] min-h-[390px]">
-          {/* Left Panel: Services Rows */}
+          {/* Left Panel: 3x3 Services Rows on Top + Featured Guest Posting Bar at Bottom */}
           <div className="flex-1 py-10 lg:py-12 pl-6 lg:pl-[60px] xl:pl-[120px] 2xl:pl-[170px] pr-6 lg:pr-10 xl:pr-12">
-            <div className="flex flex-col gap-10 max-w-[1100px]">
+            <div className="flex flex-col gap-9 max-w-[1100px]">
+              {/* 3x3 Services Grid (Exact Original Top Alignment) */}
               {serviceRows.map((row, rowIdx) => (
                 <div
                   key={rowIdx}
@@ -469,6 +495,47 @@ export default function Header() {
                   ))}
                 </div>
               ))}
+
+              {/* BOTTOM FULL-WIDTH SPOTLIGHT BAR: GUEST POSTING */}
+              <div className="pt-2 border-t border-[#f1f3f4]">
+                <Link
+                  to={featuredGuestPosting.to}
+                  onClick={closeMenu}
+                  className="group flex items-center justify-between gap-6 p-3.5 xl:p-4 rounded-[16px] bg-gradient-to-r from-[#f8fbff] via-[#eef5ff] to-[#f1faf4] border border-[#d2e3fc] hover:border-[#1a73e8] shadow-[0_4px_14px_rgba(26,115,232,0.06)] hover:shadow-[0_8px_22px_rgba(26,115,232,0.12)] transition-all duration-200 no-underline"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-10 h-10 rounded-[12px] bg-[#1a73e8] group-hover:bg-[#1557b0] flex items-center justify-center shadow-[0_3px_10px_rgba(26,115,232,0.25)] transition-colors shrink-0">
+                      <MinimalSEOIcon name="sparkle" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center flex-wrap gap-2">
+                        <h4 className="text-[15.5px] xl:text-[16.5px] font-semibold text-[#202124] group-hover:text-[#1a73e8] transition-colors leading-snug">
+                          {featuredGuestPosting.label}
+                        </h4>
+                        <span className="inline-flex items-center rounded-full bg-[#1a73e8] px-2.5 py-0.5 text-[10.5px] font-semibold text-white">
+                          {featuredGuestPosting.badge}
+                        </span>
+                        <span className="inline-flex items-center rounded-full bg-[#e6f4ea] border border-[#ceead6] px-2.5 py-0.5 text-[10.5px] font-semibold text-[#1e8e3e]">
+                          {featuredGuestPosting.metricsTag}
+                        </span>
+                        <span className="inline-flex items-center rounded-full bg-white border border-[#d2e3fc] px-2.5 py-0.5 text-[10.5px] font-bold text-[#1a73e8]">
+                          {featuredGuestPosting.priceTag}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-[#5f6368] mt-0.5 truncate">
+                        {featuredGuestPosting.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1a73e8] group-hover:bg-[#1557b0] text-white px-4 py-2 text-[12.5px] font-medium shadow-sm transition-all shrink-0 whitespace-nowrap">
+                    <span>Order Guest Posts</span>
+                    <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+                      →
+                    </span>
+                  </span>
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -530,7 +597,11 @@ export default function Header() {
             >
               <span>Services</span>
               <svg
-                className={`w-4 h-4 transition-transform ${isServicesOpen ? "rotate-180 text-[#1a73e8]" : "text-[#5f6368]"}`}
+                className={`w-4 h-4 transition-transform ${
+                  isServicesOpen
+                    ? "rotate-180 text-[#1a73e8]"
+                    : "text-[#5f6368]"
+                }`}
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -546,6 +617,7 @@ export default function Header() {
 
             {isServicesOpen && (
               <div className="pl-2 space-y-5 pt-2 pb-3">
+                {/* 9 Standard Services on Mobile */}
                 {serviceRows.flat().map((item) => (
                   <Link
                     key={item.to}
@@ -573,6 +645,33 @@ export default function Header() {
                     </div>
                   </Link>
                 ))}
+
+                {/* Highlighted Guest Posting Card at the Bottom on Mobile */}
+                <Link
+                  to={featuredGuestPosting.to}
+                  onClick={closeMenu}
+                  className="flex items-start gap-3.5 p-3.5 rounded-[14px] bg-gradient-to-r from-[#f8fbff] to-[#f1faf4] border border-[#d2e3fc] shadow-sm no-underline"
+                >
+                  <div className="mt-0.5 w-9 h-9 rounded-[10px] bg-[#1a73e8] flex items-center justify-center shrink-0">
+                    <MinimalSEOIcon name="sparkle" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[15px] font-semibold text-[#1a73e8]">
+                        {featuredGuestPosting.label}
+                      </span>
+                      <span className="rounded-full bg-[#1a73e8] px-2 py-0.5 text-[10px] font-semibold text-white">
+                        {featuredGuestPosting.badge}
+                      </span>
+                      <span className="rounded-full bg-[#e6f4ea] px-2 py-0.5 text-[10px] font-bold text-[#1e8e3e]">
+                        {featuredGuestPosting.priceTag}
+                      </span>
+                    </div>
+                    <div className="text-[13px] text-[#5f6368] mt-1 leading-snug">
+                      {featuredGuestPosting.description}
+                    </div>
+                  </div>
+                </Link>
               </div>
             )}
           </div>
@@ -583,6 +682,13 @@ export default function Header() {
             className="block py-2 text-[16px] font-medium text-[#202124]"
           >
             About
+          </Link>
+          <Link
+            to="/Blog"
+            onClick={closeMenu}
+            className="block py-2 text-[16px] font-medium text-[#202124]"
+          >
+            Blog
           </Link>
           <Link
             to="/contact"
