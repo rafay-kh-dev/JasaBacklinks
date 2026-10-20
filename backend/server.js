@@ -308,12 +308,68 @@ const SERVICES = {
   custom_seo: { name: "Custom SEO Solutions", price: 4.0 },
 };
 
+const GUEST_POSTING_ID_PATTERN =
+  /^guestpost_(30|40|50)_(30|40|50)_(general|igaming)_(1k|5k|10k|25k|50k)$/;
+const GUEST_POSTING_BASE_PRICES = { general: 15, igaming: 30 };
+const GUEST_POSTING_TRAFFIC_MULTIPLIERS = {
+  "1k": 1,
+  "5k": 2,
+  "10k": 4,
+  "25k": 8,
+  "50k": 16,
+};
+const GUEST_POSTING_NICHE_LABELS = {
+  general: "General",
+  igaming: "iGaming",
+};
+
+const parseGuestPostingId = (id = "") => {
+  if (typeof id !== "string") return null;
+  const match = GUEST_POSTING_ID_PATTERN.exec(id.trim());
+  if (!match) return null;
+
+  const [, da, dr, niche, traffic] = match;
+  const basePrice = GUEST_POSTING_BASE_PRICES[niche] || 0;
+  const multiplier = GUEST_POSTING_TRAFFIC_MULTIPLIERS[traffic] || 1;
+  const price = basePrice * multiplier;
+
+  return {
+    id,
+    da,
+    dr,
+    niche,
+    traffic,
+    basePrice,
+    multiplier,
+    price,
+    name: `Guest Posting (${GUEST_POSTING_NICHE_LABELS[niche] || niche} • DA/DR ${da}+)`,
+    isGuestPost: true,
+  };
+};
+
+const getGuestPostingItem = (id = "") => {
+  const parsed = parseGuestPostingId(id);
+  if (!parsed) return null;
+  return {
+    ...parsed,
+    detail: `${parsed.traffic.replace("k", "K+")} Traffic`,
+  };
+};
+
 const calculateSecureTotal = (cart = {}) => {
   let total = 0;
-  for (const [id, qty] of Object.entries(cart)) {
+  for (const [id, qty] of Object.entries(cart || {})) {
     const parsedQty = parseInt(qty, 10);
-    if (SERVICES[id] && parsedQty > 0) {
+    if (parsedQty <= 0) continue;
+
+    if (SERVICES[id]) {
       total += SERVICES[id].price * parsedQty;
+      continue;
+    }
+
+    const guestPosting = parseGuestPostingId(id);
+    if (guestPosting) {
+      total += guestPosting.price * parsedQty;
     }
   }
   return total;
@@ -321,13 +377,41 @@ const calculateSecureTotal = (cart = {}) => {
 
 const getPricedCart = (cart = {}) =>
   Object.fromEntries(
-    Object.entries(cart)
-      .filter(([id, qty]) => SERVICES[id] && parseInt(qty, 10) > 0)
+    Object.entries(cart || {})
+      .filter(([id, qty]) => {
+        const parsedQty = parseInt(qty, 10);
+        if (parsedQty <= 0) return false;
+        return Boolean(SERVICES[id] || parseGuestPostingId(id));
+      })
       .map(([id, qty]) => [id, parseInt(qty, 10)])
   );
 
 const hasUnpricedGuestPostingItems = (cart = {}) =>
-  Object.keys(cart || {}).some((id) => id.startsWith("guestpost_"));
+  Object.entries(cart || {}).some(([id, qty]) => {
+    const parsedQty = parseInt(qty, 10);
+    if (!id.startsWith("guestpost_") || parsedQty <= 0) return false;
+    return !parseGuestPostingId(id);
+  });
+
+const buildVerifiedOrderItems = (entries = []) =>
+  entries.map(([id, qty]) => {
+    const normalizedQty = Number(qty);
+    const matchedService = SERVICES[id];
+    const guestPosting = parseGuestPostingId(id);
+    if (!matchedService && !guestPosting) {
+      throw new Error(`Unsupported order item: ${id}`);
+    }
+
+    const price = matchedService ? matchedService.price : guestPosting.price;
+    return {
+      id,
+      name: matchedService ? matchedService.name : guestPosting.name,
+      qty: normalizedQty,
+      price,
+      subtotal: price * normalizedQty,
+      isGuestPost: Boolean(guestPosting),
+    };
+  });
 
 const PAYMENT_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const paymentSessions = new Map();
@@ -348,9 +432,8 @@ app.post("/api/create-stripe-intent", async (req, res) => {
       return res.status(500).json({ error: "STRIPE_SECRET_KEY missing." });
     const { cart } = req.body;
     if (hasUnpricedGuestPostingItems(cart)) {
-      return res.status(503).json({
-        error:
-          "Guest Posting checkout is unavailable until final rates are configured.",
+      return res.status(400).json({
+        error: "Unsupported Guest Posting package ID.",
       });
     }
     const totalAmount = calculateSecureTotal(cart);
@@ -404,9 +487,8 @@ app.post("/api/create-paypal-order", async (req, res) => {
   try {
     const { cart } = req.body;
     if (hasUnpricedGuestPostingItems(cart)) {
-      return res.status(503).json({
-        error:
-          "Guest Posting checkout is unavailable until final rates are configured.",
+      return res.status(400).json({
+        error: "Unsupported Guest Posting package ID.",
       });
     }
     const totalAmount = calculateSecureTotal(cart);
@@ -505,9 +587,8 @@ app.post("/api/create-boomfi-charge", async (req, res) => {
   try {
     const { cart, originUrl } = req.body;
     if (hasUnpricedGuestPostingItems(cart)) {
-      return res.status(503).json({
-        error:
-          "Guest Posting checkout is unavailable until final rates are configured.",
+      return res.status(400).json({
+        error: "Unsupported Guest Posting package ID.",
       });
     }
 
@@ -660,13 +741,7 @@ app.post("/api/submit-order", async (req, res) => {
       });
     }
 
-    const verifiedPackages = expectedEntries.map(([id, qty]) => ({
-      id,
-      name: SERVICES[id].name,
-      qty,
-      price: SERVICES[id].price,
-      subtotal: SERVICES[id].price * qty,
-    }));
+    const verifiedPackages = buildVerifiedOrderItems(expectedEntries);
     const verifiedPaymentMethod = session.method;
 
     if (session.method === "Credit / Debit Card") {
@@ -1241,4 +1316,13 @@ process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection (Silent Crash):", reason);
 });
 
-module.exports = app;
+module.exports = {
+  app,
+  SERVICES,
+  calculateSecureTotal,
+  getPricedCart,
+  hasUnpricedGuestPostingItems,
+  parseGuestPostingId,
+  getGuestPostingItem,
+  buildVerifiedOrderItems,
+};
