@@ -76,7 +76,7 @@ const featuredGuestPosting = {
   metricsTag: "DA/DR 30+ to 50+",
   description:
     "Contextual dofollow placements on real authority websites with verified monthly organic traffic.",
-  to: "/services",
+  to: "/services/guest-posting", // Updated to standalone URL
 };
 
 const sidebarLinks = [
@@ -231,19 +231,6 @@ function MinimalSEOIcon({ name }) {
         <path d="M8 14h.01"></path>
       </svg>
     ),
-    sparkle: (
-      <svg
-        className="w-[22px] h-[22px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z" />
-      </svg>
-    ),
   };
 
   const colors = {
@@ -256,7 +243,6 @@ function MinimalSEOIcon({ name }) {
     graduation: "text-[#A142F4]",
     book: "text-[#A142F4]",
     building: "text-[#EA4335]",
-    sparkle: "text-white",
   };
 
   return (
@@ -460,7 +446,7 @@ export default function Header() {
           {/* Left Panel: 3x3 Services Rows on Top + Featured Guest Posting Bar at Bottom */}
           <div className="flex-1 py-10 lg:py-12 pl-6 lg:pl-[60px] xl:pl-[120px] 2xl:pl-[170px] pr-6 lg:pr-10 xl:pr-12">
             <div className="flex flex-col gap-9 max-w-[1100px]">
-              {/* 3x3 Services Grid (Exact Original Top Alignment) */}
+              {/* 3x3 Services Grid */}
               {serviceRows.map((row, rowIdx) => (
                 <div
                   key={rowIdx}
@@ -497,15 +483,22 @@ export default function Header() {
               ))}
 
               {/* BOTTOM FULL-WIDTH SPOTLIGHT BAR: GUEST POSTING */}
-              <div className="pt-2 border-t border-[#f1f3f4]">
+              <div>
                 <Link
                   to={featuredGuestPosting.to}
                   onClick={closeMenu}
                   className="group flex items-center justify-between gap-6 p-3.5 xl:p-4 rounded-[16px] bg-gradient-to-r from-[#f8fbff] via-[#eef5ff] to-[#f1faf4] border border-[#d2e3fc] hover:border-[#1a73e8] shadow-[0_4px_14px_rgba(26,115,232,0.06)] hover:shadow-[0_8px_22px_rgba(26,115,232,0.12)] transition-all duration-200 no-underline"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-10 h-10 rounded-[12px] bg-[#1a73e8] group-hover:bg-[#1557b0] flex items-center justify-center shadow-[0_3px_10px_rgba(26,115,232,0.25)] transition-colors shrink-0">
-                      <MinimalSEOIcon name="sparkle" />
+                    <div className="w-10 h-10 rounded-[12px] bg-white border border-[#d2e3fc] flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
+                      <img
+                        src="/favicon.svg"
+                        alt="Guest Posting Icon"
+                        className="w-6 h-6 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center flex-wrap gap-2">
@@ -652,8 +645,15 @@ export default function Header() {
                   onClick={closeMenu}
                   className="flex items-start gap-3.5 p-3.5 rounded-[14px] bg-gradient-to-r from-[#f8fbff] to-[#f1faf4] border border-[#d2e3fc] shadow-sm no-underline"
                 >
-                  <div className="mt-0.5 w-9 h-9 rounded-[10px] bg-[#1a73e8] flex items-center justify-center shrink-0">
-                    <MinimalSEOIcon name="sparkle" />
+                  <div className="mt-0.5 w-10 h-10 rounded-[10px] bg-white border border-[#d2e3fc] flex items-center justify-center overflow-hidden shrink-0">
+                    <img
+                      src="/favicon.svg"
+                      alt="Guest Posting Icon"
+                      className="w-6 h-6 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">

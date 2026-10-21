@@ -9,6 +9,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import FloatingReviewWidget from "./components/FloatingReviewWidget";
 import FloatingContactWidget from "./components/FloatingContactWidget";
+import CookieConsent from "./components/CookieConsent";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetail, { SERVICE_PAGES_DATA } from "./pages/ServiceDetail";
@@ -397,6 +398,7 @@ export default function App() {
           </Routes>
         </main>
         <FloatingReviewWidget />
+        <CookieConsent />
         <FloatingContactWidget />
         <Footer />
       </div>
