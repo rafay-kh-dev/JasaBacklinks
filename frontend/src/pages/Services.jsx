@@ -65,6 +65,39 @@ function CryptoCoinIcon() {
   );
 }
 
+function CheckBadgeIcon() {
+  return (
+    <span className="w-4 h-4 rounded-full bg-[#1e8e3e] text-white inline-flex items-center justify-center shrink-0 shadow-2xs">
+      <svg
+        className="w-2.5 h-2.5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        strokeWidth="3.2"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </span>
+  );
+}
+
+function PlusBadgeIcon() {
+  return (
+    <span className="w-4 h-4 rounded-full bg-white/20 text-white inline-flex items-center justify-center shrink-0">
+      <svg
+        className="w-3 h-3"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        strokeWidth="2.8"
+      >
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+    </span>
+  );
+}
+
 function readBoomFiReturnState() {
   const params = new URLSearchParams(window.location.search);
   const status = params.get("boomfi_status");
@@ -214,7 +247,7 @@ function gpSliderPosToQty(pos) {
   );
 }
 
-// SLIDER HELPERS FOR STANDARD SERVICES (1 TO 5,000)
+// SIGNATURE PIECEWISE SLIDER HELPERS FOR STANDARD SERVICES (1 TO 5,000)
 const CARD_SLIDER_STOPS = [1, 50, 250, 1000, 2500, 5000];
 
 function cardQtyToSliderPos(qty) {
@@ -753,7 +786,7 @@ export default function Services() {
   });
   const [guestPostQty, setGuestPostQty] = useState(5);
 
-  // Per-Card Draft Quantities (Before or while added to campaign)
+  // Per-Card Draft Quantities
   const [draftQuantities, setDraftQuantities] = useState(() => {
     const initial = {};
     SERVICE_PAGES_DATA.forEach((s) => {
@@ -825,6 +858,7 @@ export default function Services() {
     GUEST_POSTING_OPTIONS.niches.find((n) => n.id === guestPostOptions.niche) ||
     GUEST_POSTING_OPTIONS.niches[0];
   const gpSliderPos = gpQtyToSliderPos(guestPostQty);
+  const gpFillPercent = Math.min(100, Math.max(0, (gpSliderPos / 600) * 100));
   const isCurrentGpInCart = Boolean(checkoutCart[currentGuestPostId] > 0);
 
   const updateGuestPostQty = (rawVal) => {
@@ -1026,23 +1060,23 @@ export default function Services() {
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
           input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%;
             background: #ffffff; border: 3px solid #1a73e8; cursor: pointer;
             box-shadow: 0 2px 6px rgba(26, 115, 232, 0.35); transition: transform 0.15s ease;
           }
           input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.12); }
           input[type=range]::-moz-range-thumb {
-            height: 20px; width: 20px; border-radius: 50%;
+            height: 22px; width: 22px; border-radius: 50%;
             background: #ffffff; border: 3px solid #1a73e8; cursor: pointer;
             box-shadow: 0 2px 6px rgba(26, 115, 232, 0.35); transition: transform 0.15s ease;
           }
         `}</style>
 
-        {/* 1. COMPACT ENTERPRISE HERO SECTION */}
+        {/* 1. ENTERPRISE HERO SECTION */}
         <section className="relative w-full bg-white py-8 sm:py-12 px-4 sm:px-6 border-b border-[#e8eaed] overflow-hidden">
           <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-45 pointer-events-none" />
           <div className="max-w-[1280px] mx-auto text-center relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] mb-3.5">
               <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
               <span className="text-[12px] font-semibold text-[#1a73e8]">
                 Multi-Service Campaign Builder • Verified DA/DR 50+
@@ -1061,59 +1095,64 @@ export default function Services() {
           </div>
         </section>
 
-        {/* 2. STICKY CATEGORY FILTER BAR */}
-        <div className="sticky top-[64px] z-30 bg-white/95 backdrop-blur-md border-b border-[#e8eaed] py-2.5 px-4 sm:px-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
-          <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-              {categories.map((cat) => {
-                const active = activeCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-medium transition-all whitespace-nowrap cursor-pointer ${
-                      active
-                        ? "bg-[#1a73e8] text-white shadow-sm"
-                        : "bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
-                    }`}
-                  >
-                    <span className="sm:hidden">{cat.shortLabel}</span>
-                    <span className="hidden sm:inline">{cat.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="hidden md:flex items-center gap-2 text-[12.5px] font-medium text-[#5f6368] shrink-0">
-              <span>Selected:</span>
-              <span className="bg-[#e8f0fe] text-[#1a73e8] font-semibold px-2.5 py-0.5 rounded-full">
-                {selectedPackagesCount}{" "}
-                {selectedPackagesCount === 1 ? "Service" : "Services"} (
-                {totalLinks.toLocaleString()} Links)
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. SPLIT-SCREEN LIVE CAMPAIGN BUILDER (LEFT 8 COLS CARDS + RIGHT 4 COLS STICKY CHECKOUT) */}
-        <section className="w-full py-6 sm:py-10 px-4 sm:px-6">
+        {/* 2. NON-STICKY INTEGRATED CATEGORY FILTER TOOLBAR + SPLIT-SCREEN CAMPAIGN BUILDER */}
+        <section className="w-full py-6 sm:py-9 px-4 sm:px-6">
           <div className="max-w-[1280px] mx-auto">
+            {/* Sleek Non-Sticky Filter Bar (Scrolls naturally, zero screen clutter) */}
+            <div className="bg-white rounded-[20px] border border-[#e8eaed] p-2.5 sm:px-4 sm:py-3 mb-6 shadow-[0_2px_10px_rgba(60,64,67,0.03)] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                {categories.map((cat) => {
+                  const active = activeCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={`px-3.5 py-2 rounded-full text-[12.5px] font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                        active
+                          ? "bg-[#1a73e8] text-white shadow-[0_2px_8px_rgba(26,115,232,0.25)]"
+                          : "bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                      }`}
+                    >
+                      <span className="sm:hidden">{cat.shortLabel}</span>
+                      <span className="hidden sm:inline">{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="hidden md:flex items-center gap-2 text-[12.5px] font-medium text-[#5f6368] shrink-0">
+                <span>Active Bundle:</span>
+                <span className="bg-[#e8f0fe] text-[#1a73e8] font-semibold px-3 py-1 rounded-full border border-[#d2e3fc]">
+                  {selectedPackagesCount}{" "}
+                  {selectedPackagesCount === 1 ? "Service" : "Services"} •{" "}
+                  {totalLinks.toLocaleString()} Links
+                </span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
               {/* LEFT 8 COLUMNS: GUEST POSTING CONFIGURATOR + 12 INTERACTIVE SERVICE CARDS */}
               <div className="lg:col-span-8 space-y-6">
                 {/* FEATURED GUEST POSTING MULTI-TIER CONFIGURATOR */}
                 {showGuestPostingCard && (
                   <div
-                    className={`bg-white rounded-[22px] border-2 transition-all overflow-hidden shadow-[0_8px_30px_rgba(26,115,232,0.07)] ${
+                    className={`bg-white rounded-[24px] border-2 transition-all overflow-hidden shadow-[0_10px_32px_rgba(26,115,232,0.07)] ${
                       isCurrentGpInCart
-                        ? "border-[#1a73e8] ring-2 ring-[#e8f0fe]"
+                        ? "border-[#1a73e8] ring-3 ring-[#e8f0fe]"
                         : "border-[#d2e3fc]"
                     }`}
                   >
+                    <div className="grid grid-cols-4 h-[4px] w-full">
+                      <div className="bg-[#4285F4]" />
+                      <div className="bg-[#EA4335]" />
+                      <div className="bg-[#FBBC04]" />
+                      <div className="bg-[#34A853]" />
+                    </div>
+
                     <div className="bg-gradient-to-r from-[#f8fbff] via-[#eef5ff] to-[#f1faf4] px-5 py-4 border-b border-[#d2e3fc] flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[12px] bg-white border border-[#d2e3fc] flex items-center justify-center shadow-sm shrink-0">
+                        <div className="w-11 h-11 rounded-[14px] bg-white border border-[#d2e3fc] flex items-center justify-center shadow-xs shrink-0">
                           <img
                             src="/favicon.svg"
                             alt="Guest Posting"
@@ -1128,22 +1167,22 @@ export default function Services() {
                             <span className="text-[11px] font-semibold bg-[#1a73e8] text-white px-2.5 py-0.5 rounded-full">
                               ★ #1 Flagship
                             </span>
-                            <span className="text-[11px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] px-2.5 py-0.5 rounded-full">
+                            <span className="text-[11px] font-semibold bg-[#fce8e6] text-[#d93025] border border-[#fad2cf] px-2.5 py-0.5 rounded-full">
                               DA/DR 30+ to 50+ Free Choice
                             </span>
                           </div>
                           <p className="text-[12.5px] text-[#5f6368] mt-0.5">
-                            Configure niche, authority, and organic traffic
-                            tier—add multiple tiers to your campaign bundle!
+                            Real authority placements with verified organic
+                            traffic—add multiple tiers to your campaign!
                           </p>
                         </div>
                       </div>
 
                       <Link
                         to="/services/guest-posting"
-                        className="text-[12.5px] font-semibold text-[#1a73e8] hover:underline"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white border border-[#d2e3fc] text-[12px] font-semibold text-[#1a73e8] hover:bg-[#e8f0fe] transition-colors"
                       >
-                         Dedicated Page →
+                        Dedicated Page →
                       </Link>
                     </div>
 
@@ -1151,12 +1190,13 @@ export default function Services() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Step 1: Niche */}
                         <div>
-                          <label className="block text-[12px] font-semibold text-[#3c4043] mb-1.5">
+                          <label className="block text-[12.5px] font-semibold text-[#202124] mb-2">
                             1. Website Niche
                           </label>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2.5">
                             {GUEST_POSTING_OPTIONS.niches.map((n) => {
                               const active = guestPostOptions.niche === n.id;
+                              const isIgaming = n.id === "igaming";
                               return (
                                 <button
                                   key={n.id}
@@ -1167,16 +1207,39 @@ export default function Services() {
                                       niche: n.id,
                                     }))
                                   }
-                                  className={`p-2.5 rounded-[12px] border text-left transition-all cursor-pointer ${
+                                  className={`p-3 rounded-[14px] border-2 text-left transition-all cursor-pointer ${
                                     active
-                                      ? "bg-[#f8fbff] border-[#1a73e8] ring-1 ring-[#1a73e8]"
+                                      ? isIgaming
+                                        ? "bg-[#faf5ff] border-[#9334e6] shadow-2xs"
+                                        : "bg-[#f8fbff] border-[#1a73e8] shadow-2xs"
                                       : "bg-white border-[#dadce0] hover:border-[#bdc1c6]"
                                   }`}
                                 >
-                                  <span className="block text-[13px] font-semibold text-[#202124]">
-                                    {n.shortLabel}
-                                  </span>
-                                  <span className="text-[11px] font-bold text-[#1a73e8]">
+                                  <div className="flex items-center justify-between">
+                                    <span className="block text-[13.5px] font-semibold text-[#202124]">
+                                      {n.shortLabel}
+                                    </span>
+                                    <span
+                                      className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                                        active
+                                          ? isIgaming
+                                            ? "bg-[#9334e6] border-[#9334e6]"
+                                            : "bg-[#1a73e8] border-[#1a73e8]"
+                                          : "border-[#bdc1c6]"
+                                      }`}
+                                    >
+                                      {active && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                                      )}
+                                    </span>
+                                  </div>
+                                  <span
+                                    className={`text-[11.5px] font-bold block mt-0.5 ${
+                                      isIgaming
+                                        ? "text-[#9334e6]"
+                                        : "text-[#1a73e8]"
+                                    }`}
+                                  >
                                     From ${n.basePrice}/post
                                   </span>
                                 </button>
@@ -1185,47 +1248,50 @@ export default function Services() {
                           </div>
                         </div>
 
-                        {/* Step 2: DA/DR */}
+                        {/* Step 2: DA/DR (UPDATED TO VIBRANT GOOGLE RED ACTIVE BUTTON) */}
                         <div>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <label className="text-[12px] font-semibold text-[#3c4043]">
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="text-[12.5px] font-semibold text-[#202124]">
                               2. Target Authority
                             </label>
-                            <span className="text-[10.5px] font-semibold text-[#1e8e3e] bg-[#e6f4ea] px-2 py-0.5 rounded-full">
+                            <span className="text-[10.5px] font-semibold text-[#1e8e3e] bg-[#e6f4ea] border border-[#ceead6] px-2.5 py-0.5 rounded-full">
                               $0 Free Upgrade
                             </span>
                           </div>
-                          <div className="grid grid-cols-3 gap-1.5 bg-[#f8f9fa] p-1 rounded-[12px] border border-[#dadce0]">
-                            {GUEST_POSTING_OPTIONS.authorityTiers.map((tier) => (
-                              <button
-                                key={tier}
-                                type="button"
-                                onClick={() =>
-                                  setGuestPostOptions((prev) => ({
-                                    ...prev,
-                                    dadr: tier,
-                                  }))
-                                }
-                                className={`py-2 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer ${
-                                  guestPostOptions.dadr === tier
-                                    ? "bg-[#202124] text-white shadow-xs"
-                                    : "text-[#5f6368] hover:text-[#202124]"
-                                }`}
-                              >
-                                DA/DR {tier}+
-                              </button>
-                            ))}
+                          <div className="grid grid-cols-3 gap-1.5 bg-[#f8f9fa] p-1.5 rounded-[14px] border border-[#dadce0]">
+                            {GUEST_POSTING_OPTIONS.authorityTiers.map((tier) => {
+                              const active = guestPostOptions.dadr === tier;
+                              return (
+                                <button
+                                  key={tier}
+                                  type="button"
+                                  onClick={() =>
+                                    setGuestPostOptions((prev) => ({
+                                      ...prev,
+                                      dadr: tier,
+                                    }))
+                                  }
+                                  className={`py-2.5 px-2 rounded-[10px] text-[12.5px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                                    active
+                                      ? "bg-[#ea4335] text-white shadow-[0_4px_12px_rgba(234,67,53,0.32)]"
+                                      : "text-[#5f6368] hover:text-[#ea4335] hover:bg-white"
+                                  }`}
+                                >
+                                  <span>DA/DR {tier}+</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
 
                       {/* Step 3: Monthly Organic Traffic */}
                       <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label className="text-[12px] font-semibold text-[#3c4043]">
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-[12.5px] font-semibold text-[#202124]">
                             3. Verified Monthly Organic Traffic (2x Tier Progression)
                           </label>
-                          <span className="text-[11.5px] font-semibold text-[#1a73e8]">
+                          <span className="text-[12px] font-bold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
                             ${currentGuestPostUnitPrice}/post
                           </span>
                         </div>
@@ -1245,18 +1311,18 @@ export default function Services() {
                                     traffic: tTier.id,
                                   }))
                                 }
-                                className={`py-2 px-1.5 rounded-[12px] border text-center transition-all cursor-pointer ${
+                                className={`py-2.5 px-1.5 rounded-[12px] border-2 text-center transition-all cursor-pointer ${
                                   active
                                     ? "bg-[#1a73e8] border-[#1a73e8] text-white shadow-xs"
                                     : "bg-[#f8f9fa] border-[#e8eaed] text-[#202124] hover:border-[#1a73e8]"
                                 }`}
                               >
-                                <span className="block text-[12px] font-bold">
+                                <span className="block text-[12.5px] font-bold">
                                   {tTier.label}
                                 </span>
                                 <span
-                                  className={`block text-[10.5px] font-semibold mt-0.5 ${
-                                    active ? "text-white/90" : "text-[#1a73e8]"
+                                  className={`block text-[11px] font-semibold mt-0.5 ${
+                                    active ? "text-white/95" : "text-[#1a73e8]"
                                   }`}
                                 >
                                   ${price}
@@ -1267,93 +1333,155 @@ export default function Services() {
                         </div>
                       </div>
 
-                      {/* Step 4: Quantity Slider + Add to Campaign Action */}
-                      <div className="pt-4 border-t border-[#e8eaed] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[12px] font-semibold text-[#3c4043]">
-                              4. Guest Post Quantity ({guestPostQty} Links)
-                            </span>
-                            <span className="text-[13px] font-bold text-[#1a73e8]">
-                              Subtotal: ${currentGuestPostSubtotal.toFixed(2)}
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="600"
-                            step="1"
-                            value={gpSliderPos}
-                            onChange={(e) =>
-                              updateGuestPostQty(
-                                gpSliderPosToQty(e.target.value)
-                              )
-                            }
-                            className="w-full h-[7px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer"
-                            style={{
-                              background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${
-                                (gpSliderPos / 600) * 100
-                              }%, #e8eaed ${
-                                (gpSliderPos / 600) * 100
-                              }%, #e8eaed 100%)`,
-                            }}
-                          />
-                        </div>
+                      {/* Step 4: Signature Dot-Stop Slider + Add to Campaign Action */}
+                      <div className="pt-4 border-t border-[#e8eaed] bg-[#f8fbff] -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 p-5 sm:p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[12.5px] font-semibold text-[#202124]">
+                                4. Quantity:{" "}
+                                <strong className="text-[#1a73e8]">
+                                  {guestPostQty} Guest Posts
+                                </strong>
+                              </span>
+                              <span className="gw-font-display text-[15px] font-bold text-[#1a73e8]">
+                                Subtotal: $
+                                {currentGuestPostSubtotal.toLocaleString(
+                                  "en-US",
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )}
+                              </span>
+                            </div>
 
-                        <div className="flex items-center gap-2.5 shrink-0">
-                          <div className="flex items-center bg-[#f8f9fa] border border-[#dadce0] rounded-full p-0.5">
+                            {/* Signature Dot-Stop Slider Bar */}
+                            <div className="relative flex items-center h-6">
+                              <div className="absolute inset-x-[10px] flex justify-between items-center pointer-events-none z-10">
+                                {GP_SLIDER_STOPS.map((s, i) => (
+                                  <span
+                                    key={s}
+                                    className={`w-2 h-2 rounded-full transition-colors ${
+                                      gpSliderPos >= i * 100
+                                        ? "bg-white ring-2 ring-[#1a73e8]"
+                                        : "bg-[#bdc1c6]"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="600"
+                                step="1"
+                                value={gpSliderPos}
+                                onChange={(e) =>
+                                  updateGuestPostQty(
+                                    gpSliderPosToQty(e.target.value)
+                                  )
+                                }
+                                className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer relative z-20"
+                                style={{
+                                  background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${gpFillPercent}%, #e8eaed ${gpFillPercent}%, #e8eaed 100%)`,
+                                }}
+                              />
+                            </div>
+
+                            {/* Clickable Stop Pills */}
+                            <div className="relative h-5 mt-1">
+                              {GP_SLIDER_STOPS.map((s, i) => (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onClick={() => updateGuestPostQty(s)}
+                                  style={{
+                                    left:
+                                      i > 0 && i < 6
+                                        ? `${(i / 6) * 100}%`
+                                        : undefined,
+                                  }}
+                                  className={`absolute top-0 ${
+                                    i === 0
+                                      ? "left-0"
+                                      : i === 6
+                                        ? "right-0"
+                                        : "-translate-x-1/2"
+                                  } text-[10.5px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-colors ${
+                                    guestPostQty === s
+                                      ? "bg-[#1a73e8] text-white font-semibold"
+                                      : "text-[#5f6368] hover:text-[#1a73e8]"
+                                  }`}
+                                >
+                                  {s === 1000 ? "1k" : s}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 shrink-0 pt-2 sm:pt-0">
+                            <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-1 shadow-2xs">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateGuestPostQty(guestPostQty - 1)
+                                }
+                                className="w-7 h-7 rounded-full text-[#5f6368] hover:bg-[#f1f3f4] font-bold cursor-pointer"
+                              >
+                                −
+                              </button>
+                              <input
+                                type="number"
+                                min="1"
+                                max="1000"
+                                value={guestPostQty}
+                                onChange={(e) =>
+                                  updateGuestPostQty(e.target.value)
+                                }
+                                className="w-12 text-center bg-transparent text-[13px] font-bold text-[#202124] focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateGuestPostQty(guestPostQty + 1)
+                                }
+                                className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-[#e8f0fe] font-bold cursor-pointer"
+                              >
+                                +
+                              </button>
+                            </div>
+
                             <button
                               type="button"
-                              onClick={() =>
-                                updateGuestPostQty(guestPostQty - 1)
-                              }
-                              className="w-7 h-7 rounded-full text-[#5f6368] hover:bg-white font-bold cursor-pointer"
+                              onClick={toggleGuestPostInCampaign}
+                              className={`h-[40px] px-4 rounded-full text-[13px] font-semibold transition-all cursor-pointer flex items-center gap-2 ${
+                                isCurrentGpInCart
+                                  ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hover:bg-[#ceead6]/60"
+                                  : "bg-[#1a73e8] hover:bg-[#1557b0] text-white shadow-[0_4px_12px_rgba(26,115,232,0.25)]"
+                              }`}
                             >
-                              −
-                            </button>
-                            <input
-                              type="number"
-                              min="1"
-                              max="1000"
-                              value={guestPostQty}
-                              onChange={(e) =>
-                                updateGuestPostQty(e.target.value)
-                              }
-                              className="w-12 text-center bg-transparent text-[13px] font-bold text-[#202124] focus:outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateGuestPostQty(guestPostQty + 1)
-                              }
-                              className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-white font-bold cursor-pointer"
-                            >
-                              +
+                              {isCurrentGpInCart ? (
+                                <>
+                                  <CheckBadgeIcon />
+                                  <span>In Campaign</span>
+                                </>
+                              ) : (
+                                <>
+                                  <PlusBadgeIcon />
+                                  <span>Add to Campaign</span>
+                                </>
+                              )}
                             </button>
                           </div>
-
-                          <button
-                            type="button"
-                            onClick={toggleGuestPostInCampaign}
-                            className={`h-[40px] px-4 rounded-full text-[13px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                              isCurrentGpInCart
-                                ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6]"
-                                : "bg-[#1a73e8] hover:bg-[#1557b0] text-white shadow-xs"
-                            }`}
-                          >
-                            {isCurrentGpInCart
-                              ? "✓ Added to Campaign"
-                              : "+ Add to Campaign"}
-                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* 12 PBN & MANAGED SEO SERVICE CARDS (2-COLUMN INTERACTIVE GRID) */}
+                {/* 12 PBN & MANAGED SEO SERVICE CARDS (2-COLUMN ENTERPRISE GRID) */}
                 {filteredServices.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {filteredServices.map((service) => {
                       const isAdded = Boolean(checkoutCart[service.id] > 0);
                       const currentQty =
@@ -1361,65 +1489,94 @@ export default function Services() {
                         draftQuantities[service.id] ||
                         50;
                       const sliderPos = cardQtyToSliderPos(currentQty);
-                      const fillPct = (sliderPos / 500) * 100;
+                      const fillPct = Math.min(
+                        100,
+                        Math.max(0, (sliderPos / 500) * 100)
+                      );
                       const cardSubtotal = currentQty * service.price;
 
                       return (
                         <div
                           key={service.id}
-                          className={`bg-white rounded-[20px] border transition-all duration-200 flex flex-col justify-between overflow-hidden ${
+                          className={`bg-white rounded-[22px] border transition-all duration-200 flex flex-col justify-between overflow-hidden ${
                             isAdded
-                              ? "border-2 border-[#1a73e8] ring-2 ring-[#e8f0fe]/80 shadow-[0_8px_24px_rgba(26,115,232,0.08)]"
-                              : "border-[#e8eaed] hover:border-[#d2e3fc] shadow-[0_2px_10px_rgba(60,64,67,0.04)]"
+                              ? "border-2 border-[#1a73e8] ring-3 ring-[#e8f0fe]/90 shadow-[0_10px_28px_rgba(26,115,232,0.10)]"
+                              : "border-[#e8eaed] hover:border-[#d2e3fc] hover:shadow-[0_8px_24px_rgba(60,64,67,0.06)] shadow-[0_2px_10px_rgba(60,64,67,0.03)]"
                           }`}
                         >
                           <div>
-                            <div className={`h-[4px] w-full ${service.topAccent || "bg-[#1a73e8]"}`} />
-                            <div className="p-5">
+                            <div
+                              className={`h-[4px] w-full ${
+                                service.topAccent || "bg-[#1a73e8]"
+                              }`}
+                            />
+                            <div className="p-5 sm:p-6">
                               {/* Top Badges & Price */}
-                              <div className="flex items-center justify-between gap-2 mb-2.5">
+                              <div className="flex items-center justify-between gap-2 mb-3">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span
-                                    className={`text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full ${service.badgeColor}`}
+                                    className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${service.badgeColor}`}
                                   >
                                     {service.badge}
                                   </span>
-                                  <span className="text-[10.5px] font-medium bg-[#f8f9fa] text-[#5f6368] border border-[#e8eaed] px-2 py-0.5 rounded-full">
-                                    {service.metric}
+                                  <span className="text-[11px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] px-2.5 py-0.5 rounded-full">
+                                    ● {service.metric}
                                   </span>
                                 </div>
-                                <span className="gw-font-display text-[16px] font-bold text-[#1a73e8] shrink-0">
-                                  ${service.price.toFixed(2)}
-                                  <span className="text-[11px] font-normal text-[#5f6368]">
+                                <div className="text-right shrink-0">
+                                  <span className="gw-font-display text-[18px] font-bold text-[#1a73e8]">
+                                    ${service.price.toFixed(2)}
+                                  </span>
+                                  <span className="text-[11px] font-medium text-[#5f6368]">
                                     /link
                                   </span>
-                                </span>
+                                </div>
                               </div>
 
-                              {/* Title & Description */}
+                              {/* Title & Dedicated Page Link */}
                               <div className="flex items-start justify-between gap-2">
-                                <h2 className="gw-font-display text-[17px] font-semibold text-[#202124] leading-snug">
+                                <h2 className="gw-font-display text-[18px] font-semibold text-[#202124] leading-snug">
                                   {service.name}
                                 </h2>
                                 <Link
                                   to={`/services/${service.slug}`}
-                                  className="text-[11.5px] font-medium text-[#1a73e8] hover:underline shrink-0 mt-0.5"
+                                  className="text-[11.5px] font-semibold text-[#1a73e8] bg-[#f8fbff] hover:bg-[#e8f0fe] border border-[#d2e3fc] px-2.5 py-0.5 rounded-full shrink-0 transition-colors"
                                 >
                                   Details →
                                 </Link>
                               </div>
-                              <p className="text-[12.5px] text-[#5f6368] mt-1 line-clamp-2 leading-[1.5]">
+                              <p className="text-[12.5px] text-[#5f6368] mt-1.5 line-clamp-2 leading-[1.55]">
                                 {service.desc}
                               </p>
 
+                              {/* TLD & Turnaround Metadata Strip */}
+                              <div className="grid grid-cols-2 gap-2 mt-3.5 p-2.5 rounded-[12px] bg-[#f8f9fa] border border-[#e8eaed] text-[11.5px]">
+                                <div>
+                                  <span className="text-[#5f6368] block text-[10px] uppercase font-semibold">
+                                    Supported TLDs
+                                  </span>
+                                  <span className="font-semibold text-[#202124] truncate block">
+                                    {service.tlds}
+                                  </span>
+                                </div>
+                                <div className="border-l border-[#dadce0] pl-2.5">
+                                  <span className="text-[#5f6368] block text-[10px] uppercase font-semibold">
+                                    Turnaround
+                                  </span>
+                                  <span className="font-semibold text-[#1e8e3e] block">
+                                    ⏱ {service.turnaround}
+                                  </span>
+                                </div>
+                              </div>
+
                               {/* Compact Features List */}
-                              <ul className="mt-3.5 space-y-1.5 border-t border-[#f1f3f4] pt-3">
+                              <ul className="mt-3.5 space-y-1.5 pt-1">
                                 {service.features.slice(0, 3).map((feat, i) => (
                                   <li
                                     key={i}
                                     className="flex items-center gap-2 text-[12px] text-[#3c4043]"
                                   >
-                                    <span className="text-[#1e8e3e] font-bold">
+                                    <span className="w-4 h-4 rounded-full bg-[#e6f4ea] text-[#1e8e3e] inline-flex items-center justify-center shrink-0 text-[10px] font-bold">
                                       ✓
                                     </span>
                                     <span className="truncate">{feat}</span>
@@ -1429,22 +1586,22 @@ export default function Services() {
                             </div>
                           </div>
 
-                          {/* Card Bottom Interactive Quantity & Multi-Select Footer */}
+                          {/* Card Bottom Signature Slider & Multi-Select Footer */}
                           <div
-                            className={`px-5 py-3.5 border-t transition-colors ${
+                            className={`px-5 py-4 border-t transition-colors ${
                               isAdded
                                 ? "bg-[#f8fbff] border-[#d2e3fc]"
-                                : "bg-[#fcfcfc] border-[#f1f3f4]"
+                                : "bg-[#fcfcfc] border-[#e8eaed]"
                             }`}
                           >
-                            <div className="flex items-center justify-between text-[11.5px] mb-1.5">
+                            <div className="flex items-center justify-between text-[12px] mb-2">
                               <span className="font-medium text-[#5f6368]">
                                 Quantity:{" "}
                                 <strong className="text-[#202124]">
                                   {currentQty.toLocaleString()} Links
                                 </strong>
                               </span>
-                              <span className="font-bold text-[#1a73e8]">
+                              <span className="gw-font-display text-[14.5px] font-bold text-[#1a73e8]">
                                 $
                                 {cardSubtotal.toLocaleString("en-US", {
                                   minimumFractionDigits: 2,
@@ -1453,26 +1610,78 @@ export default function Services() {
                               </span>
                             </div>
 
-                            <input
-                              type="range"
-                              min="0"
-                              max="500"
-                              step="1"
-                              value={sliderPos}
-                              onChange={(e) =>
-                                updateCardQuantity(
-                                  service.id,
-                                  cardSliderPosToQty(e.target.value)
-                                )
-                              }
-                              className="w-full h-[6px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer mb-3"
-                              style={{
-                                background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${fillPct}%, #dadce0 ${fillPct}%, #dadce0 100%)`,
-                              }}
-                            />
+                            {/* Signature Dot-Stop Slider Bar */}
+                            <div className="relative flex items-center h-6">
+                              <div className="absolute inset-x-[10px] flex justify-between items-center pointer-events-none z-10">
+                                {CARD_SLIDER_STOPS.map((stopVal, idx) => (
+                                  <span
+                                    key={stopVal}
+                                    className={`w-2 h-2 rounded-full transition-colors ${
+                                      sliderPos >= idx * 100
+                                        ? "bg-white ring-2 ring-[#1a73e8]"
+                                        : "bg-[#bdc1c6]"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="500"
+                                step="1"
+                                value={sliderPos}
+                                onChange={(e) =>
+                                  updateCardQuantity(
+                                    service.id,
+                                    cardSliderPosToQty(e.target.value)
+                                  )
+                                }
+                                className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer relative z-20"
+                                style={{
+                                  background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${fillPct}%, #e8eaed ${fillPct}%, #e8eaed 100%)`,
+                                }}
+                              />
+                            </div>
 
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5">
+                            {/* Clickable Stop Labels */}
+                            <div className="relative h-5 mt-0.5 mb-3">
+                              {CARD_SLIDER_STOPS.map((stopVal, idx) => {
+                                const leftPct = (idx / 5) * 100;
+                                return (
+                                  <button
+                                    key={stopVal}
+                                    type="button"
+                                    onClick={() =>
+                                      updateCardQuantity(service.id, stopVal)
+                                    }
+                                    style={
+                                      idx > 0 && idx < 5
+                                        ? { left: `${leftPct}%` }
+                                        : undefined
+                                    }
+                                    className={`absolute top-0 ${
+                                      idx === 0
+                                        ? "left-0"
+                                        : idx === 5
+                                          ? "right-0"
+                                          : "-translate-x-1/2"
+                                    } text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-colors ${
+                                      currentQty === stopVal
+                                        ? "bg-[#1a73e8] text-white font-semibold"
+                                        : "text-[#5f6368] hover:text-[#1a73e8]"
+                                    }`}
+                                  >
+                                    {stopVal >= 1000
+                                      ? `${stopVal / 1000}k`
+                                      : stopVal}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Stepper + Clean Pill Campaign Button */}
+                            <div className="flex items-center justify-between gap-2.5">
+                              <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 shadow-2xs">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -1481,7 +1690,7 @@ export default function Services() {
                                       currentQty - 50
                                     )
                                   }
-                                  className="w-6 h-6 rounded-full text-[#5f6368] hover:bg-[#f1f3f4] text-[13px] font-bold cursor-pointer"
+                                  className="w-7 h-7 rounded-full text-[#5f6368] hover:bg-[#f1f3f4] text-[14px] font-bold cursor-pointer flex items-center justify-center"
                                 >
                                   −
                                 </button>
@@ -1496,7 +1705,7 @@ export default function Services() {
                                       e.target.value
                                     )
                                   }
-                                  className="w-12 text-center bg-transparent text-[12.5px] font-bold text-[#202124] focus:outline-none"
+                                  className="w-13 text-center bg-transparent text-[13px] font-bold text-[#202124] focus:outline-none"
                                 />
                                 <button
                                   type="button"
@@ -1506,7 +1715,7 @@ export default function Services() {
                                       currentQty + 50
                                     )
                                   }
-                                  className="w-6 h-6 rounded-full text-[#1a73e8] hover:bg-[#e8f0fe] text-[13px] font-bold cursor-pointer"
+                                  className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-[#e8f0fe] text-[14px] font-bold cursor-pointer flex items-center justify-center"
                                 >
                                   +
                                 </button>
@@ -1517,18 +1726,22 @@ export default function Services() {
                                 onClick={() =>
                                   toggleServiceInCampaign(service.id)
                                 }
-                                className={`flex-1 h-[36px] rounded-full text-[12.5px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                                className={`flex-1 h-[38px] px-3.5 rounded-full text-[12.5px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 focus:outline-none ${
                                   isAdded
-                                    ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hover:bg-[#ceead6]/60"
-                                    : "bg-[#1a73e8] hover:bg-[#1557b0] text-white shadow-2xs"
+                                    ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hover:bg-[#dcord2]"
+                                    : "bg-[#1a73e8] hover:bg-[#1557b0] text-white shadow-[0_3px_10px_rgba(26,115,232,0.22)]"
                                 }`}
                               >
                                 {isAdded ? (
                                   <>
-                                    <span>✓ In Campaign</span>
+                                    <CheckBadgeIcon />
+                                    <span>In Campaign</span>
                                   </>
                                 ) : (
-                                  <span>+ Add to Campaign</span>
+                                  <>
+                                    <PlusBadgeIcon />
+                                    <span>Add to Campaign</span>
+                                  </>
                                 )}
                               </button>
                             </div>
@@ -1543,7 +1756,7 @@ export default function Services() {
               {/* RIGHT 4 COLUMNS: STICKY MULTI-SERVICE CAMPAIGN CHECKOUT DOCK */}
               <aside
                 id="campaign-checkout-dock"
-                className="lg:col-span-4 w-full lg:sticky lg:top-[124px] self-start"
+                className="lg:col-span-4 w-full lg:sticky lg:top-[84px] self-start"
               >
                 <div className="bg-white rounded-[24px] border border-[#dadce0] shadow-[0_16px_40px_rgba(60,64,67,0.10)] overflow-hidden">
                   <div className="grid grid-cols-4 h-[4px] w-full">
@@ -1581,7 +1794,7 @@ export default function Services() {
                           No services selected yet
                         </p>
                         <p className="text-[12px] text-[#5f6368] mt-1">
-                          Click &ldquo;+ Add to Campaign&rdquo; on any service
+                          Click &ldquo;Add to Campaign&rdquo; on any service
                           card on the left to build your custom bundle.
                         </p>
                       </div>
@@ -1749,7 +1962,7 @@ export default function Services() {
           </div>
         </section>
 
-        {/* 4. COMPACT NETWORK ARCHITECTURE COMPARISON TABLE */}
+        {/* 3. COMPACT NETWORK ARCHITECTURE COMPARISON TABLE */}
         <section className="w-full bg-white py-12 px-4 sm:px-6 border-t border-[#e8eaed]">
           <div className="max-w-[1280px] mx-auto">
             <div className="text-center max-w-[680px] mx-auto mb-8">
