@@ -54,6 +54,11 @@ function RouteTitleManager() {
         description:
           "Explore all 12 verified DA/DR 50+ link building services, including Homepage PBN Posts, Sidebar Blogrolls, .ID Regional Links, and EDU/GOV backlinks.",
       },
+      "/services/guest-posting": {
+        title: "Premium Guest Posting | DA/DR 50+ | Jasa Backlinks",
+        description:
+          "Publish contextual dofollow articles on real authority websites with verified organic search traffic. Build your custom guest post campaign today.",
+      },
       "/about": {
         title: "About | Jasa Backlinks",
         description:
@@ -200,6 +205,21 @@ function RouteTitleManager() {
         name: "Services",
         item: `${SITE_URL}/services`,
       });
+    } else if (path === "/services/guest-posting") {
+      breadcrumbItems.push(
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Services",
+          item: `${SITE_URL}/services`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Guest Posting",
+          item: canonicalUrl,
+        },
+      );
     } else if (matchedService) {
       breadcrumbItems.push(
         {
@@ -385,7 +405,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/services" element={<Services />} />
+
             <Route path="/services/:slug" element={<ServiceDetail />} />
+
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

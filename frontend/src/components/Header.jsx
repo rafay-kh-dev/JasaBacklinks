@@ -68,15 +68,16 @@ const serviceRows = [
   ],
 ];
 
-// Featured Flagship Service (Positioned at the bottom of the Mega Menu)
+// Featured Flagship Service
 const featuredGuestPosting = {
   label: "Guest Posting",
-  badge: "★ #1 Flagship Service",
+  badge: "★ #1 Flagship",
+  desktopBadge: "★ #1 Flagship Service",
   priceTag: "From $15/link",
   metricsTag: "DA/DR 30+ to 50+",
   description:
     "Contextual dofollow placements on real authority websites with verified monthly organic traffic.",
-  to: "/services/guest-posting", // Updated to standalone URL
+  to: "/services/guest-posting",
 };
 
 const sidebarLinks = [
@@ -91,7 +92,7 @@ function MinimalSEOIcon({ name }) {
   const icons = {
     "file-text": (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -108,7 +109,7 @@ function MinimalSEOIcon({ name }) {
     ),
     layout: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -123,7 +124,7 @@ function MinimalSEOIcon({ name }) {
     ),
     pin: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -137,7 +138,7 @@ function MinimalSEOIcon({ name }) {
     ),
     globe: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -152,7 +153,7 @@ function MinimalSEOIcon({ name }) {
     ),
     map: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -167,7 +168,7 @@ function MinimalSEOIcon({ name }) {
     ),
     target: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -182,7 +183,7 @@ function MinimalSEOIcon({ name }) {
     ),
     graduation: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -196,7 +197,7 @@ function MinimalSEOIcon({ name }) {
     ),
     book: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -210,7 +211,7 @@ function MinimalSEOIcon({ name }) {
     ),
     building: (
       <svg
-        className="w-[22px] h-[22px]"
+        className="w-[20px] h-[20px] lg:w-[22px] lg:h-[22px]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -252,16 +253,18 @@ function MinimalSEOIcon({ name }) {
 
 export default function Header() {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [isMobileServicesOpen, setIsMobileServicesOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const headerRef = useRef(null);
 
   const closeMenu = () => {
     setIsServicesOpen(false);
+    setIsMobileServicesOpen(false);
     setIsMobileOpen(false);
   };
 
-  // Scroll Event Listener to toggle background color
+  // Scroll Event Listener to toggle background colour
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -275,7 +278,19 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Click outside listener for Mega Menu
+  // Lock background page scroll on iPhone/Mobile when mobile drawer is open
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileOpen]);
+
+  // Click outside listener for Desktop Mega Menu
   useEffect(() => {
     function handleClickOutside(event) {
       if (headerRef.current && !headerRef.current.contains(event.target)) {
@@ -289,7 +304,7 @@ export default function Header() {
   return (
     <header
       ref={headerRef}
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 w-full z-[110] transition-all duration-300 ${
         isScrolled || isServicesOpen || isMobileOpen
           ? "bg-white/95 backdrop-blur-md border-b border-[#e8eaed] shadow-sm"
           : "bg-transparent border-b border-transparent"
@@ -300,7 +315,7 @@ export default function Header() {
       }}
     >
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-6 lg:px-10 h-[64px] max-w-[1920px] mx-auto">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 h-[64px] max-w-[1920px] mx-auto">
         {/* Left: Brand Logo & Navigation */}
         <div className="flex items-center h-full">
           {/* Logo */}
@@ -320,7 +335,7 @@ export default function Header() {
               }}
             />
             <span className="flex flex-col items-end justify-center">
-              <span className="text-[21px] font-medium text-[#202124] tracking-[-0.015em] leading-none mt-0.5">
+              <span className="text-[20px] sm:text-[21px] font-medium text-[#202124] tracking-[-0.015em] leading-none mt-0.5">
                 Jasa Backlinks
               </span>
               <span className="text-[9px] font-medium text-[#5f6368] leading-tight tracking-[0.02em]">
@@ -384,7 +399,7 @@ export default function Header() {
           </nav>
         </div>
 
-        {/* Right Action Buttons */}
+        {/* Right Action Buttons (Desktop) */}
         <div className="hidden lg:flex items-center gap-3 shrink-0">
           <Link
             to="/services"
@@ -411,7 +426,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="p-2 text-[#5f6368] hover:text-[#202124] rounded-full hover:bg-[#f1f3f4] transition-colors"
+            className="p-2 text-[#5f6368] hover:text-[#202124] rounded-full hover:bg-[#f1f3f4] transition-colors cursor-pointer"
             aria-label="Toggle Menu"
           >
             <svg
@@ -440,7 +455,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Desktop Mega Menu */}
+      {/* Desktop Mega Menu (100% Untouched) */}
       {isServicesOpen && (
         <div className="hidden lg:flex absolute top-[64px] left-0 w-full bg-white border-b border-[#dadce0] shadow-[0_10px_20px_rgba(60,64,67,0.06)] min-h-[390px]">
           {/* Left Panel: 3x3 Services Rows on Top + Featured Guest Posting Bar at Bottom */}
@@ -464,9 +479,9 @@ export default function Header() {
                       </div>
                       <div className="min-w-0 pt-0.5">
                         <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
-                          <h4 className="text-[15px] xl:text-[16px] font-medium text-[#202124] leading-[22px] tracking-[-0.01em] group-hover:text-[#1a73e8] transition-colors whitespace-nowrap">
+                          <h2 className="text-[15px] xl:text-[16px] font-medium text-[#202124] leading-[22px] tracking-[-0.01em] group-hover:text-[#1a73e8] transition-colors whitespace-nowrap">
                             {item.label}
-                          </h4>
+                          </h2>
                           {item.badge && (
                             <span className="inline-flex items-center rounded-[4px] bg-[#f1f3f4] px-2 py-[3px] text-[10px] font-bold text-[#5f6368] leading-none whitespace-nowrap">
                               {item.badge}
@@ -502,11 +517,11 @@ export default function Header() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center flex-wrap gap-2">
-                        <h4 className="text-[15.5px] xl:text-[16.5px] font-semibold text-[#202124] group-hover:text-[#1a73e8] transition-colors leading-snug">
+                        <h2 className="text-[15.5px] xl:text-[16.5px] font-semibold text-[#202124] group-hover:text-[#1a73e8] transition-colors leading-snug">
                           {featuredGuestPosting.label}
-                        </h4>
+                        </h2>
                         <span className="inline-flex items-center rounded-full bg-[#1a73e8] px-2.5 py-0.5 text-[10.5px] font-semibold text-white">
-                          {featuredGuestPosting.badge}
+                          {featuredGuestPosting.desktopBadge}
                         </span>
                         <span className="inline-flex items-center rounded-full bg-[#e6f4ea] border border-[#ceead6] px-2.5 py-0.5 text-[10.5px] font-semibold text-[#1e8e3e]">
                           {featuredGuestPosting.metricsTag}
@@ -571,148 +586,205 @@ export default function Header() {
         </div>
       )}
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Navigation Drawer (iPhone 100dvh Safe + Pinned Bottom Buttons + Top Guest Posting Spotlight) */}
       {isMobileOpen && (
-        <div className="lg:hidden absolute top-[64px] left-0 w-full bg-white border-b border-[#dadce0] px-6 py-5 space-y-4 max-h-[calc(100vh-64px)] overflow-y-auto">
-          <Link
-            to="/"
-            onClick={closeMenu}
-            className="block py-2 text-[16px] font-medium text-[#202124]"
-          >
-            Home
-          </Link>
-
-          <div className="space-y-3">
-            <button
-              type="button"
-              onClick={() => setIsServicesOpen(!isServicesOpen)}
-              className="flex w-full items-center justify-between py-2 text-[16px] font-medium text-[#202124]"
-            >
-              <span>Services</span>
-              <svg
-                className={`w-4 h-4 transition-transform ${
-                  isServicesOpen
-                    ? "rotate-180 text-[#1a73e8]"
-                    : "text-[#5f6368]"
-                }`}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-
-            {isServicesOpen && (
-              <div className="pl-2 space-y-5 pt-2 pb-3">
-                {/* 9 Standard Services on Mobile */}
-                {serviceRows.flat().map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={closeMenu}
-                    className="flex items-start gap-4 group"
-                  >
-                    <div className="mt-0.5 p-1 rounded-md bg-gray-50 border border-gray-100 group-hover:bg-blue-50 group-hover:border-blue-100 shrink-0">
-                      <MinimalSEOIcon name={item.icon} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[15px] font-medium text-[#202124]">
-                          {item.label}
-                        </span>
-                        {item.badge && (
-                          <span className="rounded bg-[#f1f3f4] px-1.5 py-0.5 text-[10px] font-bold text-[#5f6368]">
-                            {item.badge}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[13.5px] text-[#5f6368] mt-0.5 line-clamp-2">
-                        {item.description}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-
-                {/* Highlighted Guest Posting Card at the Bottom on Mobile */}
-                <Link
-                  to={featuredGuestPosting.to}
-                  onClick={closeMenu}
-                  className="flex items-start gap-3.5 p-3.5 rounded-[14px] bg-gradient-to-r from-[#f8fbff] to-[#f1faf4] border border-[#d2e3fc] shadow-sm no-underline"
-                >
-                  <div className="mt-0.5 w-10 h-10 rounded-[10px] bg-white border border-[#d2e3fc] flex items-center justify-center overflow-hidden shrink-0">
-                    <img
-                      src="/favicon.svg"
-                      alt="Guest Posting Icon"
-                      className="w-6 h-6 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[15px] font-semibold text-[#1a73e8]">
-                        {featuredGuestPosting.label}
-                      </span>
-                      <span className="rounded-full bg-[#1a73e8] px-2 py-0.5 text-[10px] font-semibold text-white">
-                        {featuredGuestPosting.badge}
-                      </span>
-                      <span className="rounded-full bg-[#e6f4ea] px-2 py-0.5 text-[10px] font-bold text-[#1e8e3e]">
-                        {featuredGuestPosting.priceTag}
-                      </span>
-                    </div>
-                    <div className="text-[13px] text-[#5f6368] mt-1 leading-snug">
-                      {featuredGuestPosting.description}
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          <Link
-            to="/about"
-            onClick={closeMenu}
-            className="block py-2 text-[16px] font-medium text-[#202124]"
-          >
-            About
-          </Link>
-          <Link
-            to="/Blog"
-            onClick={closeMenu}
-            className="block py-2 text-[16px] font-medium text-[#202124]"
-          >
-            Blog
-          </Link>
-          <Link
-            to="/contact"
-            onClick={closeMenu}
-            className="block py-2 text-[16px] font-medium text-[#202124]"
-          >
-            Contact
-          </Link>
-
-          <div className="pt-3 flex flex-col gap-2.5">
+        <div className="lg:hidden fixed top-[64px] left-0 right-0 w-full h-[calc(100dvh-64px)] max-h-[calc(100vh-64px)] bg-white flex flex-col justify-between z-[110] shadow-xl">
+          {/* Scrollable Middle Navigation Area */}
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 space-y-2">
+            {/* 1. ALWAYS-VISIBLE GUEST POSTING SPOTLIGHT CARD ON MOBILE */}
             <Link
-              to="/services"
+              to={featuredGuestPosting.to}
               onClick={closeMenu}
-              className="flex h-[40px] w-full items-center justify-center rounded-full border border-[#dadce0] text-[14px] font-medium text-[#1a73e8]"
+              className="flex items-center justify-between gap-3 p-3.5 rounded-[16px] bg-gradient-to-r from-[#f8fbff] via-[#eef5ff] to-[#f1faf4] border-2 border-[#d2e3fc] shadow-[0_4px_14px_rgba(26,115,232,0.08)] no-underline mb-2"
             >
-              Explore packages
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-[12px] bg-white border border-[#d2e3fc] flex items-center justify-center shadow-sm shrink-0">
+                  <img
+                    src="/favicon.svg"
+                    alt="Guest Posting"
+                    className="w-6 h-6 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[15px] font-semibold text-[#202124]">
+                      {featuredGuestPosting.label}
+                    </span>
+                    <span className="rounded-full bg-[#1a73e8] px-2 py-0.5 text-[10px] font-semibold text-white">
+                      {featuredGuestPosting.badge}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <span className="rounded-md bg-[#e6f4ea] px-1.5 py-0.5 text-[10.5px] font-semibold text-[#1e8e3e]">
+                      {featuredGuestPosting.metricsTag}
+                    </span>
+                    <span className="rounded-md bg-white border border-[#d2e3fc] px-1.5 py-0.5 text-[10.5px] font-bold text-[#1a73e8]">
+                      {featuredGuestPosting.priceTag}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <span className="w-8 h-8 rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-[14px] font-bold shrink-0">
+                →
+              </span>
             </Link>
+
+            <Link
+              to="/"
+              onClick={closeMenu}
+              className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[15.5px] font-medium text-[#202124] hover:bg-[#f8f9fa]"
+            >
+              <span>Home</span>
+            </Link>
+
+            {/* Mobile Services Accordion */}
+            <div className="rounded-[14px] bg-[#f8f9fa]/70 border border-[#e8eaed] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setIsMobileServicesOpen(!isMobileServicesOpen)}
+                className="flex w-full items-center justify-between px-3.5 py-3 text-[15.5px] font-medium text-[#202124] cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span>All SEO & PBN Services</span>
+                  <span className="text-[11px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full">
+                    13
+                  </span>
+                </div>
+                <svg
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isMobileServicesOpen
+                      ? "rotate-180 text-[#1a73e8]"
+                      : "text-[#5f6368]"
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {isMobileServicesOpen && (
+                <div className="px-2.5 pb-3 pt-1 space-y-1.5 bg-white border-t border-[#e8eaed]">
+                  {/* Guest Posting #1 Inside Dropdown as well */}
+                  <Link
+                    to={featuredGuestPosting.to}
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 p-2.5 rounded-[12px] bg-[#f8fbff] border border-[#d2e3fc]"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-1.5 rounded-lg bg-white border border-[#d2e3fc] shrink-0">
+                        <img
+                          src="/favicon.svg"
+                          alt="Guest Posting"
+                          className="w-[18px] h-[18px] object-contain"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[14px] font-semibold text-[#1a73e8] block leading-tight">
+                          Guest Posting (Real Traffic)
+                        </span>
+                        <span className="text-[12px] text-[#5f6368] block">
+                          DA/DR 30+ to 50+ • From $15/link
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold text-[#1a73e8] bg-[#e8f0fe] px-2 py-0.5 rounded-full shrink-0">
+                      #1
+                    </span>
+                  </Link>
+
+                  {/* 9 Core PBN Services */}
+                  {serviceRows.flat().map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 p-2 rounded-[10px] hover:bg-[#f8f9fa] transition-colors"
+                    >
+                      <div className="p-1.5 rounded-lg bg-gray-50 border border-gray-100 shrink-0">
+                        <MinimalSEOIcon name={item.icon} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[14px] font-medium text-[#202124] leading-tight">
+                          {item.label}
+                        </div>
+                        <div className="text-[12px] text-[#5f6368] truncate">
+                          {item.description}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+
+                  {/* Managed SEO Packages */}
+                  <div className="pt-2 mt-2 border-t border-[#f1f3f4] grid grid-cols-1 gap-1">
+                    {sidebarLinks.slice(0, 3).map((pkg) => (
+                      <Link
+                        key={pkg.to}
+                        to={pkg.to}
+                        onClick={closeMenu}
+                        className="flex items-center justify-between px-3 py-2 rounded-[10px] bg-[#f8f9fa] text-[13px] font-medium text-[#202124] hover:text-[#1a73e8]"
+                      >
+                        <span>{pkg.label}</span>
+                        <span className="text-[#1a73e8] text-[12px]">→</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link
+              to="/about"
+              onClick={closeMenu}
+              className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[15.5px] font-medium text-[#202124] hover:bg-[#f8f9fa]"
+            >
+              <span>About</span>
+            </Link>
+
+            <Link
+              to="/Blog"
+              onClick={closeMenu}
+              className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[15.5px] font-medium text-[#202124] hover:bg-[#f8f9fa]"
+            >
+              <span>Blog</span>
+            </Link>
+
             <Link
               to="/contact"
               onClick={closeMenu}
-              className="flex h-[40px] w-full items-center justify-center rounded-full bg-[#1a73e8] text-[14px] font-medium text-white"
+              className="flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[15.5px] font-medium text-[#202124] hover:bg-[#f8f9fa]"
             >
-              Contact Us
+              <span>Contact</span>
             </Link>
+          </div>
+
+          {/* Pinned iPhone-Safe Bottom Action Buttons (Never Hidden by iOS Safari Bar) */}
+          <div className="shrink-0 bg-white border-t border-[#e8eaed] px-4 sm:px-6 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] shadow-[0_-8px_20px_rgba(0,0,0,0.04)]">
+            <div className="grid grid-cols-2 gap-2.5">
+              <Link
+                to="/services"
+                onClick={closeMenu}
+                className="flex h-[44px] w-full items-center justify-center rounded-full border border-[#dadce0] bg-white text-[13.5px] font-medium text-[#1a73e8] active:bg-[#f8f9fa] no-underline"
+              >
+                Explore Packages
+              </Link>
+              <Link
+                to="/contact"
+                onClick={closeMenu}
+                className="flex h-[44px] w-full items-center justify-center rounded-full bg-[#1a73e8] text-[13.5px] font-medium text-white shadow-sm active:bg-[#1557b0] no-underline"
+              >
+                Contact Us
+              </Link>
+            </div>
           </div>
         </div>
       )}
