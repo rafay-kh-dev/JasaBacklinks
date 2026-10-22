@@ -306,7 +306,7 @@ export default function Header() {
       ref={headerRef}
       className={`fixed top-0 left-0 w-full z-[110] transition-all duration-300 ${
         isScrolled || isServicesOpen || isMobileOpen
-          ? "bg-white/95 backdrop-blur-md border-b border-[#e8eaed] shadow-sm"
+          ? "bg-white/95 backdrop-blur-md"
           : "bg-transparent"
       }`}
       style={{
