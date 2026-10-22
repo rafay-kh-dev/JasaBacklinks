@@ -307,7 +307,7 @@ export default function Header() {
       className={`fixed top-0 left-0 w-full z-[110] transition-all duration-300 ${
         isScrolled || isServicesOpen || isMobileOpen
           ? "bg-white/95 backdrop-blur-md border-b border-[#e8eaed] shadow-sm"
-          : "bg-transparent border-b border-transparent"
+          : "bg-transparent"
       }`}
       style={{
         fontFamily:
@@ -315,7 +315,7 @@ export default function Header() {
       }}
     >
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 h-[64px] max-w-[1920px] mx-auto">
+      <div className="flex items-center justify-between px-4 sm:px-6 lg:px-10 h-[56px] max-w-[1920px] mx-auto">
         {/* Left: Brand Logo & Navigation */}
         <div className="flex items-center h-full">
           {/* Logo */}
@@ -457,7 +457,7 @@ export default function Header() {
 
       {/* Desktop Mega Menu (100% Untouched) */}
       {isServicesOpen && (
-        <div className="hidden lg:flex absolute top-[64px] left-0 w-full bg-white border-b border-[#dadce0] shadow-[0_10px_20px_rgba(60,64,67,0.06)] min-h-[390px]">
+        <div className="hidden lg:flex absolute top-[56px] left-0 w-full bg-white border-b border-[#dadce0] shadow-[0_10px_20px_rgba(60,64,67,0.06)] min-h-[390px]">
           {/* Left Panel: 3x3 Services Rows on Top + Featured Guest Posting Bar at Bottom */}
           <div className="flex-1 py-10 lg:py-12 pl-6 lg:pl-[60px] xl:pl-[120px] 2xl:pl-[170px] pr-6 lg:pr-10 xl:pr-12">
             <div className="flex flex-col gap-9 max-w-[1100px]">
@@ -588,7 +588,7 @@ export default function Header() {
 
       {/* Mobile Navigation Drawer (iPhone 100dvh Safe + Pinned Bottom Buttons + Top Guest Posting Spotlight) */}
       {isMobileOpen && (
-        <div className="lg:hidden fixed top-[64px] left-0 right-0 w-full h-[calc(100dvh-64px)] max-h-[calc(100vh-64px)] bg-white flex flex-col justify-between z-[110] shadow-xl">
+        <div className="lg:hidden fixed top-[56px] left-0 right-0 w-full h-[calc(100dvh-56px)] max-h-[calc(100vh-56px)] bg-white flex flex-col justify-between z-[110] shadow-xl">
           {/* Scrollable Middle Navigation Area */}
           <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 space-y-2">
             {/* 1. ALWAYS-VISIBLE GUEST POSTING SPOTLIGHT CARD ON MOBILE */}

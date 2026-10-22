@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import axios from "axios";
 import { FALLBACK_BLOGS } from "./Blog";
 
@@ -155,72 +156,6 @@ function BlogPostContent({ slug }) {
     };
   }, [post]);
 
-  // Dynamic SEO Title, Meta Description & BlogPosting JSON-LD Schema
-  useEffect(() => {
-    if (!post) return;
-
-    const effectiveSeoTitle = `${
-      post.seoTitle || post.title
-    } | Jasa Backlinks Blog`;
-    document.title = effectiveSeoTitle;
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement("meta");
-      metaDesc.setAttribute("name", "description");
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute("content", post.excerpt || post.title);
-
-    const siteOrigin =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://jasabacklinks.com";
-    const articleUrl = `${siteOrigin}/blog/${post.slug}`;
-
-    const blogSchema = {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      mainEntityOfPage: {
-        "@type": "WebPage",
-        "@id": articleUrl,
-      },
-      headline: post.seoTitle || post.title,
-      description: post.excerpt,
-      image: post.image ? [post.image] : [],
-      datePublished: post.publishedAt || "2026-10-16",
-      dateModified: post.publishedAt || "2026-10-16",
-      wordCount: wordCount || 450,
-      keywords: Array.isArray(post.tags)
-        ? post.tags.join(", ")
-        : post.focusKeyword || "PBN Backlinks, SEO",
-      author: {
-        "@type": "Person",
-        name: post.author || "SeoHub Technical Team",
-        jobTitle: post.authorRole || "Senior Link Strategist",
-      },
-      publisher: {
-        "@type": "Organization",
-        name: "Jasa Backlinks (SeoHub Ltd)",
-        url: siteOrigin,
-      },
-    };
-
-    let scriptTag = document.getElementById("jasa-blogpost-schema");
-    if (!scriptTag) {
-      scriptTag = document.createElement("script");
-      scriptTag.id = "jasa-blogpost-schema";
-      scriptTag.type = "application/ld+json";
-      document.head.appendChild(scriptTag);
-    }
-    scriptTag.textContent = JSON.stringify(blogSchema);
-
-    return () => {
-      const existing = document.getElementById("jasa-blogpost-schema");
-      if (existing) existing.remove();
-    };
-  }, [post, wordCount]);
-
   // Reading Progress Bar & Active Section Spy on Scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -272,7 +207,7 @@ function BlogPostContent({ slug }) {
 
   if (isLoading || !post) {
     return (
-      <main className="w-full min-h-[75vh] bg-[#fcfcfc] pt-[90px] px-4">
+      <main className="w-full min-h-[75vh] bg-[#fcfcfc] pt-[56px] px-4">
         <div className="max-w-[1140px] mx-auto animate-pulse space-y-6">
           <div className="h-6 w-48 bg-[#e8eaed] rounded-full" />
           <div className="h-12 w-4/5 bg-[#e8eaed] rounded-2xl" />
@@ -296,9 +231,63 @@ function BlogPostContent({ slug }) {
       ? encodeURIComponent(window.location.href)
       : "";
   const shareTitle = encodeURIComponent(post.title);
+  const effectiveSeoTitle = `${
+    post.seoTitle || post.title
+  } | Jasa Backlinks Blog`;
+  const seoDescription = post.excerpt || post.title;
+  const siteOrigin = (
+    import.meta.env.VITE_SITE_URL ||
+    (typeof window !== "undefined"
+      ? window.location.origin
+      : "https://www.jasabacklinks.net")
+  ).replace(/\/$/, "");
+  const articleUrl = `${siteOrigin}/blog/${post.slug}`;
+  const blogSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
+    headline: post.seoTitle || post.title,
+    description: seoDescription,
+    image: post.image ? [post.image] : [],
+    datePublished: post.publishedAt || "2026-10-16",
+    dateModified: post.publishedAt || "2026-10-16",
+    wordCount: wordCount || 450,
+    keywords: Array.isArray(post.tags)
+      ? post.tags.join(", ")
+      : post.focusKeyword || "PBN Backlinks, SEO",
+    author: {
+      "@type": "Person",
+      name: post.author || "SeoHub Technical Team",
+      jobTitle: post.authorRole || "Senior Link Strategist",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Jasa Backlinks (SeoHub Ltd)",
+      url: siteOrigin,
+    },
+  };
 
   return (
-    <main className="w-full bg-[#fcfcfc] relative overflow-x-clip pt-[68px] sm:pt-[80px] pb-20">
+    <main className="w-full bg-[#fcfcfc] relative overflow-x-clip pt-[56px] pb-20">
+      <Helmet prioritizeSeoTags>
+        <title>{effectiveSeoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={effectiveSeoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:url" content={articleUrl} />
+        {post.image && <meta property="og:image" content={post.image} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={effectiveSeoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        {post.image && <meta name="twitter:image" content={post.image} />}
+        <script id="jasa-blogpost-schema" type="application/ld+json">
+          {JSON.stringify(blogSchema).replace(/</g, "\\u003c")}
+        </script>
+      </Helmet>
       {/* --- FIXED TOP READING PROGRESS BAR --- */}
       <div className="fixed top-[60px] sm:top-[68px] left-0 right-0 h-[3.5px] bg-[#e8eaed]/70 z-40 pointer-events-none">
         <div

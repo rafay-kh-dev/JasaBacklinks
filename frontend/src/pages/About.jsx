@@ -95,7 +95,7 @@ export default function About() {
   ];
 
   return (
-    <main className="w-full bg-[#fcfcfc] relative overflow-x-clip pt-[68px] sm:pt-[80px] pb-16 sm:pb-0">
+    <main className="w-full bg-[#fcfcfc] relative overflow-x-clip pt-[56px] pb-16 sm:pb-0">
       <style>{`
         .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 28px 28px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }

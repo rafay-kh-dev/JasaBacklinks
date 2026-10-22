@@ -1,16 +1,28 @@
-# React + Vite
+# Jasa Backlinks frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Development and verification
 
-Currently, two official plugins are available:
+From this directory:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```sh
+npm run dev
+npm run lint
+npm run test:unit
+npm run test:e2e
+npm run build
+```
 
-## React Compiler
+Install the Playwright Chromium browser once before running browser tests:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```sh
+npx playwright install chromium
+```
 
-## Expanding the ESLint configuration
+The browser suite checks the campaign builder, mobile navigation, accessible
+quantity controls, and service SEO metadata. It stubs the PayPal SDK request.
+Backend payment-session tests mock provider API responses; verify Stripe,
+PayPal, and BoomFi against provider sandbox credentials separately before
+production release.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Route components are loaded on demand so visitors download only the code
+required for the page they open.

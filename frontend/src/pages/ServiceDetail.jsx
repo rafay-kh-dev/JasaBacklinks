@@ -10,6 +10,12 @@ import {
 } from "@stripe/react-stripe-js";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
+import { SERVICE_PAGES_DATA } from "../data/serviceCatalog";
+import {
+  GUEST_POSTING_OPTIONS,
+  getGuestPostingItem,
+  getGuestPostingPrice,
+} from "../config/guestPosting";
 
 // ENVIRONMENT & API CONFIGURATION
 const STRIPE_PUBLIC_KEY =
@@ -96,58 +102,6 @@ const TEAM_CONTACTS = {
   supportEmail: "hello@jasabacklinks.net",
 };
 
-// GUEST POSTING CONFIGURATION & 2X TRAFFIC PRICING
-const GUEST_POSTING_OPTIONS = {
-  authorityTiers: ["30", "40", "50"],
-  niches: [
-    { id: "general", label: "General", basePrice: 15 },
-    { id: "igaming", label: "iGaming", basePrice: 30 },
-  ],
-  trafficTiers: [
-    { id: "1k", label: "1K+", fullLabel: "1,000+ Traffic", multiplier: 1 },
-    { id: "5k", label: "5K+", fullLabel: "5,000+ Traffic", multiplier: 2 },
-    { id: "10k", label: "10K+", fullLabel: "10,000+ Traffic", multiplier: 4 },
-    { id: "25k", label: "25K+", fullLabel: "25,000+ Traffic", multiplier: 8 },
-    { id: "50k", label: "50K+", fullLabel: "50,000+ Traffic", multiplier: 16 },
-  ],
-};
-
-const getGuestPostingPrice = ({ niche, traffic }) => {
-  const nicheObj =
-    GUEST_POSTING_OPTIONS.niches.find((n) => n.id === niche) ||
-    GUEST_POSTING_OPTIONS.niches[0];
-  const trafficObj =
-    GUEST_POSTING_OPTIONS.trafficTiers.find((t) => t.id === traffic) ||
-    GUEST_POSTING_OPTIONS.trafficTiers[0];
-  return nicheObj.basePrice * trafficObj.multiplier;
-};
-
-const getGuestPostingItem = (id) => {
-  const match =
-    /^guestpost_(30|40|50)_(30|40|50)_(general|igaming)_(1k|5k|10k|25k|50k)$/.exec(
-      id,
-    );
-  if (!match) return null;
-
-  const [, da, dr, niche, traffic] = match;
-  const nicheOption = GUEST_POSTING_OPTIONS.niches.find(
-    (option) => option.id === niche,
-  );
-  const trafficOption = GUEST_POSTING_OPTIONS.trafficTiers.find(
-    (option) => option.id === traffic,
-  );
-  if (!nicheOption || !trafficOption) return null;
-
-  const options = { da, dr, niche, traffic };
-  return {
-    id,
-    name: `Guest Posting (${nicheOption.label} • DA/DR ${da}+)`,
-    detail: `${trafficOption.fullLabel}`,
-    price: getGuestPostingPrice(options),
-    ...options,
-  };
-};
-
 let stripePromise;
 const getStripePromise = () => {
   if (!stripePromise) {
@@ -180,8 +134,6 @@ const STRIPE_ELEMENT_OPTIONS = {
 };
 
 // PIECEWISE SLIDER MAPPING HELPERS FOR STANDARD SERVICES (UP TO 5,000)
-const SLIDER_STOPS = [0, 1, 1000, 2000, 3000, 4000, 5000];
-
 function qtyToSliderPos(qty) {
   if (!qty || qty <= 0) return 0;
   if (qty <= 1) return 100;
@@ -248,698 +200,6 @@ function gpSliderPosToQty(pos) {
     Math.min(1000, Math.round(start + segFraction * (end - start))),
   );
 }
-
-// eslint-disable-next-line react-refresh/only-export-components -- route metadata is imported by App.jsx.
-export const SERVICE_PAGES_DATA = [
-  // 0. GUEST POSTING (#1 FLAGSHIP SERVICE)
-  {
-    id: "guest_posting",
-    slug: "guest-posting",
-    aliases: ["guest_posting", "guest-post", "guest-posts"],
-    category: "guest_post",
-    categoryLabel: "Editorial Outreach",
-    name: "Guest Posting",
-    shortSubtitle: "Real-traffic editorial guest posts",
-    heroHeadline: "Manual Editorial Outreach &",
-    heroHighlight: "Real-Traffic Guest Posting.",
-    price: 15.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 30+ to 50+",
-    tlds: ".COM • .NET • .ORG • .ID",
-    turnaround: "3–5 Days",
-    badge: "★ #1 Flagship Service",
-    badgeColor: "bg-[#e8f0fe] text-[#1a73e8]",
-    topAccent: "bg-[#1a73e8]",
-    desc: "Publish contextual dofollow articles on real authority websites with verified monthly organic search traffic. Choose any DA/DR tier from 30+ to 50+ at zero extra cost—pricing scales transparently by niche and real traffic volume.",
-    features: [
-      "600–800+ words unique niche-relevant article included",
-      "Free choice of Moz DA / Ahrefs DR 30+, 40+, or 50+",
-      "Verified monthly organic traffic (1K+ up to 50K+ visitors)",
-      "100% Permanent Dofollow editorial links & white-label report",
-    ],
-    deliverables: [
-      {
-        title: "Verified Organic Traffic",
-        desc: "Every guest post is published on a real website with genuine Ahrefs and Semrush organic search traffic.",
-      },
-      {
-        title: "Free DA/DR 30+ to 50+ Choice",
-        desc: "Select DA/DR 30+, 40+, or 50+ inside the configurator at the exact same flat rate with zero hidden upgrades.",
-      },
-      {
-        title: "General & iGaming Support",
-        desc: "Dedicated editorial inventory for both mainstream General niches ($15 base) and iGaming/Casino campaigns ($30 base).",
-      },
-    ],
-    faqs: [
-      {
-        q: "Does selecting DA/DR 50+ cost more than DA/DR 30+?",
-        a: "No! You can choose DA/DR 30+, 40+, or 50+ for the exact same price. Your rate only changes based on your selected Niche (General vs iGaming) and Monthly Organic Traffic tier.",
-      },
-      {
-        q: "How does the 2x traffic tier pricing work?",
-        a: "Our base rate starts at 1K+ monthly organic traffic ($15 for General, $30 for iGaming) and scales by 2x for each higher traffic tier (5K+, 10K+, 25K+, and 50K+).",
-      },
-    ],
-  },
-
-  // 1. HOMEPAGE POST
-  {
-    id: "hp_post",
-    slug: "homepage-post",
-    aliases: ["hp_post", "homepage-links"],
-    category: "standard",
-    categoryLabel: "Standard PBN Network",
-    name: "Homepage Post",
-    shortSubtitle: "Contextual homepage links",
-    heroHeadline: "Contextual Homepage PBN Posts on",
-    heroHighlight: "Aged DA/DR 50+ Domains.",
-    price: 1.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".COM • .NET • .ORG",
-    turnaround: "5–7 Days",
-    badge: "Most Popular",
-    badgeColor: "bg-[#e8f0fe] text-[#1a73e8]",
-    topAccent: "bg-[#1a73e8]",
-    desc: "Publish niche-relevant, human-edited articles directly on the main homepage feed of aged, high-authority .COM, .NET, and .ORG domains with zero footprints.",
-    features: [
-      "400–600 words unique contextual article per placement",
-      "Guaranteed Moz DA 50+ & Ahrefs DR 50+ domains",
-      "100% Dofollow contextual link placement on homepage",
-      "Distributed Class-C IPs, WHOIS privacy & unique CMS themes",
-    ],
-    deliverables: [
-      {
-        title: "Contextual Content Engine",
-        desc: "Every homepage post includes a 400–600 word article tailored around your target keyword and semantic niche entities.",
-      },
-      {
-        title: "Direct Homepage Authority",
-        desc: "Your article is published directly on the root homepage where 90%+ of a domain's referring link equity resides.",
-      },
-      {
-        title: "White-Label Excel Tracking",
-        desc: "Receive an unbranded spreadsheet containing live placement URLs, anchor texts, and verified DA/DR metrics.",
-      },
-    ],
-    faqs: [
-      {
-        q: "How long does my post stay on the homepage?",
-        a: "Homepage posts remain on the main feed as new content is added naturally. If you want your post permanently locked at the top, check our Homepage Sticky Post service.",
-      },
-      {
-        q: "Can I submit multiple URLs and anchor texts for 50+ links?",
-        a: "Yes. In Step 2 after payment, you can provide unlimited target URLs and custom anchor text ratios for your campaign.",
-      },
-    ],
-  },
-
-  // 2. SIDEBAR BLOGROLL
-  {
-    id: "sidebar",
-    slug: "sidebar-blogroll",
-    aliases: ["sidebar", "blogroll"],
-    category: "standard",
-    categoryLabel: "Standard PBN Network",
-    name: "Sidebar Blogroll",
-    shortSubtitle: "High-authority sidebar links",
-    heroHeadline: "High-Authority Sitewide",
-    heroHighlight: "Sidebar Blogroll Links.",
-    price: 2.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".COM • .NET • .ORG",
-    turnaround: "3–5 Days",
-    badge: "High Link Juice",
-    badgeColor: "bg-[#e6f4ea] text-[#1e8e3e]",
-    topAccent: "bg-[#34a853]",
-    desc: "Pass massive sitewide link equity from every indexed page of our aged DA/DR 50+ domains directly to your money site to accelerate Domain Rating and crawler frequency.",
-    features: [
-      "Sitewide homepage & inner-page authority transfer",
-      "Strictly capped outbound link (OBL) ratio (<15 links)",
-      "Instant Googlebot discovery & rapid indexing",
-      "Clean historical backlink profile with zero spam score",
-    ],
-    deliverables: [
-      {
-        title: "Sitewide Link Equity",
-        desc: "Placed in the primary sidebar widget so your target URL receives authority from the homepage and all indexed inner pages.",
-      },
-      {
-        title: "Strict OBL Control",
-        desc: "We cap total outbound links on every domain to preserve maximum PageRank flow to your target URLs.",
-      },
-      {
-        title: "Fast 3–5 Day Turnaround",
-        desc: "Ideal for agencies needing rapid DR boosts and crawl velocity for competitive client campaigns.",
-      },
-    ],
-    faqs: [
-      {
-        q: "Are sidebar blogroll links safe for money sites?",
-        a: "Yes, when used with branded, naked URL, or high-level commercial anchors across our clean Class-C IP network.",
-      },
-      {
-        q: "Do these links help increase Ahrefs DR?",
-        a: "Absolutely. Sitewide blogroll placements on DR 50+ domains are one of the fastest ways to push your domain authority upward.",
-      },
-    ],
-  },
-
-  // 3. HOMEPAGE STICKY POST
-  {
-    id: "sticky",
-    slug: "homepage-sticky-post",
-    aliases: ["sticky", "sticky-post"],
-    category: "standard",
-    categoryLabel: "Standard PBN Network",
-    name: "Homepage Sticky Post",
-    shortSubtitle: "Pinned homepage placement",
-    heroHeadline: "Permanently Pinned",
-    heroHighlight: "Homepage Sticky Placements.",
-    price: 2.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".COM • .NET • .ORG",
-    turnaround: "5–7 Days",
-    badge: "Pinned Top",
-    badgeColor: "bg-[#fef7e0] text-[#f29900]",
-    topAccent: "bg-[#fbbc04]",
-    desc: "Lock your contextual article permanently at the very top of our DA/DR 50+ homepages so your placement never rolls off into inner pagination.",
-    features: [
-      "Permanently pinned in the top homepage slot",
-      "Maximum homepage crawl priority & link juice",
-      "500+ word niche article with custom anchor text",
-      "Unbranded white-label Excel & CSV delivery",
-    ],
-    deliverables: [
-      {
-        title: "Zero Roll-Off Guarantee",
-        desc: "Unlike standard posts that move down as new articles publish, sticky posts stay pinned in the top homepage featured grid.",
-      },
-      {
-        title: "Priority Crawler Access",
-        desc: "Search engine bots crawl the top of the homepage first, ensuring your contextual backlink is re-indexed continuously.",
-      },
-      {
-        title: "Multi-Niche Compatibility",
-        desc: "Supports SaaS, E-Commerce, Local Services, Fintech, Crypto, and iGaming campaigns.",
-      },
-    ],
-    faqs: [
-      {
-        q: "What is the difference between Homepage Post and Homepage Sticky Post?",
-        a: "A Homepage Sticky Post is locked at the top of the homepage feed so it never rolls to page 2 when newer posts are added.",
-      },
-      {
-        q: "Can I drip-feed my sticky posts over 2 weeks?",
-        a: "Yes. Simply mention your preferred drip-feed schedule in the Special Instructions field during Step 2 onboarding.",
-      },
-    ],
-  },
-
-  // 4. .ID HOMEPAGE POST
-  {
-    id: "id_hp_post",
-    slug: "id-homepage-post",
-    aliases: ["id_hp_post", "id-homepage"],
-    category: "id_net",
-    categoryLabel: ".ID Regional Network",
-    name: ".ID Homepage Post",
-    shortSubtitle: "Indonesian contextual links",
-    heroHeadline: "Authentic Indonesian (.ID)",
-    heroHighlight: "Homepage Contextual Links.",
-    price: 2.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".ID • .CO.ID • .WEB.ID",
-    turnaround: "5–7 Days",
-    badge: "Regional .ID",
-    badgeColor: "bg-[#fce8e6] text-[#d93025]",
-    topAccent: "bg-[#ea4335]",
-    desc: "Dominate Google.co.id and Southeast Asian SERPs with contextual homepage articles published on aged, authoritative Indonesian country-code domains.",
-    features: [
-      "Native Bahasa Indonesia or English contextual articles",
-      "Aged .ID, .CO.ID, .WEB.ID & .OR.ID domains",
-      "Geo-targeted Indonesian & Singaporean hosting IPs",
-      "Verified Moz DA 50+ & Ahrefs DR 50+ metrics",
-    ],
-    deliverables: [
-      {
-        title: "Authentic ccTLD Authority",
-        desc: "Country-code .ID and .CO.ID domains send the strongest regional relevance signals to Google for Indonesian and APAC search queries.",
-      },
-      {
-        title: "Bilingual Content Support",
-        desc: "Choose between native Bahasa Indonesia articles or English articles with Indonesian/English anchor texts.",
-      },
-      {
-        title: "100% Footprint-Free .ID Hosting",
-        desc: "Hosted across local Asian data centres and global CDNs with unique templates and clean WHOIS records.",
-      },
-    ],
-    faqs: [
-      {
-        q: "Can I use English anchor texts inside Bahasa Indonesia articles?",
-        a: "Yes. Our writers naturally weave either Bahasa Indonesia or English anchor texts into the contextual article.",
-      },
-      {
-        q: "Are these real .ID and .CO.ID extensions?",
-        a: "100%. Every placement in this tier is published on verified Indonesian registry extensions (.ID, .CO.ID, .WEB.ID, .OR.ID).",
-      },
-    ],
-  },
-
-  // 5. .ID SIDEBAR BLOGROLL
-  {
-    id: "id_sidebar",
-    slug: "id-sidebar-blogroll",
-    aliases: ["id_sidebar", "id-blogroll"],
-    category: "id_net",
-    categoryLabel: ".ID Regional Network",
-    name: ".ID Sidebar Blogroll",
-    shortSubtitle: "Local .ID blogroll placement",
-    heroHeadline: "High-Powered Local .ID",
-    heroHighlight: "Sidebar Blogroll Placements.",
-    price: 3.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".ID • .CO.ID • .OR.ID",
-    turnaround: "3–5 Days",
-    badge: "Local Power",
-    badgeColor: "bg-[#fce8e6] text-[#d93025]",
-    topAccent: "bg-[#ea4335]",
-    desc: "Push competitive Indonesian keywords into the Top 3 with sitewide blogroll placements across our highest-authority .ID and .CO.ID domains.",
-    features: [
-      "Direct homepage & sitewide .ID link equity",
-      "Geo-targeted Indonesian Class-C IP distribution",
-      "Strong regional trust signals for Google.co.id",
-      "Full placement replacement guarantee included",
-    ],
-    deliverables: [
-      {
-        title: "Regional Sitewide Power",
-        desc: "Transfers regional ccTLD authority from every indexed page of our aged .ID domains directly to your target URL.",
-      },
-      {
-        title: "Competitive Niche Ready",
-        desc: "Proven performance for Indonesian E-Commerce, Fintech, Travel, Gaming, and Enterprise corporate portals.",
-      },
-      {
-        title: "Rapid 3–5 Day Deployment",
-        desc: "Links go live quickly with instant crawler discovery and a complete white-label verification sheet.",
-      },
-    ],
-    faqs: [
-      {
-        q: "How many URLs can I use in a 50-link .ID Sidebar order?",
-        a: "You can use 1 URL or split the 50 placements across multiple inner pages or subdomains at no extra cost.",
-      },
-      {
-        q: "Are all .ID Sidebar domains indexed in Google?",
-        a: "Yes. We continuously monitor indexation across our entire .ID inventory prior to deploying any client campaign.",
-      },
-    ],
-  },
-
-  // 6. .ID STICKY POST
-  {
-    id: "id_sticky",
-    slug: "id-sticky-post",
-    aliases: ["id_sticky"],
-    category: "id_net",
-    categoryLabel: ".ID Regional Network",
-    name: ".ID Sticky Post",
-    shortSubtitle: "Pinned .ID homepage post",
-    heroHeadline: "Pinned Top-of-Homepage",
-    heroHighlight: ".ID Sticky Post Placements.",
-    price: 2.5,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".ID • .CO.ID • .WEB.ID",
-    turnaround: "5–7 Days",
-    badge: "Pinned .ID",
-    badgeColor: "bg-[#fef7e0] text-[#f29900]",
-    topAccent: "bg-[#fbbc04]",
-    desc: "Combine contextual relevance with permanent top-of-homepage positioning across aged DA/DR 50+ Indonesian (.ID / .CO.ID) domains.",
-    features: [
-      "Locked top-of-homepage .ID contextual placement",
-      "Unique Bahasa Indonesia or English niche article",
-      "Safe drip-feed publishing schedule available",
-      "Complete live URL & DA/DR tracking sheet",
-    ],
-    deliverables: [
-      {
-        title: "Pinned Regional Authority",
-        desc: "Your contextual article stays pinned in the primary featured section of the .ID homepage so it never loses root-level link equity.",
-      },
-      {
-        title: "Contextual Surround Signals",
-        desc: "Surrounded by niche-relevant headings, semantic keywords, and topical paragraphs to maximise AEO and organic rankings.",
-      },
-      {
-        title: "Agency White-Label Ready",
-        desc: "Delivered in a clean, unbranded Excel sheet ready to share directly with your clients or in-house stakeholders.",
-      },
-    ],
-    faqs: [
-      {
-        q: "Why choose .ID Sticky Post over standard .ID Homepage Post?",
-        a: "Sticky posts guarantee your article remains pinned at the top of the homepage feed permanently rather than moving down over time.",
-      },
-      {
-        q: "Can I combine .ID Sticky Posts with EDU links?",
-        a: "Yes! Use the Bulk Cost Calculator below on this page to combine .ID Sticky Posts with any other service in a single checkout.",
-      },
-    ],
-  },
-
-  // 7. EDU PBN BLOGPOST
-  {
-    id: "edu_post",
-    slug: "edu-pbn-blogpost",
-    aliases: ["edu_post", "edu-blogpost"],
-    category: "edu_gov",
-    categoryLabel: "EDU & GOV Authority Tier",
-    name: "EDU PBN Blogpost",
-    shortSubtitle: "Academic contextual articles",
-    heroHeadline: "High-Trust Academic",
-    heroHighlight: "EDU PBN Contextual Blogposts.",
-    price: 3.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".EDU • .AC.ID • .SCH.ID",
-    turnaround: "5–7 Days",
-    badge: "Academic Trust",
-    badgeColor: "bg-[#f3e8fd] text-[#9334e6]",
-    topAccent: "bg-[#9334e6]",
-    desc: "Skyrocket your E-E-A-T signals, AI Overview citations, and Domain Rating with contextual articles published on aged educational domains.",
-    features: [
-      "Contextual article on aged .EDU & academic domains",
-      "Massive boost to Ahrefs DR & institutional trust",
-      "Natural anchor text & citation integration",
-      "100% indexed & footprint-free academic hosting",
-    ],
-    deliverables: [
-      {
-        title: "Institutional E-E-A-T Signals",
-        desc: "Search engines and LLM systems assign significantly higher trust weight to links originating from academic domain extensions.",
-      },
-      {
-        title: "Editorial-Grade Articles",
-        desc: "Each placement is wrapped in an informative, well-structured article that matches academic and research-style formatting.",
-      },
-      {
-        title: "Verified DA/DR 50+ Metrics",
-        desc: "Every educational domain is vetted for clean historical backlinks from real universities, journals, and authority portals.",
-      },
-    ],
-    faqs: [
-      {
-        q: "Are these contextual articles or profile links?",
-        a: "These are 100% contextual articles published as full blog posts on our aged educational PBN properties—never spammy forum profiles.",
-      },
-      {
-        q: "Do EDU blogposts help with AI Overviews (ChatGPT / Gemini / Perplexity)?",
-        a: "Yes. High-trust educational domains carry strong citation authority that helps brands surface in AI-generated answers.",
-      },
-    ],
-  },
-
-  // 8. EDU PBN BLOGROLL
-  {
-    id: "edu_sidebar",
-    slug: "edu-pbn-blogroll",
-    aliases: ["edu_sidebar", "edu-blogroll"],
-    category: "edu_gov",
-    categoryLabel: "EDU & GOV Authority Tier",
-    name: "EDU PBN Blogroll",
-    shortSubtitle: "University sidebar placements",
-    heroHeadline: "Maximum Institutional Power:",
-    heroHighlight: "EDU PBN Sidebar Blogroll.",
-    price: 5.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA/DR 50+",
-    tlds: ".EDU • .AC.ID • .SCH.ID",
-    turnaround: "3–5 Days",
-    badge: "Max Authority",
-    badgeColor: "bg-[#f3e8fd] text-[#9334e6]",
-    topAccent: "bg-[#9334e6]",
-    desc: "University and academic sidebar placements delivering massive sitewide institutional authority to push ultra-competitive keywords into the Top 3.",
-    features: [
-      "Sitewide academic sidebar link equity transfer",
-      "High-trust institutional backlink profile",
-      "Built for Finance, SaaS, iGaming, Crypto & E-Com",
-      "Priority indexing & white-label spreadsheet report",
-    ],
-    deliverables: [
-      {
-        title: "Sitewide Academic Authority",
-        desc: "Your link is placed on the sidebar of aged educational domains, capturing authority from every indexed academic page.",
-      },
-      {
-        title: "Built for Hardest Keywords",
-        desc: "Engineered specifically for high-CPC and high-difficulty SERPs where standard guest posts plateau.",
-      },
-      {
-        title: "Strict Capacity Protection",
-        desc: "We strictly limit the number of active sidebar slots per educational domain to maintain elite link equity.",
-      },
-    ],
-    faqs: [
-      {
-        q: "Who should order EDU PBN Blogroll placements?",
-        a: "Agencies and brands competing in high-difficulty niches (Fintech, SaaS, iGaming, Legal, E-Commerce) looking for maximum authority transfer.",
-      },
-      {
-        q: "How fast will I see ranking movement?",
-        a: "Most campaigns experience noticeable crawler activity within 7 days and strong SERP movement within 2 to 4 weeks.",
-      },
-    ],
-  },
-
-  // 9. EDU & GOV BACKLINK (HIDDEN LINKS)
-  {
-    id: "hidden_links",
-    slug: "edu-gov-backlink",
-    aliases: ["hidden_links", "hidden-links", "edu-gov-backlinks"],
-    category: "edu_gov",
-    categoryLabel: "EDU & GOV Authority Tier",
-    name: "EDU & GOV Backlink",
-    shortSubtitle: "Official authority backlinks",
-    heroHeadline: "Official Academic & Government",
-    heroHighlight: "Stealth Authority Backlinks.",
-    price: 20.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DA 50–85+ Trust",
-    tlds: ".AC.ID • .SCH.ID • .GO.ID",
-    turnaround: "5–7 Days",
-    badge: "Exclusive Tier",
-    badgeColor: "bg-[#f3e8fd] text-[#9334e6]",
-    topAccent: "bg-[#9334e6]",
-    desc: "Ultra-high-trust placements on official academic (.AC.ID, .SCH.ID) and government (.GO.ID) properties with competitor-proof stealth integration.",
-    features: [
-      "Authentic .AC.ID, .SCH.ID & .GO.ID extensions",
-      "Competitor-proof stealth link integration",
-      "Unmatched institutional trust & AI citation weight",
-      "Strict capacity limits for maximum network safety",
-    ],
-    deliverables: [
-      {
-        title: "Official .AC.ID, .SCH.ID & .GO.ID",
-        desc: "Direct placements on restricted academic and government extensions that competitors cannot easily replicate.",
-      },
-      {
-        title: "Stealth Competitor Protection",
-        desc: "Formatted so search engine bots crawl and count full dofollow link equity while keeping your strategy hidden from competitor audits.",
-      },
-      {
-        title: "VIP Campaign Management",
-        desc: "Handled by our senior technical SEO engineers with dedicated WhatsApp/Telegram reporting.",
-      },
-    ],
-    faqs: [
-      {
-        q: "Why are EDU & GOV Backlinks priced at $20 per link?",
-        a: "Because these placements are deployed on restricted official .AC.ID, .SCH.ID, and .GO.ID domains with extraordinary domain trust and strict slot limits.",
-      },
-      {
-        q: "Are these links dofollow and crawlable by Googlebot?",
-        a: "Yes. 100% dofollow and fully crawlable by Googlebot, Bingbot, and AI search crawlers.",
-      },
-    ],
-  },
-
-  // 10. COMPLETE SEO PACKAGE
-  {
-    id: "complete_seo",
-    slug: "complete-seo-package",
-    aliases: ["complete_seo", "complete-seo"],
-    category: "solutions",
-    categoryLabel: "Managed SEO Solutions",
-    name: "Complete SEO Package",
-    shortSubtitle: "All-in-one authority & contextual link campaign",
-    heroHeadline: "All-In-One Managed",
-    heroHighlight: "Complete SEO Link Package.",
-    price: 5.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "Multi-Tier DR 50+",
-    tlds: ".COM • .ID • .EDU Mix",
-    turnaround: "5–7 Days",
-    badge: "All-In-One",
-    badgeColor: "bg-[#e8f0fe] text-[#1a73e8]",
-    topAccent: "bg-[#1a73e8]",
-    desc: "A diversified, done-for-you authority campaign combining Standard PBN Homepage Posts, Sitewide Blogrolls, and High-Trust EDU placements into one balanced link profile.",
-    features: [
-      "Balanced mix of Homepage, Sticky & EDU placements",
-      "Natural anchor text diversification (Branded, Exact, Partial)",
-      "Drip-feed velocity tailored to your domain age",
-      "Dedicated campaign manager & white-label master report",
-    ],
-    deliverables: [
-      {
-        title: "Diversified TLD Footprint",
-        desc: "Blends .COM, .NET, .ORG, regional .ID, and academic .EDU domains so your backlink profile looks 100% organic.",
-      },
-      {
-        title: "Anchor Text Optimization",
-        desc: "Our SEO strategists structure safe exact-match, partial-match, and branded anchor ratios across your target URLs.",
-      },
-      {
-        title: "End-to-End Execution",
-        desc: "Submit your URLs and keywords once in Step 2—we handle content creation, placement, indexing, and white-label reporting.",
-      },
-    ],
-    faqs: [
-      {
-        q: "What is included in the Complete SEO Package?",
-        a: "Every 50-link unit includes a curated blend of DA/DR 50+ Homepage Posts, Sticky placements, and EDU authority links managed by our team.",
-      },
-      {
-        q: "Can agencies resell the Complete SEO Package?",
-        a: "Yes! All reports are 100% unbranded and white-label so you can hand them directly to your clients.",
-      },
-    ],
-  },
-
-  // 11. RANK ON FIRST PAGE
-  {
-    id: "rank_first_page",
-    slug: "rank-on-first-page",
-    aliases: ["rank_first_page", "first-page-seo"],
-    category: "solutions",
-    categoryLabel: "Managed SEO Solutions",
-    name: "Rank on First Page",
-    shortSubtitle: "Aggressive Page-1 SERP domination campaign",
-    heroHeadline: "High-Velocity Authority Built to",
-    heroHighlight: "Rank on the First Page.",
-    price: 8.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "DR 50–80+ Power",
-    tlds: ".COM • .EDU • .AC.ID • .GO.ID",
-    turnaround: "5–7 Days",
-    badge: "Page 1 Power",
-    badgeColor: "bg-[#e6f4ea] text-[#1e8e3e]",
-    topAccent: "bg-[#34a853]",
-    desc: "Engineered for stubborn keywords stuck on Page 2 or Page 3. Combines our highest-metric Pinned Sticky Posts, EDU Blogrolls, and Institutional links to force Top-3 SERP breakthroughs.",
-    features: [
-      "Priority placement on our highest-DR (DR 60–80+) domains",
-      "Includes Pinned Sticky Posts + EDU/GOV institutional links",
-      "Competitor gap analysis & anchor velocity planning",
-      "Direct WhatsApp/Telegram strategist support",
-    ],
-    deliverables: [
-      {
-        title: "High-DR Power Placements",
-        desc: "Focuses exclusively on top-percentile domains with strong referring domain counts and permanent homepage visibility.",
-      },
-      {
-        title: "SERP Bottleneck Breaker",
-        desc: "Designed to overcome authority gaps against entrenched competitors in Finance, SaaS, E-Commerce, and iGaming.",
-      },
-      {
-        title: "Verified Indexing Protocol",
-        desc: "Every placement is pushed through our premium indexing pipeline to ensure rapid Googlebot recognition.",
-      },
-    ],
-    faqs: [
-      {
-        q: "How is 'Rank on First Page' different from standard packages?",
-        a: "It allocates your budget toward our highest-tier Sticky Homepage and EDU/GOV inventory with custom anchor text velocity designed for Page-1 breakthroughs.",
-      },
-      {
-        q: "How many target keywords should I submit?",
-        a: "For best Page-1 results, we recommend focusing a 50 to 250 link campaign on 1 to 3 primary money pages and 5 to 10 core keywords.",
-      },
-    ],
-  },
-
-  // 12. CUSTOM SEO SOLUTIONS
-  {
-    id: "custom_seo",
-    slug: "custom-seo-solutions",
-    aliases: ["custom_seo", "custom-seo"],
-    category: "solutions",
-    categoryLabel: "Managed SEO Solutions",
-    name: "Custom SEO Solutions",
-    shortSubtitle: "Bespoke enterprise & agency link infrastructure",
-    heroHeadline: "Tailored Enterprise & Agency",
-    heroHighlight: "Custom SEO Solutions.",
-    price: 4.0,
-    unitLabel: "link",
-    minQty: 1,
-    metric: "Custom DR 50+",
-    tlds: "Custom TLD & Geo Selection",
-    turnaround: "3–7 Days",
-    badge: "Enterprise Custom",
-    badgeColor: "bg-[#fef7e0] text-[#f29900]",
-    topAccent: "bg-[#fbbc04]",
-    desc: "Need custom drip-feed schedules, specific country TLDs, multi-client agency splitting, or bespoke anchor ratios? Configure your custom allocation or build a multi-service bundle below.",
-    features: [
-      "Split link volume across unlimited client domains",
-      "Custom geo-targeting (Global .COM, Indonesian .ID, or EDU)",
-      "Custom drip-feed schedules from 3 days to 30 days",
-      "Dedicated account manager via WhatsApp & Telegram",
-    ],
-    deliverables: [
-      {
-        title: "Multi-Client Agency Splitting",
-        desc: "Order in bulk and distribute your links across 5, 10, or 50+ client URLs with separate white-label tabs.",
-      },
-      {
-        title: "Custom Editorial Guidelines",
-        desc: "Provide your own brand guidelines, restricted words, or custom language requirements during Step 2 onboarding.",
-      },
-      {
-        title: "Flexible Bulk Estimator",
-        desc: "Order a custom allocation directly above or use the multi-service slider calculator below to craft your exact mix.",
-      },
-    ],
-    faqs: [
-      {
-        q: "Can I specify custom instructions for different URLs?",
-        a: "Yes. In Step 2 after checkout, you can paste your URLs, anchor texts, and detailed custom instructions, or message our team directly on WhatsApp/Telegram.",
-      },
-      {
-        q: "Do you offer wholesale volume for SEO agencies?",
-        a: "Yes! Our pricing starts from $1.00/link with instant bulk scaling up to 5,000+ placements per order.",
-      },
-    ],
-  },
-];
 
 // POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM
 function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
@@ -1531,7 +791,6 @@ function ServiceDetailPage({ currentService }) {
 
   const [heroQty, setHeroQty] = useState(restoredHeroQty);
   const [checkoutCart, setCheckoutCart] = useState(restoredCart);
-  const [calcCategory, setCalcCategory] = useState("all");
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   // Checkout Modal & Gateway States
@@ -1571,12 +830,7 @@ function ServiceDetailPage({ currentService }) {
     const nextOptions = { ...guestPostOptions, [field]: value };
     const nextGpId = `guestpost_${nextOptions.dadr}_${nextOptions.dadr}_${nextOptions.niche}_${nextOptions.traffic}`;
     setGuestPostOptions(nextOptions);
-    setCheckoutCart((prev) => {
-      const next = { ...prev };
-      delete next[activeGuestPostCartId];
-      next[nextGpId] = heroQty;
-      return next;
-    });
+    setCheckoutCart({ [nextGpId]: heroQty });
   };
 
   const maxHeroQty = isGuestPostingPage ? 1000 : 5000;
@@ -1593,7 +847,7 @@ function ServiceDetailPage({ currentService }) {
     if (isNaN(parsed) || parsed < 1) parsed = 1;
     if (parsed > maxHeroQty) parsed = maxHeroQty;
     setHeroQty(parsed);
-    setCheckoutCart((prev) => ({ ...prev, [activeHeroCartKey]: parsed }));
+    setCheckoutCart({ [activeHeroCartKey]: parsed });
   };
 
   const handleHeroSliderChange = (posVal) => {
@@ -1604,28 +858,6 @@ function ServiceDetailPage({ currentService }) {
       const mapped = sliderPosToQty(posVal);
       updateHeroQty(mapped < 1 ? 1 : mapped);
     }
-  };
-
-  // Master Calculator Quantity Setter
-  const setCalcServiceQty = (id, rawVal) => {
-    let val = parseInt(rawVal, 10);
-    if (isNaN(val) || val <= 0) {
-      setCheckoutCart((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-      return;
-    }
-    const maxLimit = id.startsWith("guestpost_") ? 1000 : 5000;
-    if (val > maxLimit) val = maxLimit;
-    setCheckoutCart((prev) => ({ ...prev, [id]: val }));
-    if (id === activeHeroCartKey) setHeroQty(val);
-  };
-
-  const handleCalcSliderPosChange = (id, sliderPosValue) => {
-    const mappedQty = sliderPosToQty(sliderPosValue);
-    setCalcServiceQty(id, mappedQty);
   };
 
   const openCheckoutModalWithCart = async (cartObj) => {
@@ -1734,7 +966,6 @@ function ServiceDetailPage({ currentService }) {
       };
     });
 
-  const selectedPackagesCount = selectedPackagesDetailed.length;
   const finalTotal = selectedPackagesDetailed.reduce(
     (sum, item) => sum + item.subtotal,
     0,
@@ -1743,9 +974,6 @@ function ServiceDetailPage({ currentService }) {
     (sum, item) => sum + item.qty,
     0,
   );
-  const guestPostItems = selectedPackagesDetailed.filter(
-    (item) => item.isGuestPost,
-  );
 
   const handlePaymentSuccess = (transactionId, method) => {
     setIsCheckoutGatewayOpen(false);
@@ -1753,22 +981,6 @@ function ServiceDetailPage({ currentService }) {
     setIsOrderModalOpen(true);
     document.body.style.overflow = "hidden";
   };
-
-  const calcCategories = [
-    { id: "all", label: "All Services (12)", shortLabel: "All (12)" },
-    { id: "standard", label: "Standard PBN (3)", shortLabel: "Standard (3)" },
-    { id: "id_net", label: ".ID Regional (3)", shortLabel: ".ID Net (3)" },
-    { id: "edu_gov", label: "EDU & GOV (3)", shortLabel: "EDU/GOV (3)" },
-    { id: "solutions", label: "SEO Packages (3)", shortLabel: "Packages (3)" },
-  ];
-
-  const nonGuestPostServices = SERVICE_PAGES_DATA.filter(
-    (s) => s.id !== "guest_posting",
-  );
-  const filteredCalcServices =
-    calcCategory === "all"
-      ? nonGuestPostServices
-      : nonGuestPostServices.filter((s) => s.category === calcCategory);
 
   const quickPresets = [50, 100, 250, 500, 1000];
 
@@ -1780,12 +992,9 @@ function ServiceDetailPage({ currentService }) {
         intent: "capture",
       }}
     >
-      <main className="w-full bg-[#fcfcfc] relative overflow-x-clip pt-[68px] sm:pt-[80px] pb-20 sm:pb-0">
+      <main className="w-full bg-[#fcfcfc] relative overflow-x-clip pt-[56px] pb-20 sm:pb-0">
         <style>{`
           .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 28px 28px; }
-          .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-          .custom-scrollbar::-webkit-scrollbar-track { background: #f1f3f4; border-radius: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -1907,18 +1116,13 @@ function ServiceDetailPage({ currentService }) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 text-[12.5px] text-[#5f6368]">
-                  <span>Want to combine this with other placements?</span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      document
-                        .getElementById("estimator")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
+                  <span>Want to bundle this with other placements?</span>
+                  <Link
+                    to="/services"
                     className="text-[#1a73e8] font-semibold hover:underline cursor-pointer"
                   >
-                    Open Multi-Service Bulk Calculator Below ↓
-                  </button>
+                    Open Multi-Service Campaign Builder →
+                  </Link>
                 </div>
               </div>
 
@@ -2007,17 +1211,17 @@ function ServiceDetailPage({ currentService }) {
                           </div>
                         </div>
 
-                        {/* Guest Posting Step 2: Target DA/DR */}
+                        {/* Guest Posting Step 2: Target DA/DR (RED ACTIVE BUTTON WITHOUT TICK) */}
                         <div className="mb-4">
                           <div className="flex items-center justify-between mb-1.5">
                             <label className="text-[12px] font-semibold text-[#3c4043]">
                               2. Target DA / DR Metric
                             </label>
-                            <span className="text-[10.5px] font-semibold text-[#1e8e3e] bg-[#e6f4ea] px-2 py-0.5 rounded-full">
-                              Free Choice
+                            <span className="text-[10.5px] font-semibold text-[#1e8e3e] bg-[#e6f4ea] border border-[#ceead6] px-2.5 py-0.5 rounded-full">
+                              $0 Free Upgrade
                             </span>
                           </div>
-                          <div className="grid grid-cols-3 gap-1 bg-[#f1f3f4] p-1 rounded-full border border-[#dadce0]">
+                          <div className="grid grid-cols-3 gap-1.5 bg-[#f8f9fa] p-1.5 rounded-[14px] border border-[#dadce0]">
                             {GUEST_POSTING_OPTIONS.authorityTiers.map(
                               (tier) => {
                                 const active = guestPostOptions.dadr === tier;
@@ -2028,17 +1232,12 @@ function ServiceDetailPage({ currentService }) {
                                     onClick={() =>
                                       updateGuestPostOption("dadr", tier)
                                     }
-                                    className={`py-2 px-2 rounded-full text-[12px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                    className={`py-2 px-2 rounded-[10px] text-[12px] font-semibold transition-all cursor-pointer flex items-center justify-center ${
                                       active
-                                        ? "bg-[#202124] text-white shadow-sm"
-                                        : "text-[#5f6368] hover:text-[#202124]"
+                                        ? "bg-[#ea4335] text-white shadow-[0_4px_12px_rgba(234,67,53,0.32)]"
+                                        : "text-[#5f6368] hover:text-[#ea4335] hover:bg-white"
                                     }`}
                                   >
-                                    {active && (
-                                      <span className="text-[#34a853] text-[11px]">
-                                        ✓
-                                      </span>
-                                    )}
                                     <span>DA/DR {tier}+</span>
                                   </button>
                                 );
@@ -2099,6 +1298,7 @@ function ServiceDetailPage({ currentService }) {
                           <div className="relative flex items-center h-6">
                             <input
                               type="range"
+                              aria-label="Guest post quantity"
                               min="0"
                               max="600"
                               step="1"
@@ -2169,6 +1369,7 @@ function ServiceDetailPage({ currentService }) {
                           <div className="relative flex items-center h-6">
                             <input
                               type="range"
+                              aria-label={`${currentService.name} quantity`}
                               min="100"
                               max="600"
                               step="1"
@@ -2209,6 +1410,7 @@ function ServiceDetailPage({ currentService }) {
                         <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5">
                           <button
                             type="button"
+                            aria-label={`Decrease ${currentService.name} quantity`}
                             onClick={() =>
                               updateHeroQty(
                                 heroQty - (isGuestPostingPage ? 1 : 50),
@@ -2220,6 +1422,7 @@ function ServiceDetailPage({ currentService }) {
                           </button>
                           <input
                             type="number"
+                            aria-label={`${currentService.name} quantity`}
                             min="1"
                             max={maxHeroQty}
                             step="1"
@@ -2229,6 +1432,7 @@ function ServiceDetailPage({ currentService }) {
                           />
                           <button
                             type="button"
+                            aria-label={`Increase ${currentService.name} quantity`}
                             onClick={() =>
                               updateHeroQty(
                                 heroQty + (isGuestPostingPage ? 1 : 50),
@@ -2372,506 +1576,7 @@ function ServiceDetailPage({ currentService }) {
           </div>
         </section>
 
-        {/* 3. INTERACTIVE BULK COST CALCULATOR (COMBINE WITH OTHER SERVICES) */}
-        <section
-          id="estimator"
-          className="w-full bg-[#f8f9fa] py-12 sm:py-20 px-4 sm:px-6 border-b border-[#e8eaed]"
-        >
-          <div className="max-w-[1200px] mx-auto">
-            <div className="mb-8 sm:mb-10 max-w-[740px] mx-auto text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11.5px] sm:text-[12.5px] font-medium mb-3">
-                <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
-                Multi-Service Campaign Calculator
-              </div>
-              <h2 className="gw-font-display text-[26px] sm:text-[36px] md:text-[42px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-2.5">
-                Combine{" "}
-                <span className="text-[#1a73e8]">{currentService.name}</span>{" "}
-                with other networks.
-              </h2>
-              <p className="gw-font-text text-[14px] sm:text-[16px] text-[#5f6368] leading-[1.6]">
-                Your current selection is pre-loaded below. Add any other PBN,
-                .ID, or EDU/GOV placements to build a custom agency campaign.
-              </p>
-            </div>
-
-            <div className="flex flex-col lg:flex-row lg:items-start gap-6 sm:gap-8 xl:gap-10 relative">
-              {/* Left Column: Sliders Builder */}
-              <div className="flex-1 w-full min-w-0">
-                <div className="bg-white p-3.5 sm:p-4 rounded-[20px] border border-[#e8eaed] shadow-[0_1px_3px_rgba(60,64,67,0.03)] mb-4 sm:mb-5">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-                      {calcCategories.map((cat) => {
-                        const active = calcCategory === cat.id;
-                        return (
-                          <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => setCalcCategory(cat.id)}
-                            className={`text-[12px] sm:text-[12.5px] font-medium px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap cursor-pointer ${
-                              active
-                                ? "bg-[#1a73e8] text-white shadow-sm"
-                                : "bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
-                            }`}
-                          >
-                            <span className="sm:hidden">{cat.shortLabel}</span>
-                            <span className="hidden sm:inline">
-                              {cat.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Calculator Slider Rows */}
-                <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                  {guestPostItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-[18px] border-2 border-[#1a73e8] bg-[#f8fbff] p-4 shadow-sm"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <h2 className="gw-font-display text-[15px] font-semibold text-[#202124]">
-                            {item.name}
-                          </h2>
-                          <p className="mt-0.5 text-[12px] text-[#5f6368]">
-                            {item.detail} • ${item.price.toFixed(2)} / link
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 sm:justify-end">
-                          <input
-                            type="number"
-                            min="1"
-                            max="1000"
-                            value={item.qty}
-                            onChange={(e) =>
-                              setCalcServiceQty(item.id, e.target.value)
-                            }
-                            className="w-20 rounded-[9px] border border-[#dadce0] bg-white px-2.5 py-1.5 text-[13px] font-semibold text-[#202124]"
-                          />
-                          <span className="gw-font-display text-[15px] font-semibold text-[#1a73e8]">
-                            ${(item.price * item.qty).toFixed(2)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setCalcServiceQty(item.id, 0)}
-                            className="rounded-full p-1.5 text-[#9aa0a6] hover:bg-white hover:text-[#d93025] cursor-pointer"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {filteredCalcServices.map((service) => {
-                    const currentQty = checkoutCart[service.id] || 0;
-                    const isActive = currentQty > 0;
-                    const isCurrentPageService =
-                      service.id === currentService.id;
-                    const sliderPos = qtyToSliderPos(currentQty);
-                    const fillPercent = Math.min(
-                      100,
-                      Math.max(0, (sliderPos / 600) * 100),
-                    );
-
-                    return (
-                      <div
-                        key={service.id}
-                        className={`rounded-[18px] sm:rounded-[20px] border transition-all duration-200 ${
-                          isActive
-                            ? "p-4 sm:p-5 bg-[#f8fbff] border-[#1a73e8] ring-2 ring-[#e8f0fe]/70"
-                            : "p-3.5 sm:p-5 bg-white border-[#e8eaed] hover:border-[#dadce0]"
-                        }`}
-                      >
-                        <div
-                          onClick={() => {
-                            if (!isActive) setCalcServiceQty(service.id, 1);
-                          }}
-                          className={`flex justify-between items-center gap-2 ${
-                            isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
-                          }`}
-                        >
-                          <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCalcServiceQty(service.id, isActive ? 0 : 1);
-                              }}
-                              className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
-                                isActive
-                                  ? "bg-[#1a73e8] border-[#1a73e8] text-white"
-                                  : "bg-white border-[#bdc1c6] hover:border-[#1a73e8]"
-                              }`}
-                            >
-                              {isActive && (
-                                <svg
-                                  className="w-3.5 h-3.5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth="3"
-                                >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                              )}
-                            </button>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                <h2 className="gw-font-display text-[15px] sm:text-[17px] font-medium text-[#202124] leading-snug">
-                                  {service.name}
-                                </h2>
-                                {isCurrentPageService && (
-                                  <span className="text-[10px] font-semibold bg-[#e6f4ea] text-[#1e8e3e] px-2 py-0.5 rounded-full">
-                                    Current Page
-                                  </span>
-                                )}
-                                <span className="text-[10px] sm:text-[11px] font-medium bg-[#f1f3f4] text-[#5f6368] px-1.5 sm:px-2 py-0.5 rounded-md">
-                                  {service.metric}
-                                </span>
-                              </div>
-                              <p className="gw-font-text text-[12px] sm:text-[13px] text-[#5f6368] mt-0.5 leading-snug truncate sm:whitespace-normal">
-                                {service.shortSubtitle}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="gw-font-display text-[13px] sm:text-[14.5px] font-medium text-[#1a73e8] bg-white border border-[#d2e3fc] px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap">
-                              ${service.price.toFixed(2)}
-                              <span className="text-[10.5px] sm:text-[12px] font-normal text-[#5f6368]">
-                                /link
-                              </span>
-                            </span>
-                          </div>
-                        </div>
-
-                        <div
-                          className={`${
-                            isActive ? "flex" : "hidden sm:flex"
-                          } flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-5 mt-2`}
-                        >
-                          <div className="flex-1">
-                            <div className="relative flex items-center h-7">
-                              <div className="absolute inset-x-[10px] flex justify-between items-center pointer-events-none z-10">
-                                {SLIDER_STOPS.map((stopVal, idx) => {
-                                  const stopPos = idx * 100;
-                                  const isReached =
-                                    sliderPos >= stopPos && currentQty > 0;
-                                  return (
-                                    <span
-                                      key={stopVal}
-                                      className={`w-2 h-2 rounded-full transition-colors ${
-                                        isReached
-                                          ? "bg-white ring-2 ring-[#1a73e8]"
-                                          : "bg-[#bdc1c6]"
-                                      }`}
-                                    />
-                                  );
-                                })}
-                              </div>
-
-                              <input
-                                type="range"
-                                min="0"
-                                max="600"
-                                step="1"
-                                value={sliderPos}
-                                onChange={(e) =>
-                                  handleCalcSliderPosChange(
-                                    service.id,
-                                    e.target.value,
-                                  )
-                                }
-                                className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer focus:outline-none relative z-20 touch-pan-y"
-                                style={{
-                                  background: `linear-gradient(to right, #1a73e8 0%, #1a73e8 ${fillPercent}%, #e8eaed ${fillPercent}%, #e8eaed 100%)`,
-                                }}
-                              />
-                            </div>
-
-                            <div className="relative h-6 mt-1">
-                              {SLIDER_STOPS.map((stopVal, idx) => {
-                                const leftPct = (idx / 6) * 100;
-                                const isCurrentStop =
-                                  currentQty === stopVal &&
-                                  (stopVal > 0 || currentQty === 0);
-                                const alignClass =
-                                  idx === 0
-                                    ? "left-0 translate-x-0"
-                                    : idx === 6
-                                      ? "right-0 translate-x-0"
-                                      : "-translate-x-1/2";
-
-                                return (
-                                  <button
-                                    key={stopVal}
-                                    type="button"
-                                    onClick={() =>
-                                      setCalcServiceQty(service.id, stopVal)
-                                    }
-                                    style={
-                                      idx > 0 && idx < 6
-                                        ? { left: `${leftPct}%` }
-                                        : undefined
-                                    }
-                                    className={`absolute top-0 ${alignClass} text-[10.5px] sm:text-[11px] font-medium px-1.5 py-0.5 rounded-full transition-colors cursor-pointer whitespace-nowrap ${
-                                      isCurrentStop && stopVal > 0
-                                        ? "bg-[#1a73e8] text-white font-semibold"
-                                        : "text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe]/70"
-                                    }`}
-                                  >
-                                    {stopVal === 0 ? (
-                                      "Off"
-                                    ) : stopVal === 1 ? (
-                                      <>
-                                        1
-                                        <span className="hidden sm:inline">
-                                          {" "}
-                                          (Min)
-                                        </span>
-                                      </>
-                                    ) : (
-                                      `${stopVal / 1000}k`
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#e8eaed]/80">
-                            <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 sm:p-1">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setCalcServiceQty(
-                                    service.id,
-                                    currentQty <= 1 ? 0 : currentQty - 1,
-                                  )
-                                }
-                                className="w-7 h-7 rounded-full text-[#5f6368] hover:bg-[#f1f3f4] flex items-center justify-center cursor-pointer font-medium"
-                              >
-                                −
-                              </button>
-                              <input
-                                type="number"
-                                min="0"
-                                max="5000"
-                                step="1"
-                                value={currentQty}
-                                onChange={(e) =>
-                                  setCalcServiceQty(service.id, e.target.value)
-                                }
-                                className="w-[54px] sm:w-[60px] text-center bg-transparent text-[13.5px] sm:text-[14px] font-semibold text-[#202124] focus:outline-none"
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setCalcServiceQty(
-                                    service.id,
-                                    currentQty === 0 ? 1 : currentQty + 1,
-                                  )
-                                }
-                                className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-[#e8f0fe] flex items-center justify-center cursor-pointer font-medium"
-                              >
-                                +
-                              </button>
-                            </div>
-
-                            <div className="min-w-[82px] text-right">
-                              <span className="block text-[10px] sm:text-[11px] text-[#5f6368]">
-                                Subtotal
-                              </span>
-                              <span
-                                className={`gw-font-display text-[14px] sm:text-[15px] font-semibold ${
-                                  isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"
-                                }`}
-                              >
-                                $
-                                {(currentQty * service.price).toLocaleString(
-                                  "en-US",
-                                  {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  },
-                                )}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Right Column: Sticky Order Summary */}
-              <aside className="w-full lg:w-[390px] xl:w-[420px] shrink-0 lg:sticky lg:top-[96px] self-start">
-                <div className="bg-white rounded-[22px] sm:rounded-[24px] border border-[#dadce0] shadow-[0_12px_36px_rgba(60,64,67,0.08)] overflow-hidden flex flex-col">
-                  <div className="grid grid-cols-4 h-[4px] w-full">
-                    <div className="bg-[#4285F4]" />
-                    <div className="bg-[#EA4335]" />
-                    <div className="bg-[#FBBC04]" />
-                    <div className="bg-[#34A853]" />
-                  </div>
-
-                  <div className="p-5 sm:p-6 lg:p-7 flex flex-col">
-                    <div className="flex items-center justify-between mb-4 border-b border-[#e8eaed] pb-3.5">
-                      <div>
-                        <h2 className="gw-font-display text-[19px] sm:text-[20px] font-medium text-[#202124]">
-                          Order Summary
-                        </h2>
-                        <p className="text-[12px] text-[#5f6368] mt-0.5">
-                          {selectedPackagesCount}{" "}
-                          {selectedPackagesCount === 1
-                            ? "service selected"
-                            : "services selected"}
-                        </p>
-                      </div>
-                      {selectedPackagesCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => setCheckoutCart({})}
-                          className="text-[12px] font-medium text-[#d93025] hover:bg-[#fce8e6] px-3 py-1 rounded-full transition-colors cursor-pointer"
-                        >
-                          Reset
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto max-h-[240px] mb-4 pr-1 space-y-2 custom-scrollbar">
-                      {selectedPackagesDetailed.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex justify-between items-center bg-[#f8f9fa] px-3 py-2.5 rounded-[12px] border border-[#e8eaed]"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="text-[11.5px] font-bold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-full shrink-0">
-                              {item.qty.toLocaleString()}
-                            </span>
-                            <span className="text-[13px] font-medium text-[#202124] truncate">
-                              {item.name}
-                            </span>
-                          </div>
-                          <span className="text-[13px] font-semibold text-[#202124] pl-2">
-                            $
-                            {item.subtotal.toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="bg-[#f8f9fa] rounded-[16px] p-4 mb-4 border border-[#e8eaed]">
-                      <div className="flex justify-between items-center mb-2 text-[12.5px] text-[#5f6368]">
-                        <span>Total Volume</span>
-                        <span className="font-semibold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
-                          {totalLinks.toLocaleString()} Backlinks
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-end pt-2 border-t border-[#dadce0]">
-                        <span className="gw-font-display text-[14.5px] font-medium text-[#202124]">
-                          Estimated Total
-                        </span>
-                        <span className="gw-font-display text-[26px] font-medium text-[#1a73e8] leading-none">
-                          $
-                          {finalTotal.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}{" "}
-                          <span className="text-[12px] text-[#5f6368]">
-                            USD
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-
-                    {paymentError && (
-                      <div className="mb-3 p-3 rounded-[12px] bg-[#fce8e6] border border-[#fad2cf] text-[#d93025] text-[12px] font-medium">
-                        {paymentError}
-                      </div>
-                    )}
-
-                    <div className="space-y-2.5">
-                      <button
-                        type="button"
-                        onClick={() => openCheckoutModalWithCart(checkoutCart)}
-                        disabled={
-                          totalLinks === 0 ||
-                          isInitializing ||
-                          isRedirectingBoomFi
-                        }
-                        className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#635bff] text-[#f6f9fc] font-medium text-[14.5px] sm:text-[15px] hover:bg-[#5249f5] hover:shadow-[0_4px_14px_rgba(26,115,232,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <StripeWordmarkIcon />
-                        <span>Pay with Card (Instant)</span>
-                      </button>
-
-                      {totalLinks > 0 && (
-                        <div className="w-full relative z-0">
-                          <PayPalButtons
-                            style={{
-                              layout: "horizontal",
-                              height: 46,
-                              color: "gold",
-                              shape: "pill",
-                              tagline: false,
-                            }}
-                            forceReRender={[totalLinks, finalTotal]}
-                            createOrder={async () => {
-                              setPaymentError("");
-                              const { data } = await axios.post(
-                                `${BACKEND_URL}/api/create-paypal-order`,
-                                { cart: checkoutCart },
-                              );
-                              return data.id;
-                            }}
-                            onApprove={async (data) => {
-                              const res = await axios.post(
-                                `${BACKEND_URL}/api/capture-paypal-order`,
-                                { orderID: data.orderID },
-                              );
-                              handlePaymentSuccess(
-                                res.data?.captureId || data.orderID,
-                                "PayPal Checkout",
-                              );
-                            }}
-                          />
-                        </div>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => handleBoomFiDirectCheckout(checkoutCart)}
-                        disabled={
-                          totalLinks === 0 ||
-                          isInitializing ||
-                          isRedirectingBoomFi
-                        }
-                        className="gw-font-display w-full h-[46px] rounded-full border border-[#dadce0] bg-[#d5ff2e] hover:bg-[#c2ed15] text-[#202124] font-medium text-[14px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                      >
-                        <CryptoCoinIcon />
-                        <span>
-                          {isRedirectingBoomFi
-                            ? "Redirecting to BoomFi Gateway..."
-                            : "Pay with Crypto (BoomFi)"}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </aside>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. SERVICE-SPECIFIC FAQ SECTION */}
+        {/* 3. SERVICE-SPECIFIC FAQ SECTION */}
         <section className="w-full bg-white py-12 sm:py-16 px-4 sm:px-6 border-b border-[#e8eaed]">
           <div className="max-w-[860px] mx-auto">
             <div className="text-center mb-8">
@@ -2916,7 +1621,7 @@ function ServiceDetailPage({ currentService }) {
           </div>
         </section>
 
-        {/* 5. EXPLORE ALL DEDICATED SERVICES DIRECTORY */}
+        {/* 4. EXPLORE ALL DEDICATED SERVICES DIRECTORY */}
         <section className="w-full bg-[#f8f9fa] py-12 sm:py-16 px-4 sm:px-6">
           <div className="max-w-[1200px] mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-7">
@@ -2934,7 +1639,7 @@ function ServiceDetailPage({ currentService }) {
                 to="/services"
                 className="text-[13px] font-semibold text-[#1a73e8] hover:underline"
               >
-                View Full Catalogue →
+                Open Multi-Service Builder →
               </Link>
             </div>
 

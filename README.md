@@ -48,7 +48,19 @@ Custom-built native touch sliders, collapsible specification modules, and sticky
 * Node.js & Express.js
 * Stripe Node SDK
 * Nodemailer
+* Zod request validation, Helmet security headers, and rate limiting
 * CORS & Dotenv
+
+## Payment Webhook Configuration
+
+Configure provider credentials in the backend environment before enabling live payments:
+
+* Stripe: `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
+* PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and the webhook ID from the PayPal app's webhook configuration as `PAYPAL_WEBHOOK_ID`. Set `PAYPAL_BASE_URL` to the matching sandbox or live API base.
+* BoomFi: `BOOMFI_API_KEY`, the RSA webhook signing public key from the dashboard as `BOOMFI_WEBHOOK_PUBLIC_KEY`, and the merchant organization ID as `BOOMFI_ORG_ID`. Preserve PEM newlines (or encode them as `\n`); webhook deliveries are verified against their original raw request body and a five-minute timestamp window.
+* Order email: `RESEND_API_KEY` (or the existing `SMTP_PASS` alias), with optional `SENDER_EMAIL` and `ADMIN_EMAIL` addresses.
+
+PayPal and BoomFi webhook endpoints reject unsigned deliveries. Register `/api/webhooks/paypal` and `/api/webhooks/boomfi` with their respective providers. Run backend unit tests with `npm test --prefix backend`.
 
 ## Developer Note
 

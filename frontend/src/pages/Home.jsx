@@ -2860,7 +2860,7 @@ export default function Home() {
       `}</style>
 
       {/* Hero Section */}
-      <section className="relative z-10 min-h-[70vh] sm:min-h-[76vh] flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-10 sm:pb-14 pt-[76px] sm:pt-[84px] overflow-hidden">
+      <section className="relative z-10 min-h-[70vh] sm:min-h-[76vh] flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-10 sm:pb-14 pt-[68px] sm:pt-[76px] overflow-hidden">
         <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
           <div className="absolute inset-0 bg-dotted-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)] opacity-50" />
           <svg

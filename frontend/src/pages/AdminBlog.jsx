@@ -786,7 +786,7 @@ export default function AdminBlog() {
   // ============================================================================
   if (!isAuthenticated) {
     return (
-      <main className="w-full min-h-[90vh] bg-[#f8f9fa] flex items-center justify-center px-4 pt-[76px] pb-12">
+      <main className="w-full min-h-[90vh] bg-[#f8f9fa] flex items-center justify-center px-4 pt-[56px] pb-12">
         <div className="w-full max-w-[440px] bg-white rounded-[26px] border border-[#dadce0] shadow-[0_20px_60px_rgba(60,64,67,0.10)] overflow-hidden">
           <div className="grid grid-cols-4 h-[4px] w-full">
             <div className="bg-[#4285F4]" />
@@ -886,7 +886,7 @@ export default function AdminBlog() {
   // VIEW 2: FULL ENTERPRISE CMS, MEDIA LIBRARY & RANK MATH SEO SUITE
   // ============================================================================
   return (
-    <main className="w-full bg-[#f8f9fa] min-h-screen pt-[74px] pb-20 px-3.5 sm:px-6">
+    <main className="w-full bg-[#f8f9fa] min-h-screen pt-[56px] pb-20 px-3.5 sm:px-6">
       <div className="max-w-[1280px] mx-auto">
         {/* --- TOP ADMIN COMMAND HEADER & NAVIGATION TABS --- */}
         <div className="bg-white rounded-[22px] border border-[#dadce0] p-4 sm:p-5 mb-6 shadow-[0_4px_20px_rgba(60,64,67,0.04)] flex flex-col lg:flex-row lg:items-center justify-between gap-4">

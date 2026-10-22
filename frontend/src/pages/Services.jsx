@@ -10,7 +10,12 @@ import {
 } from "@stripe/react-stripe-js";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
-import { SERVICE_PAGES_DATA } from "./ServiceDetail";
+import { SERVICE_PAGES_DATA } from "../data/serviceCatalog";
+import {
+  GUEST_POSTING_OPTIONS,
+  getGuestPostingItem,
+  getGuestPostingPrice,
+} from "../config/guestPosting";
 
 // ENVIRONMENT & API CONFIGURATION
 const STRIPE_PUBLIC_KEY =
@@ -127,58 +132,6 @@ const TEAM_CONTACTS = {
   telegramUrl: "https://t.me/SEOHUBLTD",
   telegramLabel: "@SEOHUBLTD",
   supportEmail: "hello@jasabacklinks.net",
-};
-
-// GUEST POSTING CONFIGURATION & 2X TRAFFIC PRICING
-const GUEST_POSTING_OPTIONS = {
-  authorityTiers: ["30", "40", "50"],
-  niches: [
-    { id: "general", label: "General Niche", shortLabel: "General", basePrice: 15 },
-    { id: "igaming", label: "iGaming & Casino", shortLabel: "iGaming", basePrice: 30 },
-  ],
-  trafficTiers: [
-    { id: "1k", label: "1K+", fullLabel: "1,000+ Traffic", multiplier: 1 },
-    { id: "5k", label: "5K+", fullLabel: "5,000+ Traffic", multiplier: 2 },
-    { id: "10k", label: "10K+", fullLabel: "10,000+ Traffic", multiplier: 4 },
-    { id: "25k", label: "25K+", fullLabel: "25,000+ Traffic", multiplier: 8 },
-    { id: "50k", label: "50K+", fullLabel: "50,000+ Traffic", multiplier: 16 },
-  ],
-};
-
-const getGuestPostingPrice = ({ niche, traffic }) => {
-  const nicheObj =
-    GUEST_POSTING_OPTIONS.niches.find((n) => n.id === niche) ||
-    GUEST_POSTING_OPTIONS.niches[0];
-  const trafficObj =
-    GUEST_POSTING_OPTIONS.trafficTiers.find((t) => t.id === traffic) ||
-    GUEST_POSTING_OPTIONS.trafficTiers[0];
-  return nicheObj.basePrice * trafficObj.multiplier;
-};
-
-const getGuestPostingItem = (id) => {
-  const match =
-    /^guestpost_(30|40|50)_(30|40|50)_(general|igaming)_(1k|5k|10k|25k|50k)$/.exec(
-      id
-    );
-  if (!match) return null;
-
-  const [, da, dr, niche, traffic] = match;
-  const nicheOption = GUEST_POSTING_OPTIONS.niches.find(
-    (option) => option.id === niche
-  );
-  const trafficOption = GUEST_POSTING_OPTIONS.trafficTiers.find(
-    (option) => option.id === traffic
-  );
-  if (!nicheOption || !trafficOption) return null;
-
-  const options = { da, dr, niche, traffic };
-  return {
-    id,
-    name: `Guest Posting (${nicheOption.shortLabel} • DA/DR ${da}+)`,
-    detail: `${trafficOption.fullLabel}`,
-    price: getGuestPostingPrice(options),
-    ...options,
-  };
 };
 
 let stripePromise;
@@ -1050,7 +1003,7 @@ export default function Services() {
         intent: "capture",
       }}
     >
-      <main className="w-full bg-[#f8f9fa] relative overflow-x-clip pt-[68px] sm:pt-[80px] pb-28 lg:pb-16">
+      <main className="w-full bg-[#f8f9fa] relative overflow-x-clip pt-[56px] pb-28 lg:pb-16">
         <style>{`
           .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 28px 28px; }
           .custom-scrollbar::-webkit-scrollbar { width: 5px; }
@@ -1217,7 +1170,7 @@ export default function Services() {
                                 >
                                   <div className="flex items-center justify-between">
                                     <span className="block text-[13.5px] font-semibold text-[#202124]">
-                                      {n.shortLabel}
+                                      {n.cardLabel}
                                     </span>
                                     <span
                                       className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
@@ -1372,6 +1325,7 @@ export default function Services() {
                               </div>
                               <input
                                 type="range"
+                                aria-label="Guest post quantity"
                                 min="0"
                                 max="600"
                                 step="1"
@@ -1423,6 +1377,7 @@ export default function Services() {
                             <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-1 shadow-2xs">
                               <button
                                 type="button"
+                                aria-label="Decrease guest post quantity"
                                 onClick={() =>
                                   updateGuestPostQty(guestPostQty - 1)
                                 }
@@ -1432,6 +1387,7 @@ export default function Services() {
                               </button>
                               <input
                                 type="number"
+                                aria-label="Guest post quantity"
                                 min="1"
                                 max="1000"
                                 value={guestPostQty}
@@ -1442,6 +1398,7 @@ export default function Services() {
                               />
                               <button
                                 type="button"
+                                aria-label="Increase guest post quantity"
                                 onClick={() =>
                                   updateGuestPostQty(guestPostQty + 1)
                                 }
@@ -1626,6 +1583,7 @@ export default function Services() {
                               </div>
                               <input
                                 type="range"
+                                aria-label={`${service.name} quantity`}
                                 min="0"
                                 max="500"
                                 step="1"
@@ -1684,6 +1642,7 @@ export default function Services() {
                               <div className="flex items-center bg-white border border-[#dadce0] rounded-full p-0.5 shadow-2xs">
                                 <button
                                   type="button"
+                                  aria-label={`Decrease ${service.name} quantity`}
                                   onClick={() =>
                                     updateCardQuantity(
                                       service.id,
@@ -1696,6 +1655,7 @@ export default function Services() {
                                 </button>
                                 <input
                                   type="number"
+                                  aria-label={`${service.name} quantity`}
                                   min="1"
                                   max="5000"
                                   value={currentQty}
@@ -1709,6 +1669,7 @@ export default function Services() {
                                 />
                                 <button
                                   type="button"
+                                  aria-label={`Increase ${service.name} quantity`}
                                   onClick={() =>
                                     updateCardQuantity(
                                       service.id,
@@ -1728,7 +1689,7 @@ export default function Services() {
                                 }
                                 className={`flex-1 h-[38px] px-3.5 rounded-full text-[12.5px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 focus:outline-none ${
                                   isAdded
-                                    ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hover:bg-[#dcord2]"
+                                    ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hover:bg-[#d9f0dc]"
                                     : "bg-[#1a73e8] hover:bg-[#1557b0] text-white shadow-[0_3px_10px_rgba(26,115,232,0.22)]"
                                 }`}
                               >

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function FloatingReviewWidget() {
+  const location = useLocation();
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -145,7 +147,13 @@ export default function FloatingReviewWidget() {
   const activeReview = reviewPlatforms[currentIndex];
 
   return (
-    <div className="fixed bottom-24 sm:bottom-8 left-4 sm:left-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-700">
+    <div
+      className={`fixed ${
+        location.pathname === "/services"
+          ? "bottom-[120px] sm:bottom-6"
+          : "bottom-4 sm:bottom-6"
+      } left-4 sm:left-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-700`}
+    >
       {/* Main Container Pill */}
       <div className="flex items-center bg-white rounded-full p-1 sm:p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#e8eaed] transition-all hover:shadow-[0_12px_40px_rgba(26,115,232,0.12)]">
         {/* Left Badge Part: Dark Green Circle + Score */}
