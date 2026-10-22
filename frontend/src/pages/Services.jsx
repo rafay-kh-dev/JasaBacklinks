@@ -196,7 +196,7 @@ function gpSliderPosToQty(pos) {
   const end = GP_SLIDER_STOPS[segIndex + 1];
   return Math.max(
     1,
-    Math.min(1000, Math.round(start + segFraction * (end - start)))
+    Math.min(1000, Math.round(start + segFraction * (end - start))),
   );
 }
 
@@ -262,7 +262,7 @@ function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
 
     if (!numComplete || !expComplete || !cvcComplete) {
       setErrorMessage(
-        "Please complete your Card Number, Expiry Date, and CVV."
+        "Please complete your Card Number, Expiry Date, and CVV.",
       );
       return;
     }
@@ -278,13 +278,13 @@ function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
         payment_method: {
           card: cardNumberElement,
         },
-      }
+      },
     );
 
     if (error) {
       setErrorMessage(
         error.message ||
-          "Your card was declined. Please check your card details."
+          "Your card was declined. Please check your card details.",
       );
       setIsProcessing(false);
     } else if (paymentIntent && paymentIntent.status === "succeeded") {
@@ -435,7 +435,7 @@ function OrderOnboardingFlowModal({
       });
       if (!data?.success) {
         throw new Error(
-          "The server did not confirm that your order details were received."
+          "The server did not confirm that your order details were received.",
         );
       }
       localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
@@ -444,7 +444,7 @@ function OrderOnboardingFlowModal({
       setSubmissionError(
         err.response?.data?.error ||
           err.message ||
-          "Unable to submit your order details. Please try again."
+          "Unable to submit your order details. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -768,7 +768,7 @@ export default function Services() {
   const [paymentError, setPaymentError] = useState(
     boomfiReturn.status === "failed"
       ? "Crypto payment was cancelled or not completed. Your campaign bundle has been restored."
-      : ""
+      : "",
   );
 
   const returnPayment =
@@ -780,7 +780,7 @@ export default function Services() {
       : null;
 
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(
-    Boolean(returnPayment)
+    Boolean(returnPayment),
   );
   const [completedPayment, setCompletedPayment] = useState(returnPayment);
 
@@ -789,7 +789,7 @@ export default function Services() {
     if (boomfiReturn.status === "success" && boomfiReturn.transactionId) {
       axios
         .get(
-          `${BACKEND_URL}/api/payments/session/${boomfiReturn.transactionId}`
+          `${BACKEND_URL}/api/payments/session/${boomfiReturn.transactionId}`,
         )
         .then(({ data }) => {
           if (data?.cart && Object.keys(data.cart).length > 0) {
@@ -896,11 +896,11 @@ export default function Services() {
   const selectedPackagesCount = selectedPackagesDetailed.length;
   const finalTotal = selectedPackagesDetailed.reduce(
     (sum, item) => sum + item.subtotal,
-    0
+    0,
   );
   const totalLinks = selectedPackagesDetailed.reduce(
     (sum, item) => sum + item.qty,
-    0
+    0,
   );
 
   // Checkout Gateway Handlers
@@ -921,7 +921,7 @@ export default function Services() {
     } catch (err) {
       setPaymentError(
         err.response?.data?.error ||
-          "Could not initialise card gateway. Please try PayPal or Crypto."
+          "Could not initialise card gateway. Please try PayPal or Crypto.",
       );
     } finally {
       setIsInitializing(false);
@@ -938,7 +938,7 @@ export default function Services() {
         {
           cart: cartToUse,
           originUrl: currentPageOrigin,
-        }
+        },
       );
       if (data?.checkoutUrl && data.transactionId) {
         try {
@@ -948,7 +948,7 @@ export default function Services() {
               cart: cartToUse,
               transactionId: data.transactionId,
               timestamp: Date.now(),
-            })
+            }),
           );
         } catch (e) {
           console.warn("Storage warning:", e);
@@ -959,7 +959,7 @@ export default function Services() {
       }
     } catch (err) {
       setPaymentError(
-        err.response?.data?.error || "Unable to initialise Crypto Checkout."
+        err.response?.data?.error || "Unable to initialise Crypto Checkout.",
       );
     } finally {
       setIsRedirectingBoomFi(false);
@@ -983,7 +983,7 @@ export default function Services() {
   ];
 
   const nonGuestServices = SERVICE_PAGES_DATA.filter(
-    (s) => s.id !== "guest_posting"
+    (s) => s.id !== "guest_posting",
   );
   const filteredServices =
     activeCategory === "all"
@@ -1032,7 +1032,7 @@ export default function Services() {
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] mb-3.5">
               <span className="w-2 h-2 rounded-full bg-[#1a73e8] animate-pulse" />
               <span className="text-[12px] font-semibold text-[#1a73e8]">
-                Multi-Service Campaign Builder • Verified DA/DR 50+
+                Multi-Service Campaign Builder
               </span>
             </div>
             <h2 className="gw-font-display text-[28px] sm:text-[42px] lg:text-[48px] font-medium text-[#202124] leading-[1.12] tracking-[-0.025em] max-w-[820px] mx-auto mb-3">
@@ -1212,28 +1212,30 @@ export default function Services() {
                             </span>
                           </div>
                           <div className="grid grid-cols-3 gap-1.5 bg-[#f8f9fa] p-1.5 rounded-[14px] border border-[#dadce0]">
-                            {GUEST_POSTING_OPTIONS.authorityTiers.map((tier) => {
-                              const active = guestPostOptions.dadr === tier;
-                              return (
-                                <button
-                                  key={tier}
-                                  type="button"
-                                  onClick={() =>
-                                    setGuestPostOptions((prev) => ({
-                                      ...prev,
-                                      dadr: tier,
-                                    }))
-                                  }
-                                  className={`py-2.5 px-2 rounded-[10px] text-[12.5px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                    active
-                                      ? "bg-[#ea4335] text-white shadow-[0_4px_12px_rgba(234,67,53,0.32)]"
-                                      : "text-[#5f6368] hover:text-[#ea4335] hover:bg-white"
-                                  }`}
-                                >
-                                  <span>DA/DR {tier}+</span>
-                                </button>
-                              );
-                            })}
+                            {GUEST_POSTING_OPTIONS.authorityTiers.map(
+                              (tier) => {
+                                const active = guestPostOptions.dadr === tier;
+                                return (
+                                  <button
+                                    key={tier}
+                                    type="button"
+                                    onClick={() =>
+                                      setGuestPostOptions((prev) => ({
+                                        ...prev,
+                                        dadr: tier,
+                                      }))
+                                    }
+                                    className={`py-2.5 px-2 rounded-[10px] text-[12.5px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                                      active
+                                        ? "bg-[#ea4335] text-white shadow-[0_4px_12px_rgba(234,67,53,0.32)]"
+                                        : "text-[#5f6368] hover:text-[#ea4335] hover:bg-white"
+                                    }`}
+                                  >
+                                    <span>DA/DR {tier}+</span>
+                                  </button>
+                                );
+                              },
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1242,7 +1244,8 @@ export default function Services() {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <label className="text-[12.5px] font-semibold text-[#202124]">
-                            3. Verified Monthly Organic Traffic (2x Tier Progression)
+                            3. Verified Monthly Organic Traffic (2x Tier
+                            Progression)
                           </label>
                           <span className="text-[12px] font-bold text-[#1a73e8] bg-[#e8f0fe] px-2.5 py-0.5 rounded-full">
                             ${currentGuestPostUnitPrice}/post
@@ -1304,7 +1307,7 @@ export default function Services() {
                                   {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2,
-                                  }
+                                  },
                                 )}
                               </span>
                             </div>
@@ -1332,7 +1335,7 @@ export default function Services() {
                                 value={gpSliderPos}
                                 onChange={(e) =>
                                   updateGuestPostQty(
-                                    gpSliderPosToQty(e.target.value)
+                                    gpSliderPosToQty(e.target.value),
                                   )
                                 }
                                 className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer relative z-20"
@@ -1448,7 +1451,7 @@ export default function Services() {
                       const sliderPos = cardQtyToSliderPos(currentQty);
                       const fillPct = Math.min(
                         100,
-                        Math.max(0, (sliderPos / 500) * 100)
+                        Math.max(0, (sliderPos / 500) * 100),
                       );
                       const cardSubtotal = currentQty * service.price;
 
@@ -1591,7 +1594,7 @@ export default function Services() {
                                 onChange={(e) =>
                                   updateCardQuantity(
                                     service.id,
-                                    cardSliderPosToQty(e.target.value)
+                                    cardSliderPosToQty(e.target.value),
                                   )
                                 }
                                 className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer relative z-20"
@@ -1646,7 +1649,7 @@ export default function Services() {
                                   onClick={() =>
                                     updateCardQuantity(
                                       service.id,
-                                      currentQty - 50
+                                      currentQty - 50,
                                     )
                                   }
                                   className="w-7 h-7 rounded-full text-[#5f6368] hover:bg-[#f1f3f4] text-[14px] font-bold cursor-pointer flex items-center justify-center"
@@ -1662,7 +1665,7 @@ export default function Services() {
                                   onChange={(e) =>
                                     updateCardQuantity(
                                       service.id,
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="w-13 text-center bg-transparent text-[13px] font-bold text-[#202124] focus:outline-none"
@@ -1673,7 +1676,7 @@ export default function Services() {
                                   onClick={() =>
                                     updateCardQuantity(
                                       service.id,
-                                      currentQty + 50
+                                      currentQty + 50,
                                     )
                                   }
                                   className="w-7 h-7 rounded-full text-[#1a73e8] hover:bg-[#e8f0fe] text-[14px] font-bold cursor-pointer flex items-center justify-center"
@@ -1880,18 +1883,18 @@ export default function Services() {
                               setPaymentError("");
                               const { data } = await axios.post(
                                 `${BACKEND_URL}/api/create-paypal-order`,
-                                { cart: checkoutCart }
+                                { cart: checkoutCart },
                               );
                               return data.id;
                             }}
                             onApprove={async (data) => {
                               const res = await axios.post(
                                 `${BACKEND_URL}/api/capture-paypal-order`,
-                                { orderID: data.orderID }
+                                { orderID: data.orderID },
                               );
                               handlePaymentSuccess(
                                 res.data?.captureId || data.orderID,
-                                "PayPal Checkout"
+                                "PayPal Checkout",
                               );
                             }}
                           />
@@ -1968,7 +1971,9 @@ export default function Services() {
                     <td className="py-3.5 px-5 font-semibold text-[#202124]">
                       Standard PBN Network
                     </td>
-                    <td className="py-3.5 px-5">Verified Moz DA 50+ / DR 50+</td>
+                    <td className="py-3.5 px-5">
+                      Verified Moz DA 50+ / DR 50+
+                    </td>
                     <td className="py-3.5 px-5">.COM • .NET • .ORG</td>
                     <td className="py-3.5 px-5 text-[#1e8e3e] font-medium">
                       3–7 Days
@@ -1981,7 +1986,9 @@ export default function Services() {
                     <td className="py-3.5 px-5 font-semibold text-[#202124]">
                       Regional Indonesian (.ID)
                     </td>
-                    <td className="py-3.5 px-5">Verified Moz DA 50+ / DR 50+</td>
+                    <td className="py-3.5 px-5">
+                      Verified Moz DA 50+ / DR 50+
+                    </td>
                     <td className="py-3.5 px-5">.ID • .CO.ID • .WEB.ID</td>
                     <td className="py-3.5 px-5 text-[#1e8e3e] font-medium">
                       3–7 Days
@@ -1994,8 +2001,12 @@ export default function Services() {
                     <td className="py-3.5 px-5 font-semibold text-[#202124]">
                       EDU & GOV Authority Tier
                     </td>
-                    <td className="py-3.5 px-5">DA 50–85+ Institutional Trust</td>
-                    <td className="py-3.5 px-5">.EDU • .AC.ID • .SCH.ID • .GO.ID</td>
+                    <td className="py-3.5 px-5">
+                      DA 50–85+ Institutional Trust
+                    </td>
+                    <td className="py-3.5 px-5">
+                      .EDU • .AC.ID • .SCH.ID • .GO.ID
+                    </td>
                     <td className="py-3.5 px-5 text-[#1e8e3e] font-medium">
                       3–7 Days
                     </td>
@@ -2011,7 +2022,10 @@ export default function Services() {
 
         {/* MOBILE STICKY BOTTOM CAMPAIGN CHECKOUT BAR */}
         {selectedPackagesCount > 0 && (
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] bg-white border-t border-[#dadce0] px-3 sm:px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.10)] flex items-center justify-between gap-2 sm:gap-3" data-testid="services-mobile-checkout-bar">
+          <div
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] bg-white border-t border-[#dadce0] px-3 sm:px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.10)] flex items-center justify-between gap-2 sm:gap-3"
+            data-testid="services-mobile-checkout-bar"
+          >
             <div className="min-w-0 flex-1">
               <span className="text-[10px] sm:text-[11px] font-semibold text-[#1a73e8] block truncate">
                 {selectedPackagesCount}{" "}
