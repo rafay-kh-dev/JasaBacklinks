@@ -1,7 +1,7 @@
 jest.mock("axios", () => ({ post: jest.fn().mockResolvedValue({}) }));
 
 const axios = require("axios");
-const { sendOrderEmailsIfReady } = require("./mailer");
+const { sendContactEnquiry, sendOrderEmailsIfReady } = require("./mailer");
 
 describe("sendOrderEmailsIfReady", () => {
   beforeEach(() => {
@@ -9,6 +9,45 @@ describe("sendOrderEmailsIfReady", () => {
     process.env.RESEND_API_KEY = "test-api-key";
     process.env.SENDER_EMAIL = "orders@example.com";
     process.env.ADMIN_EMAIL = "ops@example.com";
+  });
+
+  describe("sendContactEnquiry", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.RESEND_API_KEY = "test-api-key";
+      process.env.SENDER_EMAIL = "hello@example.com";
+      process.env.ADMIN_EMAIL = "ops@example.com";
+    });
+
+    it("sends an escaped admin notification and client confirmation", async () => {
+      await sendContactEnquiry({
+        enquiryType: "General Enquiry",
+        fullName: "<img src=x onerror=alert(1)>",
+        email: "client@example.com",
+        contactPlatform: "WhatsApp",
+        contactHandle: "+44 123456789",
+        volumeTier: "50 – 250 Links",
+        websiteUrl: "https://example.com",
+        message: "<script>alert(1)</script>",
+      });
+
+      expect(axios.post).toHaveBeenCalledTimes(2);
+      const adminEmail = axios.post.mock.calls[0][1];
+      const clientEmail = axios.post.mock.calls[1][1];
+      expect(adminEmail).toMatchObject({
+        to: "ops@example.com",
+        reply_to: "client@example.com",
+      });
+      expect(adminEmail.html).toContain("&lt;img src=x onerror=alert(1)&gt;");
+      expect(adminEmail.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+      expect(clientEmail).toMatchObject({
+        to: "client@example.com",
+        reply_to: "hello@example.com",
+      });
+      expect(clientEmail.html).toContain(
+        "&lt;script&gt;alert(1)&lt;/script&gt;",
+      );
+    });
   });
 
   it("sends client and admin emails before marking them dispatched", async () => {

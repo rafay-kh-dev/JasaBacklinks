@@ -17,4 +17,12 @@ const checkoutLimiter = rateLimit({
   message: { error: "Too many checkout attempts. Please wait a few minutes." },
 });
 
-module.exports = { apiLimiter, checkoutLimiter };
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many enquiries. Please try again later." },
+});
+
+module.exports = { apiLimiter, checkoutLimiter, contactLimiter };

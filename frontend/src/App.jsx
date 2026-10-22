@@ -12,6 +12,7 @@ import Footer from "./components/Footer";
 import FloatingReviewWidget from "./components/FloatingReviewWidget";
 import FloatingContactWidget from "./components/FloatingContactWidget";
 import CookieConsent from "./components/CookieConsent";
+import PageLoader from "./components/PageLoader";
 import { SERVICE_PAGES_DATA } from "./data/serviceCatalog";
 
 const Home = lazy(() => import("./pages/Home"));
@@ -362,11 +363,7 @@ export default function App() {
           <Header />
           <main className="flex-grow">
             <Suspense
-              fallback={
-                <div className="min-h-[50vh] flex items-center justify-center text-sm text-[#5f6368]" role="status">
-                  Loading page…
-                </div>
-              }
+              fallback={<PageLoader />}
             >
               <Routes>
                 <Route path="/" element={<Home />} />

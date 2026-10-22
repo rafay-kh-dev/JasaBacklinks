@@ -150,7 +150,7 @@ export default function FloatingReviewWidget() {
     <div
       className={`fixed ${
         location.pathname === "/" || location.pathname === "/services"
-          ? "bottom-[120px] lg:bottom-6"
+          ? "bottom-[96px] lg:bottom-6"
           : "bottom-4 sm:bottom-6"
       } left-4 sm:left-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-700`}
       data-testid="floating-review-widget"

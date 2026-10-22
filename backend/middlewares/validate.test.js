@@ -1,5 +1,6 @@
 const {
   cartSchema,
+  contactSchema,
   submitOrderSchema,
   validateBody,
 } = require("./validate");
@@ -12,6 +13,25 @@ describe("checkout request validation", () => {
         originUrl: "https://www.jasabacklinks.net",
       }).success,
     ).toBe(true);
+  });
+
+  describe("contact request validation", () => {
+    it("accepts valid contact enquiries and rejects malformed submissions", () => {
+      expect(
+        contactSchema.safeParse({
+          fullName: "Test Client",
+          email: "client@example.com",
+          message: "Please send more information.",
+        }).success,
+      ).toBe(true);
+      expect(
+        contactSchema.safeParse({
+          fullName: "A",
+          email: "not-an-email",
+          message: "Hi",
+        }).success,
+      ).toBe(false);
+    });
   });
 
   it("rejects unsupported quantity types and invalid campaign details", () => {

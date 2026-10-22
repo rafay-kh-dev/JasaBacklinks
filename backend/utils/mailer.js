@@ -2,6 +2,8 @@ const axios = require("axios");
 const {
   getAdminEmailHtml,
   getClientEmailHtml,
+  getContactAdminHtml,
+  getContactClientHtml,
 } = require("../templates/emailTemplates");
 
 const RESEND_API_URL = "https://api.resend.com/emails";
@@ -61,4 +63,47 @@ async function sendOrderEmailsIfReady(orderDoc) {
   await orderDoc.save();
 }
 
-module.exports = { sendOrderEmailsIfReady };
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"']/g, (character) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character];
+  });
+}
+
+async function sendContactEnquiry(enquiry) {
+  const senderEmail = (
+    process.env.SENDER_EMAIL || "hello@jasabacklinks.net"
+  ).trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || senderEmail).trim();
+  const safeEnquiry = Object.fromEntries(
+    Object.entries(enquiry).map(([key, value]) => [key, escapeHtml(value)]),
+  );
+
+  await Promise.all([
+    sendMailOverAPI({
+      from: senderEmail,
+      to: adminEmail,
+      replyTo: enquiry.email,
+      subject: "New contact enquiry — Jasa Backlinks",
+      html: getContactAdminHtml(safeEnquiry),
+    }),
+    sendMailOverAPI({
+      from: senderEmail,
+      to: enquiry.email,
+      replyTo: senderEmail,
+      subject: "We received your enquiry — Jasa Backlinks",
+      html: getContactClientHtml({
+        fullName: safeEnquiry.fullName,
+        message: safeEnquiry.message,
+      }),
+    }),
+  ]);
+}
+
+module.exports = { sendOrderEmailsIfReady, sendContactEnquiry };

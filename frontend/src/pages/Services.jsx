@@ -305,7 +305,7 @@ function CustomStripeCardForm({ clientSecret, totalAmount, onSuccess }) {
           </span>
         </div>
         <div
-          className={`flex items-center px-3.5 py-2.5 sm:py-3 bg-[#f8f9fa] focus-within:bg-white border rounded-[12px] transition-all ${
+          className={`flex items-center px-3.5 py-2.5 sm:py-3 focus-within:bg-white border rounded-[12px] transition-all ${
             numComplete
               ? "border-[#34a853] ring-2 ring-[#e6f4ea]"
               : "border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-2 focus-within:ring-[#e8f0fe]"
@@ -1003,7 +1003,7 @@ export default function Services() {
         intent: "capture",
       }}
     >
-      <main className="w-full bg-[#f8f9fa] relative overflow-x-clip pt-[56px] pb-28 lg:pb-16">
+      <main className="w-full bg-white relative overflow-x-clip pt-[56px] pb-28 lg:pb-16">
         <style>{`
           .bg-dotted-grid { background-image: radial-gradient(circle, #d0d7de 1px, transparent 1px); background-size: 28px 28px; }
           .custom-scrollbar::-webkit-scrollbar { width: 5px; }

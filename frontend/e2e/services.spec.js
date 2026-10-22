@@ -81,6 +81,12 @@ test("floating widgets stay clear of mobile checkout bars", async ({ page }) => 
       route === "/" ? "home-mobile-checkout-bar" : "services-mobile-checkout-bar",
     );
     await expect(bar).toBeVisible();
+    if (route === "/services") {
+      await expect(page.locator("main main")).toHaveCSS(
+        "background-color",
+        "rgb(255, 255, 255)",
+      );
+    }
 
     for (const widgetName of [
       "floating-contact-widget",
@@ -91,6 +97,8 @@ test("floating widgets stay clear of mobile checkout bars", async ({ page }) => 
       const widgetBox = await widget.boundingBox();
       const barBox = await bar.boundingBox();
       expect(widgetBox.y + widgetBox.height).toBeLessThan(barBox.y);
+      expect(Math.abs(page.viewportSize().height - widgetBox.y - widgetBox.height - 96))
+        .toBeLessThanOrEqual(1);
     }
   }
 });

@@ -4,13 +4,19 @@ const helmet = require("helmet");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { corsOptions } = require("./config/corsOptions");
-const { apiLimiter, checkoutLimiter } = require("./middlewares/rateLimiter");
+const {
+  apiLimiter,
+  checkoutLimiter,
+  contactLimiter,
+} = require("./middlewares/rateLimiter");
 const webhookController = require("./controllers/webhookController");
 const paymentController = require("./controllers/paymentController");
+const contactController = require("./controllers/contactController");
 const {
   validateBody,
   cartSchema,
   submitOrderSchema,
+  contactSchema,
 } = require("./middlewares/validate");
 
 const app = express();
@@ -81,6 +87,12 @@ app.post(
   "/api/submit-order",
   validateBody(submitOrderSchema),
   paymentController.submitOrderDetails
+);
+app.post(
+  "/api/contact",
+  contactLimiter,
+  validateBody(contactSchema),
+  contactController.submitContactEnquiry
 );
 
 // 7. DATABASE CONNECTION (NO HARDCODED FALLBACK CREDENTIALS)

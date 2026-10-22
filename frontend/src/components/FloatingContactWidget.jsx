@@ -41,7 +41,7 @@ export default function FloatingContactWidget() {
       ref={widgetRef}
       className={`fixed ${
         location.pathname === "/" || location.pathname === "/services"
-          ? "bottom-[120px] lg:bottom-6"
+          ? "bottom-[96px] lg:bottom-6"
           : "bottom-4 sm:bottom-6"
       } right-4 sm:right-8 z-[100] flex flex-col items-end antialiased`}
       data-testid="floating-contact-widget"
