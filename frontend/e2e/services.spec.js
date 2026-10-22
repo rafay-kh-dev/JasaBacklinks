@@ -72,6 +72,29 @@ test("mobile drawer locks page scroll and exposes its featured service and foote
   await expect(page.getByText("Guest Posting (Real Traffic)")).toBeVisible();
 });
 
+test("floating widgets stay clear of mobile checkout bars", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  for (const route of ["/", "/services"]) {
+    await page.goto(route);
+    const bar = page.getByTestId(
+      route === "/" ? "home-mobile-checkout-bar" : "services-mobile-checkout-bar",
+    );
+    await expect(bar).toBeVisible();
+
+    for (const widgetName of [
+      "floating-contact-widget",
+      "floating-review-widget",
+    ]) {
+      const widget = page.getByTestId(widgetName);
+      await expect(widget).toBeVisible();
+      const widgetBox = await widget.boundingBox();
+      const barBox = await bar.boundingBox();
+      expect(widgetBox.y + widgetBox.height).toBeLessThan(barBox.y);
+    }
+  }
+});
+
 test("service detail has dynamic metadata, schema, and labeled quantity controls", async ({
   page,
 }) => {

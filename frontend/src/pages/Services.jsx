@@ -2011,14 +2011,14 @@ export default function Services() {
 
         {/* MOBILE STICKY BOTTOM CAMPAIGN CHECKOUT BAR */}
         {selectedPackagesCount > 0 && (
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] bg-white border-t border-[#dadce0] px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.10)] flex items-center justify-between gap-3">
-            <div>
-              <span className="text-[11px] font-semibold text-[#1a73e8] block">
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] bg-white border-t border-[#dadce0] px-3 sm:px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.10)] flex items-center justify-between gap-2 sm:gap-3" data-testid="services-mobile-checkout-bar">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-[#1a73e8] block truncate">
                 {selectedPackagesCount}{" "}
                 {selectedPackagesCount === 1 ? "Service" : "Services"} •{" "}
                 {totalLinks.toLocaleString()} Links
               </span>
-              <span className="gw-font-display text-[20px] font-bold text-[#202124] leading-none">
+              <span className="gw-font-display text-[18px] sm:text-[20px] font-bold text-[#202124] leading-none whitespace-nowrap">
                 $
                 {finalTotal.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
@@ -2030,7 +2030,7 @@ export default function Services() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={() =>
@@ -2038,16 +2038,18 @@ export default function Services() {
                     .getElementById("campaign-checkout-dock")
                     ?.scrollIntoView({ behavior: "smooth" })
                 }
-                className="px-3.5 py-2.5 rounded-full border border-[#dadce0] text-[12.5px] font-semibold text-[#3c4043] bg-[#f8f9fa]"
+                className="px-2.5 sm:px-3.5 py-2.5 rounded-full border border-[#dadce0] text-[11px] sm:text-[12.5px] font-semibold text-[#3c4043] bg-[#f8f9fa] whitespace-nowrap"
               >
-                Review Bundle
+                <span className="sm:hidden">Review</span>
+                <span className="hidden sm:inline">Review Bundle</span>
               </button>
               <button
                 type="button"
                 onClick={() => openStripeCheckoutModal(checkoutCart)}
-                className="px-4 py-2.5 rounded-full bg-[#1a73e8] text-white text-[12.5px] font-semibold shadow-sm"
+                className="px-3 sm:px-4 py-2.5 rounded-full bg-[#1a73e8] text-white text-[11px] sm:text-[12.5px] font-semibold shadow-sm whitespace-nowrap"
               >
-                Checkout Now →
+                <span className="sm:hidden">Checkout</span>
+                <span className="hidden sm:inline">Checkout Now →</span>
               </button>
             </div>
           </div>

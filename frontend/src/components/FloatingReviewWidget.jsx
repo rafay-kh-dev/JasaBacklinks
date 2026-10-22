@@ -149,10 +149,11 @@ export default function FloatingReviewWidget() {
   return (
     <div
       className={`fixed ${
-        location.pathname === "/services"
-          ? "bottom-[120px] sm:bottom-6"
+        location.pathname === "/" || location.pathname === "/services"
+          ? "bottom-[120px] lg:bottom-6"
           : "bottom-4 sm:bottom-6"
       } left-4 sm:left-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-700`}
+      data-testid="floating-review-widget"
     >
       {/* Main Container Pill */}
       <div className="flex items-center bg-white rounded-full p-1 sm:p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#e8eaed] transition-all hover:shadow-[0_12px_40px_rgba(26,115,232,0.12)]">

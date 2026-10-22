@@ -40,10 +40,11 @@ export default function FloatingContactWidget() {
     <div
       ref={widgetRef}
       className={`fixed ${
-        location.pathname === "/services"
-          ? "bottom-[120px] sm:bottom-6"
+        location.pathname === "/" || location.pathname === "/services"
+          ? "bottom-[120px] lg:bottom-6"
           : "bottom-4 sm:bottom-6"
       } right-4 sm:right-8 z-[100] flex flex-col items-end antialiased`}
+      data-testid="floating-contact-widget"
     >
       {isOpen && (
         <div className="mb-3.5 w-[min(305px,calc(100vw-2rem))] sm:w-[325px] bg-white rounded-[24px] border border-[#dadce0] shadow-[0_16px_48px_rgba(32,33,36,0.16)] overflow-hidden transition-opacity duration-200">

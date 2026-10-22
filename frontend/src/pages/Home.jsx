@@ -1751,7 +1751,7 @@ function PackageEstimator() {
 
       {/* FLOATING MOBILE QUICK-SUMMARY BAR */}
       {totalLinks > 0 && !isStripeModalOpen && !isOrderModalOpen && (
-        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3">
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3" data-testid="home-mobile-checkout-bar">
           <div>
             <div className="flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
