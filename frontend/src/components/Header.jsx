@@ -257,12 +257,43 @@ export default function Header() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const headerRef = useRef(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const openServicesOnHover = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsServicesOpen(true);
+  };
+
+  const closeServicesOnLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsServicesOpen(false);
+    }, 120);
+  };
 
   const closeMenu = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
     setIsServicesOpen(false);
     setIsMobileServicesOpen(false);
     setIsMobileOpen(false);
   };
+
+  // Cleanup hover timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Scroll Event Listener to toggle background colour
   useEffect(() => {
@@ -354,9 +385,13 @@ export default function Header() {
               Home
             </Link>
 
-            <button
-              type="button"
-              onClick={() => setIsServicesOpen(!isServicesOpen)}
+            {/* Hover opens Mega Menu, Click navigates to /services */}
+            <Link
+              to="/services"
+              onClick={closeMenu}
+              onMouseEnter={openServicesOnHover}
+              onMouseLeave={closeServicesOnLeave}
+              onFocus={openServicesOnHover}
               className={`relative flex items-center h-full px-1 cursor-pointer transition-colors focus:outline-none ${
                 isServicesOpen ? "text-[#1a73e8]" : "hover:text-[#202124]"
               }`}
@@ -379,7 +414,7 @@ export default function Header() {
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-            </button>
+            </Link>
 
             <Link
               to="/about"
@@ -455,9 +490,13 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Desktop Mega Menu (100% Untouched) */}
+      {/* Desktop Mega Menu (Opens on Hover, Stays Open While Inside) */}
       {isServicesOpen && (
-        <div className="hidden lg:flex absolute top-[56px] left-0 w-full bg-white border-b border-[#dadce0] shadow-[0_10px_20px_rgba(60,64,67,0.06)] min-h-[390px]">
+        <div
+          onMouseEnter={openServicesOnHover}
+          onMouseLeave={closeServicesOnLeave}
+          className="hidden lg:flex absolute top-[56px] left-0 w-full bg-white border-b border-[#dadce0] shadow-[0_10px_20px_rgba(60,64,67,0.06)] min-h-[390px]"
+        >
           {/* Left Panel: 3x3 Services Rows on Top + Featured Guest Posting Bar at Bottom */}
           <div className="flex-1 py-10 lg:py-12 pl-6 lg:pl-[60px] xl:pl-[120px] 2xl:pl-[170px] pr-6 lg:pr-10 xl:pr-12">
             <div className="flex flex-col gap-9 max-w-[1100px]">
