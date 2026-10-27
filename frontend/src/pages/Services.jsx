@@ -737,13 +737,13 @@ export default function Services() {
     niche: "general",
     traffic: "1k",
   });
-  const [guestPostQty, setGuestPostQty] = useState(5);
+  const [guestPostQty, setGuestPostQty] = useState(1);
 
   // Per-Card Draft Quantities
   const [draftQuantities, setDraftQuantities] = useState(() => {
     const initial = {};
     SERVICE_PAGES_DATA.forEach((s) => {
-      if (s.id !== "guest_posting") initial[s.id] = 50;
+      if (s.id !== "guest_posting") initial[s.id] = s.minQty || 50;
     });
     return initial;
   });
@@ -755,7 +755,16 @@ export default function Services() {
       boomfiReturn.savedOrder?.cart &&
       Object.keys(boomfiReturn.savedOrder.cart).length > 0
     ) {
-      return boomfiReturn.savedOrder.cart;
+      return Object.fromEntries(
+        Object.entries(boomfiReturn.savedOrder.cart).map(([id, qty]) => {
+          const minQty =
+            id.startsWith("guestpost_")
+              ? 1
+              : SERVICE_PAGES_DATA.find((service) => service.id === id)
+                  ?.minQty || 50;
+          return [id, Math.max(Number(qty) || minQty, minQty)];
+        }),
+      );
     }
     return { hp_post: 50 };
   });
@@ -839,7 +848,10 @@ export default function Services() {
   // Standard Card Quantity & Campaign Toggle Handlers
   const updateCardQuantity = (serviceId, rawVal) => {
     let parsed = parseInt(rawVal, 10);
-    if (isNaN(parsed) || parsed < 1) parsed = 1;
+    const minQty =
+      SERVICE_PAGES_DATA.find((service) => service.id === serviceId)?.minQty ||
+      50;
+    if (isNaN(parsed) || parsed < minQty) parsed = minQty;
     if (parsed > 5000) parsed = 5000;
 
     setDraftQuantities((prev) => ({ ...prev, [serviceId]: parsed }));
@@ -849,7 +861,10 @@ export default function Services() {
   };
 
   const toggleServiceInCampaign = (serviceId) => {
-    const qtyToUse = draftQuantities[serviceId] || 50;
+    const qtyToUse =
+      draftQuantities[serviceId] ||
+      SERVICE_PAGES_DATA.find((service) => service.id === serviceId)?.minQty ||
+      50;
     setCheckoutCart((prev) => {
       const next = { ...prev };
       if (next[serviceId]) {
@@ -1391,7 +1406,7 @@ export default function Services() {
                               <input
                                 type="number"
                                 aria-label="Guest post quantity"
-                                min="1"
+                                min="50"
                                 max="1000"
                                 value={guestPostQty}
                                 onChange={(e) =>
@@ -1447,7 +1462,7 @@ export default function Services() {
                       const currentQty =
                         checkoutCart[service.id] ||
                         draftQuantities[service.id] ||
-                        50;
+                        service.minQty;
                       const sliderPos = cardQtyToSliderPos(currentQty);
                       const fillPct = Math.min(
                         100,
@@ -1659,7 +1674,7 @@ export default function Services() {
                                 <input
                                   type="number"
                                   aria-label={`${service.name} quantity`}
-                                  min="1"
+                                  min={service.minQty}
                                   max="5000"
                                   value={currentQty}
                                   onChange={(e) =>

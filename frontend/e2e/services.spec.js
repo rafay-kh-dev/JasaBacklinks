@@ -32,8 +32,8 @@ test("builds a bundle with multiple Guest Posting configurations", async ({
   await expect(dock).toContainText("Guest Posting (General");
   await expect(dock).toContainText("Guest Posting (iGaming");
   await expect(dock).toContainText("3 Services");
-  await expect(dock).toContainText("60 Links");
-  await expect(dock).toContainText("$725.00 USD");
+  await expect(dock).toContainText("52 Links");
+  await expect(dock).toContainText("$185.00 USD");
 });
 
 test("accessible service quantity control updates the checkout dock", async ({
@@ -103,6 +103,44 @@ test("floating widgets stay clear of mobile checkout bars", async ({ page }) => 
   }
 });
 
+test("home calculator contains all 13 services and configurable Guest Posting", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const calculator = page.locator("#estimator");
+  await expect(
+    calculator.getByRole("button", { name: "All Placements (13)" }),
+  ).toBeVisible();
+  for (const serviceName of [
+    "Guest Posting",
+    "Complete SEO Package",
+    "Rank on First Page",
+    "Custom SEO Solutions",
+  ]) {
+    await expect(calculator.getByText(serviceName, { exact: false }).first()).toBeVisible();
+  }
+
+  await calculator.getByLabel("Guest Posting niche").selectOption("igaming");
+  await calculator.getByLabel("Guest Posting traffic").selectOption("1k");
+  await expect(calculator).toContainText("$30.00/link");
+  await calculator
+    .getByRole("spinbutton", { name: "Guest Posting quantity" })
+    .fill("1");
+  await expect(
+    calculator.getByRole("spinbutton", { name: "Guest Posting quantity" }),
+  ).toHaveValue("1");
+  await expect(calculator).toContainText("$30.00/link");
+
+  const completeSeoQty = calculator.getByRole("spinbutton", {
+    name: "Complete SEO Package quantity",
+  });
+  await completeSeoQty.fill("1");
+  await expect(completeSeoQty).toHaveValue("500");
+  await expect(calculator.getByText("$250.00", { exact: true }).first()).toBeVisible();
+  await expect(calculator).toContainText("Guest Posting (iGaming");
+});
+
 test("service detail has dynamic metadata, schema, and labeled quantity controls", async ({
   page,
 }) => {
@@ -124,6 +162,29 @@ test("service detail has dynamic metadata, schema, and labeled quantity controls
   await expect(
     page.getByRole("spinbutton", { name: "Guest Posting quantity" }),
   ).toBeVisible();
+});
+
+test("Complete SEO Package enforces the 500-link minimum and $0.50 link price", async ({
+  page,
+}) => {
+  await page.goto("/services/complete-seo-package");
+
+  const quantity = page.getByRole("spinbutton", {
+    name: "Complete SEO Package quantity",
+  });
+  await expect(quantity).toHaveAttribute("min", "500");
+  await expect(quantity).toHaveValue("500");
+  await expect(page.getByText("$0.50", { exact: false }).first()).toBeVisible();
+  for (const belowMinimumPreset of ["50", "100", "250"]) {
+    await expect(
+      page.getByRole("button", { name: belowMinimumPreset, exact: true }),
+    ).toHaveCount(0);
+  }
+  for (const validPreset of ["500", "1k", "2000", "3000", "5000"]) {
+    await expect(
+      page.getByRole("button", { name: validPreset, exact: true }),
+    ).toBeVisible();
+  }
 });
 
 test("all service catalogue routes load with service structured data", async ({

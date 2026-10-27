@@ -8,7 +8,7 @@ const SERVICES = {
   hidden_links: { name: "Hidden Links (AC.ID, SCH.ID, GO.ID)", price: 20.0 },
   edu_post: { name: "EDU PBN Blogpost", price: 3.0 },
   edu_sidebar: { name: "EDU PBN Blogroll", price: 5.0 },
-  complete_seo: { name: "Complete SEO Package", price: 5.0 },
+  complete_seo: { name: "Complete SEO Package", price: 0.5 },
   rank_first_page: { name: "Rank on First Page Campaign", price: 8.0 },
   custom_seo: { name: "Custom SEO Solutions", price: 4.0 },
 };
@@ -99,6 +99,17 @@ const normaliseAndPriceCart = (rawCart = {}) => {
 
     if (!standardSvc && !guestPostSvc) {
       throw new Error(`Unrecognised or tampered package ID: "${rawKey}".`);
+    }
+
+    const minAllowed = guestPostSvc
+      ? 1
+      : id === "complete_seo"
+        ? 500
+        : 50;
+    if (qty < minAllowed) {
+      throw new Error(
+        `Quantity for "${id}" is below the minimum limit (${minAllowed}).`,
+      );
     }
 
     const maxAllowed = guestPostSvc ? 1000 : 5000;

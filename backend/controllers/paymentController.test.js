@@ -63,7 +63,7 @@ describe("createBoomFiCharge redirect origins", () => {
     const res = createResponse();
 
     await createStripeIntent(
-      { validatedBody: { cart: { hp_post: 2 } } },
+      { validatedBody: { cart: { hp_post: 50 } } },
       res,
     );
 
@@ -71,11 +71,11 @@ describe("createBoomFiCharge redirect origins", () => {
       expect.objectContaining({
         transactionId: "pi_test",
         status: "pending_payment",
-        totalCents: 200,
+        totalCents: 5000,
       }),
     );
     expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ clientSecret: "pi_test_secret", total: 2 }),
+    expect.objectContaining({ clientSecret: "pi_test_secret", total: 50 }),
     );
   });
 
@@ -119,7 +119,7 @@ describe("createBoomFiCharge redirect origins", () => {
     const res = createResponse();
 
     await createPayPalOrder(
-      { validatedBody: { cart: { hp_post: 2 } } },
+      { validatedBody: { cart: { hp_post: 50 } } },
       res,
     );
 
@@ -127,12 +127,12 @@ describe("createBoomFiCharge redirect origins", () => {
       expect.objectContaining({
         transactionId: "paypal-order-id",
         status: "pending_payment",
-        totalCents: 200,
+        totalCents: 5000,
       }),
     );
     expect(res.json).toHaveBeenCalledWith({
       id: "paypal-order-id",
-      total: 2,
+      total: 50,
     });
   });
 
@@ -142,7 +142,7 @@ describe("createBoomFiCharge redirect origins", () => {
     await createBoomFiCharge(
       {
         validatedBody: {
-          cart: { hp_post: 1 },
+          cart: { hp_post: 50 },
           originUrl: "https://attacker.example/services/guest-posting",
         },
         headers: {},
@@ -173,7 +173,7 @@ describe("createBoomFiCharge redirect origins", () => {
     await createBoomFiCharge(
       {
         validatedBody: {
-          cart: { hp_post: 1 },
+          cart: { hp_post: 50 },
           originUrl: "https://www.jasabacklinks.net/services/guest-posting",
         },
         headers: {},

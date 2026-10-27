@@ -10,6 +10,12 @@ import {
 } from "@stripe/react-stripe-js";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
+import { SERVICE_PAGES_DATA } from "../data/serviceCatalog";
+import {
+  getGuestPostingItem,
+  getGuestPostingPrice,
+  GUEST_POSTING_OPTIONS,
+} from "../config/guestPosting";
 
 // ENVIRONMENT & API CONFIGURATION
 const STRIPE_PUBLIC_KEY =
@@ -114,6 +120,31 @@ function sliderPosToQty(pos) {
   const rawAbove1k = 1000 + ((numPos - 200) / 100) * 1000;
   const snappedAbove1k = Math.round(rawAbove1k / 50) * 50;
   return Math.max(1000, Math.min(5000, snappedAbove1k));
+}
+
+function getServiceMinimumQty(id) {
+  if (getGuestPostingItem(id)) return 1;
+  return SERVICE_PAGES_DATA.find((service) => service.id === id)?.minQty || 50;
+}
+
+function completeSeoQtyToSliderPos(qty) {
+  if (!qty || qty <= 0) return 0;
+  if (qty <= 500) return 100;
+  if (qty <= 1000) return 100 + ((qty - 500) / 500) * 100;
+  return Math.min(600, 200 + ((qty - 1000) / 1000) * 100);
+}
+
+function completeSeoSliderPosToQty(pos) {
+  const numPos = Number(pos) || 0;
+  if (numPos < 50) return 0;
+  if (numPos <= 100) return 500;
+  if (numPos <= 200) {
+    return Math.round(500 + ((numPos - 100) / 100) * 500);
+  }
+  return Math.max(
+    1000,
+    Math.min(5000, Math.round(1000 + ((numPos - 200) / 100) * 1000)),
+  );
 }
 
 // POPUP 1: DEDICATED 3-FIELD CUSTOM STRIPE CARD FORM
@@ -824,8 +855,25 @@ function PackageEstimator() {
   const restoredCart =
     boomfiReturn.savedOrder?.cart &&
     Object.keys(boomfiReturn.savedOrder.cart).length > 0
-      ? boomfiReturn.savedOrder.cart
-      : { hp_post: 1 };
+      ? Object.fromEntries(
+          Object.entries(boomfiReturn.savedOrder.cart).map(([id, qty]) => [
+            id,
+            Math.max(Number(qty) || getServiceMinimumQty(id), getServiceMinimumQty(id)),
+          ]),
+        )
+      : { hp_post: 50 };
+  const [guestPostOptions, setGuestPostOptions] = useState(() => {
+    const restoredGuestPost = Object.keys(restoredCart)
+      .map((id) => getGuestPostingItem(id))
+      .find(Boolean);
+    return {
+      dadr: restoredGuestPost?.da || "50",
+      niche: restoredGuestPost?.niche || "general",
+      traffic: restoredGuestPost?.traffic || "1k",
+    };
+  });
+  const guestPostCartId = `guestpost_${guestPostOptions.dadr}_${guestPostOptions.dadr}_${guestPostOptions.niche}_${guestPostOptions.traffic}`;
+  const guestPostItem = getGuestPostingItem(guestPostCartId);
   const returnPayment =
     boomfiReturn.status === "success" && boomfiReturn.transactionId
       ? {
@@ -850,92 +898,57 @@ function PackageEstimator() {
   );
 
   // Post-Payment Order Form Modal State (Popup 2 & Popup 3)
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(Boolean(returnPayment));
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(
+    Boolean(returnPayment),
+  );
   const [completedPayment, setCompletedPayment] = useState(returnPayment);
 
   const services = [
     {
-      id: "hp_post",
-      category: "standard",
-      name: "Homepage Post",
-      price: 1.0,
-      desc: "Contextual homepage placement",
-      metric: "DA/DR 50+",
-      tag: "Popular",
+      id: guestPostCartId,
+      category: "guest_post",
+      name: guestPostItem.name,
+      price: getGuestPostingPrice(guestPostOptions),
+      desc: "Editorial guest posts with verified organic traffic. Choose niche, DA/DR and traffic tier.",
+      metric: `DA/DR ${guestPostOptions.dadr}+`,
+      minQty: 1,
+      type: "guest_posting",
     },
-    {
-      id: "sidebar",
-      category: "standard",
-      name: "Sidebar Blogroll",
-      price: 2.0,
-      desc: "High-authority sitewide sidebar link",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "sticky",
-      category: "standard",
-      name: "Homepage Sticky Post",
-      price: 2.0,
-      desc: "Pinned on homepage for maximum link juice",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "id_hp_post",
-      category: "id_net",
-      name: ".ID Homepage Post",
-      price: 2.0,
-      desc: "Indonesian regional contextual homepage link",
-      metric: "DA/DR 50+",
-      tag: "Regional .ID",
-    },
-    {
-      id: "id_sidebar",
-      category: "id_net",
-      name: ".ID Sidebar Blogroll",
-      price: 3.0,
-      desc: "Local .ID sitewide blogroll placement",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "id_sticky",
-      category: "id_net",
-      name: ".ID Sticky Post",
-      price: 2.5,
-      desc: "Pinned .ID homepage placement",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "hidden_links",
-      category: "edu_gov",
-      name: "Hidden Links (AC.ID, SCH.ID, GO.ID)",
-      price: 20.0,
-      desc: "Official academic & government domains",
-      metric: "High Trust",
-      tag: "Exclusive",
-    },
-    {
-      id: "edu_post",
-      category: "edu_gov",
-      name: "EDU PBN Blogpost",
-      price: 3.0,
-      desc: "Academic contextual article placement",
-      metric: "DA/DR 50+",
-    },
-    {
-      id: "edu_sidebar",
-      category: "edu_gov",
-      name: "EDU PBN Blogroll",
-      price: 5.0,
-      desc: "University sidebar sitewide placement",
-      metric: "DA/DR 50+",
-    },
+    ...SERVICE_PAGES_DATA.filter((service) => service.id !== "guest_posting").map(
+      (service) => ({
+        id: service.id,
+        category: service.category,
+        name: service.name,
+        price: service.price,
+        desc: service.desc,
+        metric: service.metric,
+        minQty: service.minQty,
+      }),
+    ),
   ];
 
   const categories = [
-    { id: "all", label: "All Placements (9)" },
-    { id: "standard", label: "Standard PBN (3)" },
-    { id: "id_net", label: ".ID Regional (3)" },
-    { id: "edu_gov", label: "EDU & GOV (3)" },
+    { id: "all", label: `All Placements (${services.length})` },
+    {
+      id: "guest_post",
+      label: `Guest Posting (${services.filter((service) => service.category === "guest_post").length})`,
+    },
+    {
+      id: "standard",
+      label: `Standard PBN (${services.filter((service) => service.category === "standard").length})`,
+    },
+    {
+      id: "id_net",
+      label: `.ID Regional (${services.filter((service) => service.category === "id_net").length})`,
+    },
+    {
+      id: "edu_gov",
+      label: `EDU & GOV (${services.filter((service) => service.category === "edu_gov").length})`,
+    },
+    {
+      id: "solutions",
+      label: `SEO Solutions (${services.filter((service) => service.category === "solutions").length})`,
+    },
   ];
 
   const presets = [
@@ -973,13 +986,31 @@ function PackageEstimator() {
       });
       return;
     }
+    const minQty = getServiceMinimumQty(id);
+    if (val < minQty) val = minQty;
     if (val > 5000) val = 5000;
 
     setCart((prev) => ({ ...prev, [id]: val }));
   };
 
-  const handleSliderPosChange = (id, sliderPosValue) => {
-    const mappedQty = sliderPosToQty(sliderPosValue);
+  const updateGuestPostOption = (field, value) => {
+    const nextOptions = { ...guestPostOptions, [field]: value };
+    const nextGuestPostId = `guestpost_${nextOptions.dadr}_${nextOptions.dadr}_${nextOptions.niche}_${nextOptions.traffic}`;
+    setGuestPostOptions(nextOptions);
+    setCart((prev) => {
+      const currentQty = prev[guestPostCartId];
+      if (!currentQty || guestPostCartId === nextGuestPostId) return prev;
+      const next = { ...prev, [nextGuestPostId]: currentQty };
+      delete next[guestPostCartId];
+      return next;
+    });
+  };
+
+  const handleSliderPosChange = (id, sliderPosValue, minQty) => {
+    const mappedQty =
+      minQty === 500
+        ? completeSeoSliderPosToQty(sliderPosValue)
+        : sliderPosToQty(sliderPosValue);
     setServiceQty(id, mappedQty);
   };
 
@@ -995,12 +1026,13 @@ function PackageEstimator() {
 
   const selectedPackagesDetailed = selectedEntries.map(([id, qty]) => {
     const svc = services.find((s) => s.id === id);
+    const guestPost = getGuestPostingItem(id);
     return {
       id,
-      name: svc ? svc.name : id,
+      name: svc ? svc.name : guestPost?.name || id,
       qty,
-      price: svc ? svc.price : 0,
-      subtotal: svc ? svc.price * qty : 0,
+      price: svc ? svc.price : guestPost?.price || 0,
+      subtotal: (svc ? svc.price : guestPost?.price || 0) * qty,
     };
   });
 
@@ -1128,11 +1160,11 @@ function PackageEstimator() {
             </div>
             <h2 className="gw-font-display text-[28px] sm:text-[36px] md:text-[44px] font-medium text-[#202124] leading-[1.15] tracking-[-0.025em] mb-2.5">
               Customise your{" "}
-              <span className="text-[#1a73e8]">PBN package.</span>
+              <span className="text-[#1a73e8]">SEO package.</span>
             </h2>
             <p className="gw-font-text text-[14.5px] sm:text-[16px] text-[#5f6368] leading-[1.6]">
-              Tap any placement to start from 50 links or slide up to 5,000
-              links. Combine multiple packages in real-time.
+              Choose from all 13 services, starting at 50 links (500 for the
+              Complete SEO Package), and combine packages in real time.
             </p>
           </div>
 
@@ -1191,7 +1223,15 @@ function PackageEstimator() {
                 {filteredServices.map((service) => {
                   const currentQty = cart[service.id] || 0;
                   const isActive = currentQty > 0;
-                  const sliderPos = qtyToSliderPos(currentQty);
+                  const minQty = service.minQty || 50;
+                  const serviceSliderStops =
+                    minQty === 500
+                      ? [0, 500, 1000, 2000, 3000, 4000, 5000]
+                      : SLIDER_STOPS;
+                  const sliderPos =
+                    minQty === 500
+                      ? completeSeoQtyToSliderPos(currentQty)
+                      : qtyToSliderPos(currentQty);
                   const fillPercent = Math.min(
                     100,
                     Math.max(0, (sliderPos / 600) * 100),
@@ -1208,7 +1248,7 @@ function PackageEstimator() {
                     >
                       <div
                         onClick={() => {
-                          if (!isActive) setServiceQty(service.id, 1);
+                          if (!isActive) setServiceQty(service.id, minQty);
                         }}
                         className={`flex justify-between items-center gap-2 ${
                           isActive ? "mb-3 sm:mb-4" : "sm:mb-4 cursor-pointer"
@@ -1219,7 +1259,10 @@ function PackageEstimator() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setServiceQty(service.id, isActive ? 0 : 1);
+                              setServiceQty(
+                                service.id,
+                                isActive ? 0 : minQty,
+                              );
                             }}
                             className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
                               isActive
@@ -1271,7 +1314,7 @@ function PackageEstimator() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setServiceQty(service.id, 1);
+                                setServiceQty(service.id, minQty);
                               }}
                               className="sm:hidden text-[11.5px] font-semibold bg-[#e8f0fe] text-[#1a73e8] px-2.5 py-1 rounded-full"
                             >
@@ -1280,6 +1323,70 @@ function PackageEstimator() {
                           )}
                         </div>
                       </div>
+
+                      {service.type === "guest_posting" && (
+                        <div
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <label className="text-[11px] font-medium text-[#5f6368]">
+                            Niche
+                            <select
+                              aria-label="Guest Posting niche"
+                              value={guestPostOptions.niche}
+                              onChange={(event) =>
+                                updateGuestPostOption("niche", event.target.value)
+                              }
+                              className="mt-1 w-full rounded-lg border border-[#dadce0] bg-white px-2.5 py-2 text-[12px] text-[#202124]"
+                            >
+                              {GUEST_POSTING_OPTIONS.niches.map((niche) => (
+                                <option key={niche.id} value={niche.id}>
+                                  {niche.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="text-[11px] font-medium text-[#5f6368]">
+                            DA/DR
+                            <select
+                              aria-label="Guest Posting authority"
+                              value={guestPostOptions.dadr}
+                              onChange={(event) =>
+                                updateGuestPostOption("dadr", event.target.value)
+                              }
+                              className="mt-1 w-full rounded-lg border border-[#dadce0] bg-white px-2.5 py-2 text-[12px] text-[#202124]"
+                            >
+                              {GUEST_POSTING_OPTIONS.authorityTiers.map((tier) => (
+                                <option key={tier} value={tier}>
+                                  DA/DR {tier}+
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="text-[11px] font-medium text-[#5f6368]">
+                            Monthly traffic
+                            <select
+                              aria-label="Guest Posting traffic"
+                              value={guestPostOptions.traffic}
+                              onChange={(event) =>
+                                updateGuestPostOption("traffic", event.target.value)
+                              }
+                              className="mt-1 w-full rounded-lg border border-[#dadce0] bg-white px-2.5 py-2 text-[12px] text-[#202124]"
+                            >
+                              {GUEST_POSTING_OPTIONS.trafficTiers.map((tier) => (
+                                <option key={tier.id} value={tier.id}>
+                                  {tier.label} — $
+                                  {getGuestPostingPrice({
+                                    niche: guestPostOptions.niche,
+                                    traffic: tier.id,
+                                  })}
+                                  /link
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                      )}
 
                       <div
                         className={`${
@@ -1290,7 +1397,7 @@ function PackageEstimator() {
                           {/* Track + 7 Exact-Aligned Milestone Dots */}
                           <div className="relative flex items-center h-7">
                             <div className="absolute inset-x-[10px] flex justify-between items-center pointer-events-none z-10">
-                              {SLIDER_STOPS.map((stopVal, idx) => {
+                              {serviceSliderStops.map((stopVal, idx) => {
                                 const stopPos = idx * 100;
                                 const isReached =
                                   sliderPos >= stopPos && currentQty > 0;
@@ -1317,6 +1424,7 @@ function PackageEstimator() {
                                 handleSliderPosChange(
                                   service.id,
                                   e.target.value,
+                                  minQty,
                                 )
                               }
                               className="w-full h-[8px] bg-[#e8eaed] rounded-full appearance-none cursor-pointer focus:outline-none relative z-20 touch-pan-y"
@@ -1328,11 +1436,11 @@ function PackageEstimator() {
 
                           {/* 7 Exact Percentage-Aligned Milestone Labels */}
                           <div className="relative h-6 mt-1">
-                            {SLIDER_STOPS.map((stopVal, idx) => {
+                            {serviceSliderStops.map((stopVal, idx) => {
                               const leftPct = (idx / 6) * 100;
                               const isCurrentStop =
-                                currentQty === stopVal &&
-                                (stopVal > 0 || currentQty === 0);
+                                currentQty ===
+                                (stopVal === 1 ? minQty : stopVal);
                               const alignClass =
                                 idx === 0
                                   ? "left-0 translate-x-0"
@@ -1345,7 +1453,10 @@ function PackageEstimator() {
                                   key={stopVal}
                                   type="button"
                                   onClick={() =>
-                                    setServiceQty(service.id, stopVal)
+                                    setServiceQty(
+                                      service.id,
+                                      stopVal === 1 ? minQty : stopVal,
+                                    )
                                   }
                                   style={
                                     idx > 0 && idx < 6
@@ -1360,14 +1471,16 @@ function PackageEstimator() {
                                 >
                                   {stopVal === 0 ? (
                                     "Off"
-                                  ) : stopVal === 1 ? (
+                                  ) : stopVal === 1 || stopVal === minQty ? (
                                     <>
-                                      1
+                                      {minQty.toLocaleString()}
                                       <span className="hidden sm:inline">
                                         {" "}
                                         (Min)
                                       </span>
                                     </>
+                                  ) : stopVal < 1000 ? (
+                                    stopVal.toLocaleString()
                                   ) : (
                                     `${stopVal / 1000}k`
                                   )}
@@ -1384,7 +1497,9 @@ function PackageEstimator() {
                               onClick={() =>
                                 setServiceQty(
                                   service.id,
-                                  currentQty <= 1 ? 0 : currentQty - 1,
+                                  currentQty <= minQty
+                                    ? 0
+                                    : currentQty - (minQty === 500 ? 500 : 50),
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#5f6368] hover:text-[#202124] active:bg-[#e8eaed] hover:bg-[#f1f3f4] flex items-center justify-center transition-colors cursor-pointer font-medium"
@@ -1393,6 +1508,11 @@ function PackageEstimator() {
                             </button>
                             <input
                               type="number"
+                              aria-label={
+                                service.type === "guest_posting"
+                                  ? "Guest Posting quantity"
+                                  : `${service.name} quantity`
+                              }
                               min="0"
                               max="5000"
                               step="1"
@@ -1407,7 +1527,9 @@ function PackageEstimator() {
                               onClick={() =>
                                 setServiceQty(
                                   service.id,
-                                  currentQty === 0 ? 1 : currentQty + 1,
+                                  currentQty === 0
+                                    ? minQty
+                                    : currentQty + (minQty === 500 ? 500 : 50),
                                 )
                               }
                               className="w-7 h-7 rounded-full text-[#1a73e8] active:bg-[#d2e3fc] hover:bg-[#e8f0fe] flex items-center justify-center transition-colors cursor-pointer font-medium"
@@ -1486,13 +1608,17 @@ function PackageEstimator() {
                           No placements selected
                         </p>
                         <p className="text-[11.5px] text-[#9aa0a6] mt-0.5">
-                          Tap any placement or preset to start from 50 links.
+                          Add services from 50 links; Complete SEO starts at
+                          500 links.
                         </p>
                       </div>
                     ) : (
                       selectedEntries.map(([id, qty]) => {
                         const svc = services.find((s) => s.id === id);
-                        if (!svc) return null;
+                        const guestPost = getGuestPostingItem(id);
+                        const itemName = svc?.name || guestPost?.name;
+                        const unitPrice = svc?.price ?? guestPost?.price;
+                        if (!itemName || unitPrice === undefined) return null;
                         return (
                           <div
                             key={id}
@@ -1504,17 +1630,17 @@ function PackageEstimator() {
                               </span>
                               <div className="min-w-0">
                                 <p className="text-[12.5px] sm:text-[13px] font-medium text-[#202124] truncate">
-                                  {svc.name}
+                                  {itemName}
                                 </p>
                                 <p className="text-[10.5px] text-[#5f6368]">
-                                  ${svc.price.toFixed(2)} / link
+                                  ${unitPrice.toFixed(2)} / link
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 pl-2">
                               <span className="text-[12.5px] sm:text-[13px] font-semibold text-[#202124]">
                                 $
-                                {(svc.price * qty).toLocaleString("en-US", {
+                                {(unitPrice * qty).toLocaleString("en-US", {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}
@@ -1751,7 +1877,10 @@ function PackageEstimator() {
 
       {/* FLOATING MOBILE QUICK-SUMMARY BAR */}
       {totalLinks > 0 && !isStripeModalOpen && !isOrderModalOpen && (
-        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3" data-testid="home-mobile-checkout-bar">
+        <div
+          className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-[#202124]/95 backdrop-blur-md text-white rounded-2xl px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-3"
+          data-testid="home-mobile-checkout-bar"
+        >
           <div>
             <div className="flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
@@ -2139,7 +2268,7 @@ function AudienceBentoSection() {
                 Agencies & Resellers
               </h3>
               <p className="gw-font-text text-[13.5px] sm:text-[14.5px] text-[#5f6368] leading-[1.55]">
-                Expand your services with fully managed, wholesale PBN and AI
+                Expand your services with fully managed, wholesale SEO and AI
                 visibility campaigns.
               </p>
             </div>
@@ -2943,13 +3072,15 @@ export default function Home() {
                 <span className="w-2 h-2 rounded-full bg-[#34A853]" />
               </span>
               <span className="gw-font-text text-[11.5px] sm:text-[13px] font-medium text-[#3c4043] truncate">
-                Next-Gen PBN Authority • Verified DA/DR 50+
+                Verified DA/DR 50+ Backlinks • Starting at $1/Link
               </span>
             </div>
 
             <h2 className="gw-font-display text-[32px] sm:text-[52px] md:text-[68px] lg:text-[80px] font-medium leading-[1.12] sm:leading-[1.08] md:leading-[1.06] tracking-[-0.025em] md:tracking-[-0.03em] text-[#202124] mb-4 sm:mb-5 w-full px-1">
               Build organic authority <br className="hidden sm:block" />
-              <span className="text-[#1a73e8]">with premium PBN backlinks.</span>
+              <span className="text-[#1a73e8]">
+                with premium SEO backlinks.
+              </span>
             </h2>
 
             <p className="gw-font-text text-[15px] sm:text-[17px] md:text-[19px] text-[#5f6368] max-w-[700px] leading-[1.6] mb-6 sm:mb-8 px-2">
@@ -2980,15 +3111,48 @@ export default function Home() {
 
             <div className="flex flex-row items-center gap-3 px-4 sm:px-6 py-2.5 rounded-full bg-white/85 backdrop-blur-xl border border-[#e8eaed] shadow-[0_8px_32px_rgba(32,33,36,0.06)] relative z-20 transition-transform duration-300 hover:scale-105 cursor-default max-w-full">
               <div className="flex -space-x-2 shrink-0">
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Agency Partner" width="32" height="32" referrerPolicy="no-referrer" className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover" />
-                <img src="https://randomuser.me/api/portraits/men/46.jpg" alt="Agency Partner" width="32" height="32" referrerPolicy="no-referrer" className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover" />
-                <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Agency Partner" width="32" height="32" referrerPolicy="no-referrer" className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover" />
-                <img src="https://randomuser.me/api/portraits/men/85.jpg" alt="Agency Partner" width="32" height="32" referrerPolicy="no-referrer" className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover" />
+                <img
+                  src="https://randomuser.me/api/portraits/men/32.jpg"
+                  alt="Agency Partner"
+                  width="32"
+                  height="32"
+                  referrerPolicy="no-referrer"
+                  className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
+                />
+                <img
+                  src="https://randomuser.me/api/portraits/men/46.jpg"
+                  alt="Agency Partner"
+                  width="32"
+                  height="32"
+                  referrerPolicy="no-referrer"
+                  className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
+                />
+                <img
+                  src="https://randomuser.me/api/portraits/women/68.jpg"
+                  alt="Agency Partner"
+                  width="32"
+                  height="32"
+                  referrerPolicy="no-referrer"
+                  className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
+                />
+                <img
+                  src="https://randomuser.me/api/portraits/men/85.jpg"
+                  alt="Agency Partner"
+                  width="32"
+                  height="32"
+                  referrerPolicy="no-referrer"
+                  className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] rounded-full border-2 border-white shadow-sm object-cover"
+                />
               </div>
               <div className="flex flex-col items-start text-left">
                 <div className="flex items-center gap-0.5 mb-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <svg key={star} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#fbbc04]" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      key={star}
+                      className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#fbbc04]"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
@@ -3005,13 +3169,26 @@ export default function Home() {
             <div className="absolute -right-3 top-[14%] z-20 hidden rounded-2xl border border-white/80 bg-white/95 p-3.5 shadow-[0_14px_36px_rgba(25,43,69,0.14)] backdrop-blur sm:block xl:-right-8">
               <div className="flex items-center gap-2.5">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e8f0fe] text-[#1a73e8]">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M3 18V5m0 13h18M7 14l4-4 3 2 5-6" />
                   </svg>
                 </span>
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[#748196]">Network quality</p>
-                  <p className="gw-font-display text-[13px] font-bold text-[#1b2738]">Context first</p>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-[#748196]">
+                    Network quality
+                  </p>
+                  <p className="gw-font-display text-[13px] font-bold text-[#1b2738]">
+                    Context first
+                  </p>
                 </div>
               </div>
             </div>
@@ -3023,7 +3200,16 @@ export default function Home() {
               <div className="relative z-10 flex items-center justify-between gap-3 border-b border-white/10 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gradient-to-br from-[#4b91fa] to-[#2863c8] text-white shadow-[0_8px_20px_rgba(48,112,220,0.35)]">
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <circle cx="12" cy="12" r="2.5" />
                       <circle cx="5" cy="5" r="1.5" />
                       <circle cx="19" cy="5" r="1.5" />
@@ -3033,8 +3219,12 @@ export default function Home() {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <p className="gw-font-display text-[14px] font-semibold text-white sm:text-[15px]">Authority network</p>
-                    <p className="text-[11px] text-[#9eacc0]">Campaign preview</p>
+                    <p className="gw-font-display text-[14px] font-semibold text-white sm:text-[15px]">
+                      Authority network
+                    </p>
+                    <p className="text-[11px] text-[#9eacc0]">
+                      Campaign preview
+                    </p>
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-[#3aa878]/25 bg-[#173b35] px-2.5 py-1 text-[10px] font-semibold text-[#8ce0b5]">
@@ -3046,14 +3236,32 @@ export default function Home() {
               <div className="relative z-10 my-4 overflow-hidden rounded-[20px] border border-white/[0.08] bg-[#142236]/90 p-3 sm:my-5 sm:p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[#8999af]">Placement ecosystem</p>
-                    <p className="mt-1 text-[12px] font-medium text-[#e7edf6]">Connected authority, thoughtfully placed</p>
+                    <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[#8999af]">
+                      Placement ecosystem
+                    </p>
+                    <p className="mt-1 text-[12px] font-medium text-[#e7edf6]">
+                      Connected authority, thoughtfully placed
+                    </p>
                   </div>
-                  <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-[9px] font-medium text-[#aebbd0]">ILLUSTRATIVE</span>
+                  <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-[9px] font-medium text-[#aebbd0]">
+                    ILLUSTRATIVE
+                  </span>
                 </div>
-                <svg className="h-[168px] w-full sm:h-[190px]" viewBox="0 0 500 210" fill="none" aria-label="Illustration of a connected backlink network">
+                <svg
+                  className="h-[168px] w-full sm:h-[190px]"
+                  viewBox="0 0 500 210"
+                  fill="none"
+                  aria-label="Illustration of a connected backlink network"
+                >
                   <defs>
-                    <linearGradient id="heroLinkLine" x1="100" y1="35" x2="390" y2="180" gradientUnits="userSpaceOnUse">
+                    <linearGradient
+                      id="heroLinkLine"
+                      x1="100"
+                      y1="35"
+                      x2="390"
+                      y2="180"
+                      gradientUnits="userSpaceOnUse"
+                    >
                       <stop stopColor="#4B91FA" stopOpacity=".8" />
                       <stop offset="1" stopColor="#62D4A5" stopOpacity=".42" />
                     </linearGradient>
@@ -3063,24 +3271,116 @@ export default function Home() {
                     </radialGradient>
                   </defs>
                   <circle cx="250" cy="104" r="82" fill="url(#heroLinkGlow)" />
-                  <path d="M250 104 92 53m158 51L153 166m97-62 160-62m-160 62 155 79M92 53l61 113m257-175-5 192M92 53 410 171" stroke="url(#heroLinkLine)" strokeWidth="1.5" strokeDasharray="4 6" />
-                  <circle cx="250" cy="104" r="31" fill="#1E3E69" stroke="#6AA6FF" strokeOpacity=".75" />
+                  <path
+                    d="M250 104 92 53m158 51L153 166m97-62 160-62m-160 62 155 79M92 53l61 113m257-175-5 192M92 53 410 171"
+                    stroke="url(#heroLinkLine)"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 6"
+                  />
+                  <circle
+                    cx="250"
+                    cy="104"
+                    r="31"
+                    fill="#1E3E69"
+                    stroke="#6AA6FF"
+                    strokeOpacity=".75"
+                  />
                   <circle cx="250" cy="104" r="23" fill="#2863B7" />
-                  <path d="M239 105h22m-11-11v22" stroke="#EAF3FF" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="92" cy="53" r="17" fill="#203E63" stroke="#6AA6FF" />
+                  <path
+                    d="M239 105h22m-11-11v22"
+                    stroke="#EAF3FF"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <circle
+                    cx="92"
+                    cy="53"
+                    r="17"
+                    fill="#203E63"
+                    stroke="#6AA6FF"
+                  />
                   <circle cx="92" cy="53" r="6" fill="#71A9FF" />
-                  <circle cx="153" cy="166" r="14" fill="#1F493F" stroke="#63D6A5" />
+                  <circle
+                    cx="153"
+                    cy="166"
+                    r="14"
+                    fill="#1F493F"
+                    stroke="#63D6A5"
+                  />
                   <circle cx="153" cy="166" r="5" fill="#63D6A5" />
-                  <circle cx="410" cy="42" r="17" fill="#203E63" stroke="#6AA6FF" />
+                  <circle
+                    cx="410"
+                    cy="42"
+                    r="17"
+                    fill="#203E63"
+                    stroke="#6AA6FF"
+                  />
                   <circle cx="410" cy="42" r="6" fill="#71A9FF" />
-                  <circle cx="405" cy="181" r="15" fill="#1F493F" stroke="#63D6A5" />
+                  <circle
+                    cx="405"
+                    cy="181"
+                    r="15"
+                    fill="#1F493F"
+                    stroke="#63D6A5"
+                  />
                   <circle cx="405" cy="181" r="5" fill="#63D6A5" />
-                  <rect x="43" y="18" width="83" height="24" rx="12" fill="#1C2D43" stroke="#FFFFFF" strokeOpacity=".1" />
-                  <text x="84.5" y="34" fill="#D8E6FA" fontSize="10" textAnchor="middle">EDITORIAL</text>
-                  <rect x="365" y="13" width="89" height="24" rx="12" fill="#1C2D43" stroke="#FFFFFF" strokeOpacity=".1" />
-                  <text x="409.5" y="29" fill="#D8E6FA" fontSize="10" textAnchor="middle">AUTHORITY</text>
-                  <rect x="367" y="151" width="77" height="24" rx="12" fill="#1C2D43" stroke="#FFFFFF" strokeOpacity=".1" />
-                  <text x="405.5" y="167" fill="#C1F4DF" fontSize="10" textAnchor="middle">CONTEXT</text>
+                  <rect
+                    x="43"
+                    y="18"
+                    width="83"
+                    height="24"
+                    rx="12"
+                    fill="#1C2D43"
+                    stroke="#FFFFFF"
+                    strokeOpacity=".1"
+                  />
+                  <text
+                    x="84.5"
+                    y="34"
+                    fill="#D8E6FA"
+                    fontSize="10"
+                    textAnchor="middle"
+                  >
+                    EDITORIAL
+                  </text>
+                  <rect
+                    x="365"
+                    y="13"
+                    width="89"
+                    height="24"
+                    rx="12"
+                    fill="#1C2D43"
+                    stroke="#FFFFFF"
+                    strokeOpacity=".1"
+                  />
+                  <text
+                    x="409.5"
+                    y="29"
+                    fill="#D8E6FA"
+                    fontSize="10"
+                    textAnchor="middle"
+                  >
+                    AUTHORITY
+                  </text>
+                  <rect
+                    x="367"
+                    y="151"
+                    width="77"
+                    height="24"
+                    rx="12"
+                    fill="#1C2D43"
+                    stroke="#FFFFFF"
+                    strokeOpacity=".1"
+                  />
+                  <text
+                    x="405.5"
+                    y="167"
+                    fill="#C1F4DF"
+                    fontSize="10"
+                    textAnchor="middle"
+                  >
+                    CONTEXT
+                  </text>
                 </svg>
               </div>
 
@@ -3090,17 +3390,31 @@ export default function Home() {
                   ["PLACEMENTS", "Contextual"],
                   ["NETWORKS", "Multi-TLD"],
                 ].map(([label, value]) => (
-                  <div key={label} className="rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-2 py-3 text-center sm:px-3">
-                    <p className="text-[9px] font-medium tracking-[0.09em] text-[#91a0b5] sm:text-[10px]">{label}</p>
-                    <p className="mt-1 text-[12px] font-semibold text-white sm:text-[14px]">{value}</p>
+                  <div
+                    key={label}
+                    className="rounded-[14px] border border-white/[0.08] bg-white/[0.04] px-2 py-3 text-center sm:px-3"
+                  >
+                    <p className="text-[9px] font-medium tracking-[0.09em] text-[#91a0b5] sm:text-[10px]">
+                      {label}
+                    </p>
+                    <p className="mt-1 text-[12px] font-semibold text-white sm:text-[14px]">
+                      {value}
+                    </p>
                   </div>
                 ))}
               </div>
               <div className="relative z-10 mt-3 flex flex-wrap items-center justify-between gap-2 rounded-[14px] border border-white/[0.08] bg-[#0d1725]/70 px-3 py-2.5">
-                <span className="text-[10px] font-medium text-[#a9b6c8]">Explore placement coverage</span>
+                <span className="text-[10px] font-medium text-[#a9b6c8]">
+                  Explore placement coverage
+                </span>
                 <div className="flex gap-1.5">
                   {[".COM", ".ID", ".EDU", ".GOV"].map((domain) => (
-                    <span key={domain} className="rounded-md bg-white/[0.08] px-2 py-1 text-[9px] font-semibold text-[#e2eaf5]">{domain}</span>
+                    <span
+                      key={domain}
+                      className="rounded-md bg-white/[0.08] px-2 py-1 text-[9px] font-semibold text-[#e2eaf5]"
+                    >
+                      {domain}
+                    </span>
                   ))}
                 </div>
               </div>

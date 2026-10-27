@@ -19,7 +19,7 @@ export default function TermsOfService() {
         "All self-serve placements across our Standard PBN (.COM/.NET/.ORG), Regional Indonesian (.ID/.CO.ID), and Academic/Government (.EDU/.AC.ID/.GO.ID) tiers are governed by the following quality standards:",
       ],
       bullets: [
-        "Minimum Order Quantity: Every placement tier requires a minimum order of 50 backlinks per selected service, scalable up to 5,000+ links per campaign.",
+        "Minimum Order Quantity: Standard placements require at least 50 links per selected service, Guest Posting starts at 1 link, and the Complete SEO Package requires at least 500 links at $0.50 per link. Standard orders scale up to 5,000+ links per campaign.",
         "Verified Metrics Guarantee: All domains in our standard, .ID, and .EDU inventory are vetted to meet Moz DA 50+ and Ahrefs DR 50+ metrics at the time of placement.",
         "Contextual & Sitewide Formats: Homepage Posts and Blogposts include niche-relevant contextual articles, while Sidebar Blogrolls and Sticky Posts are deployed according to the specifications displayed on the respective service page.",
       ],

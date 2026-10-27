@@ -750,6 +750,7 @@ export default function ServiceDetail({ forcedSlug }) {
 
 function ServiceDetailPage({ currentService }) {
   const isGuestPostingPage = currentService.id === "guest_posting";
+  const minOrderQty = isGuestPostingPage ? 1 : currentService.minQty;
 
   // Guest Posting Configurator State (Used when viewing /services/guest-posting)
   const [guestPostOptions, setGuestPostOptions] = useState({
@@ -769,17 +770,26 @@ function ServiceDetailPage({ currentService }) {
   // Dedicated Hero Configurator Quantity State
   const [boomfiReturn] = useState(readBoomFiReturnState);
   const defaultInitialCart = isGuestPostingPage
-    ? { [activeGuestPostCartId]: 1 }
-    : { [currentService.id]: 1 };
+    ? { [activeGuestPostCartId]: minOrderQty }
+    : { [currentService.id]: minOrderQty };
 
-  const restoredCart =
+  const savedCart =
     boomfiReturn.savedOrder?.cart &&
     Object.keys(boomfiReturn.savedOrder.cart).length > 0
       ? boomfiReturn.savedOrder.cart
       : defaultInitialCart;
 
+  const restoredCart = Object.fromEntries(
+    Object.entries(savedCart).map(([id, qty]) => {
+      const minQty = id.startsWith("guestpost_")
+        ? 1
+        : SERVICE_PAGES_DATA.find((service) => service.id === id)?.minQty || 50;
+      return [id, Math.max(Number(qty) || minQty, minQty)];
+    }),
+  );
   const restoredHeroQty =
-    restoredCart[activeHeroCartKey] || boomfiReturn.savedOrder?.heroQty || 1;
+    restoredCart[activeHeroCartKey] ||
+    Math.max(boomfiReturn.savedOrder?.heroQty || minOrderQty, minOrderQty);
 
   const returnPayment =
     boomfiReturn.status === "success" && boomfiReturn.transactionId
@@ -844,7 +854,7 @@ function ServiceDetailPage({ currentService }) {
 
   const updateHeroQty = (rawVal) => {
     let parsed = parseInt(rawVal, 10);
-    if (isNaN(parsed) || parsed < 1) parsed = 1;
+    if (isNaN(parsed) || parsed < minOrderQty) parsed = minOrderQty;
     if (parsed > maxHeroQty) parsed = maxHeroQty;
     setHeroQty(parsed);
     setCheckoutCart({ [activeHeroCartKey]: parsed });
@@ -982,7 +992,8 @@ function ServiceDetailPage({ currentService }) {
     document.body.style.overflow = "hidden";
   };
 
-  const quickPresets = [50, 100, 250, 500, 1000];
+  const quickPresets =
+    minOrderQty >= 500 ? [500, 1000, 2000, 3000, 5000] : [50, 100, 250, 500, 1000];
 
   return (
     <PayPalScriptProvider
@@ -1390,7 +1401,7 @@ function ServiceDetailPage({ currentService }) {
                             />
                           </div>
                           <div className="flex justify-between items-center text-[10.5px] text-[#5f6368] font-medium mt-1 px-0.5">
-                            <span>1 (Min)</span>
+                            <span>{minOrderQty.toLocaleString()} (Min)</span>
                             <span>1k</span>
                             <span>2k</span>
                             <span>3k</span>
@@ -1423,7 +1434,7 @@ function ServiceDetailPage({ currentService }) {
                           <input
                             type="number"
                             aria-label={`${currentService.name} quantity`}
-                            min="1"
+                            min={minOrderQty}
                             max={maxHeroQty}
                             step="1"
                             value={heroQty}
