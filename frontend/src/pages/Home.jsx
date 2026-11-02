@@ -2972,12 +2972,23 @@ export default function Home() {
     const timer = setTimeout(() => {
       const estimatorSection = document.getElementById("estimator");
       if (estimatorSection) {
-        estimatorSection.scrollIntoView({
+        // Element ka screen par faasla (offset) maloom karein
+        const sectionTop =
+          estimatorSection.getBoundingClientRect().top + window.scrollY;
+
+        // Header ki height yahan adjust karein (e.g., 64px mobile ke liye, 80px desktop ke liye)
+        const headerOffset = window.innerWidth < 640 ? 64 : 80;
+
+        // Final position (Section ki top - Header ki height)
+        const offsetPosition = sectionTop - headerOffset;
+
+        // Ab window ko theek position par scroll karein
+        window.scrollTo({
+          top: offsetPosition,
           behavior: "smooth",
-          block: "start",
         });
       }
-    }, 1500); // 1.5 seconds ka delay taake user pehle Hero section ki jhalak dekh le
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -3071,7 +3082,7 @@ export default function Home() {
               r="3"
               fill="#1a73e8"
               className="node-pulse"
-              style={{ animationDelay: "0.5s" }}
+              style={{ animationDelay: "1s" }}
             />
             <circle cx="550" cy="380" r="5" fill="#1a73e8" />
             <circle
