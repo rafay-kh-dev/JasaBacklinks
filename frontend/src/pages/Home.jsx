@@ -858,7 +858,10 @@ function PackageEstimator() {
       ? Object.fromEntries(
           Object.entries(boomfiReturn.savedOrder.cart).map(([id, qty]) => [
             id,
-            Math.max(Number(qty) || getServiceMinimumQty(id), getServiceMinimumQty(id)),
+            Math.max(
+              Number(qty) || getServiceMinimumQty(id),
+              getServiceMinimumQty(id),
+            ),
           ]),
         )
       : { hp_post: 50 };
@@ -914,17 +917,17 @@ function PackageEstimator() {
       minQty: 1,
       type: "guest_posting",
     },
-    ...SERVICE_PAGES_DATA.filter((service) => service.id !== "guest_posting").map(
-      (service) => ({
-        id: service.id,
-        category: service.category,
-        name: service.name,
-        price: service.price,
-        desc: service.desc,
-        metric: service.metric,
-        minQty: service.minQty,
-      }),
-    ),
+    ...SERVICE_PAGES_DATA.filter(
+      (service) => service.id !== "guest_posting",
+    ).map((service) => ({
+      id: service.id,
+      category: service.category,
+      name: service.name,
+      price: service.price,
+      desc: service.desc,
+      metric: service.metric,
+      minQty: service.minQty,
+    })),
   ];
 
   const categories = [
@@ -1259,10 +1262,7 @@ function PackageEstimator() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setServiceQty(
-                                service.id,
-                                isActive ? 0 : minQty,
-                              );
+                              setServiceQty(service.id, isActive ? 0 : minQty);
                             }}
                             className={`mt-0.5 w-5 h-5 rounded-[6px] flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
                               isActive
@@ -1335,7 +1335,10 @@ function PackageEstimator() {
                               aria-label="Guest Posting niche"
                               value={guestPostOptions.niche}
                               onChange={(event) =>
-                                updateGuestPostOption("niche", event.target.value)
+                                updateGuestPostOption(
+                                  "niche",
+                                  event.target.value,
+                                )
                               }
                               className="mt-1 w-full rounded-lg border border-[#dadce0] bg-white px-2.5 py-2 text-[12px] text-[#202124]"
                             >
@@ -1352,15 +1355,20 @@ function PackageEstimator() {
                               aria-label="Guest Posting authority"
                               value={guestPostOptions.dadr}
                               onChange={(event) =>
-                                updateGuestPostOption("dadr", event.target.value)
+                                updateGuestPostOption(
+                                  "dadr",
+                                  event.target.value,
+                                )
                               }
                               className="mt-1 w-full rounded-lg border border-[#dadce0] bg-white px-2.5 py-2 text-[12px] text-[#202124]"
                             >
-                              {GUEST_POSTING_OPTIONS.authorityTiers.map((tier) => (
-                                <option key={tier} value={tier}>
-                                  DA/DR {tier}+
-                                </option>
-                              ))}
+                              {GUEST_POSTING_OPTIONS.authorityTiers.map(
+                                (tier) => (
+                                  <option key={tier} value={tier}>
+                                    DA/DR {tier}+
+                                  </option>
+                                ),
+                              )}
                             </select>
                           </label>
                           <label className="text-[11px] font-medium text-[#5f6368]">
@@ -1369,20 +1377,25 @@ function PackageEstimator() {
                               aria-label="Guest Posting traffic"
                               value={guestPostOptions.traffic}
                               onChange={(event) =>
-                                updateGuestPostOption("traffic", event.target.value)
+                                updateGuestPostOption(
+                                  "traffic",
+                                  event.target.value,
+                                )
                               }
                               className="mt-1 w-full rounded-lg border border-[#dadce0] bg-white px-2.5 py-2 text-[12px] text-[#202124]"
                             >
-                              {GUEST_POSTING_OPTIONS.trafficTiers.map((tier) => (
-                                <option key={tier.id} value={tier.id}>
-                                  {tier.label} — $
-                                  {getGuestPostingPrice({
-                                    niche: guestPostOptions.niche,
-                                    traffic: tier.id,
-                                  })}
-                                  /link
-                                </option>
-                              ))}
+                              {GUEST_POSTING_OPTIONS.trafficTiers.map(
+                                (tier) => (
+                                  <option key={tier.id} value={tier.id}>
+                                    {tier.label} — $
+                                    {getGuestPostingPrice({
+                                      niche: guestPostOptions.niche,
+                                      traffic: tier.id,
+                                    })}
+                                    /link
+                                  </option>
+                                ),
+                              )}
                             </select>
                           </label>
                         </div>
@@ -1608,8 +1621,8 @@ function PackageEstimator() {
                           No placements selected
                         </p>
                         <p className="text-[11.5px] text-[#9aa0a6] mt-0.5">
-                          Add services from 50 links; Complete SEO starts at
-                          500 links.
+                          Add services from 50 links; Complete SEO starts at 500
+                          links.
                         </p>
                       </div>
                     ) : (
@@ -2955,6 +2968,20 @@ function CTASection() {
 
 // MAIN HOME COMPONENT
 export default function Home() {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const estimatorSection = document.getElementById("estimator");
+      if (estimatorSection) {
+        estimatorSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 1500); // 1.5 seconds ka delay taake user pehle Hero section ki jhalak dekh le
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <main className="w-full bg-[#fcfcfc] relative overflow-x-clip">
       <style>{`
@@ -3044,7 +3071,7 @@ export default function Home() {
               r="3"
               fill="#1a73e8"
               className="node-pulse"
-              style={{ animationDelay: "1.5s" }}
+              style={{ animationDelay: "1s" }}
             />
             <circle cx="550" cy="380" r="5" fill="#1a73e8" />
             <circle
