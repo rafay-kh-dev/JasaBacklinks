@@ -3071,7 +3071,7 @@ export default function Home() {
               r="3"
               fill="#1a73e8"
               className="node-pulse"
-              style={{ animationDelay: "1s" }}
+              style={{ animationDelay: "0.5s" }}
             />
             <circle cx="550" cy="380" r="5" fill="#1a73e8" />
             <circle
