@@ -85,6 +85,38 @@ const escapeHtml = (value) =>
   });
 
 function getRouteContent(route) {
+  if (route === "/") {
+    return {
+      ...staticPages[route],
+      content: `
+        <main>
+          <section>
+            <h1>Jasa Backlinks — SEO Link Building Services</h1>
+            <p>Explore our guest posting, homepage placements, regional .ID links, and managed SEO packages.</p>
+            <p><a href="/services">Browse all SEO and backlink services</a></p>
+          </section>
+          <section>
+            <h2>Popular backlink services</h2>
+            <ul>${SERVICE_PAGES_DATA.slice(0, 6).map((service) => `<li><a href="/services/${encodeURIComponent(service.slug)}">${escapeHtml(service.name)}</a> — ${escapeHtml(service.desc)}</li>`).join("")}</ul>
+            <p><a href="/services">See all ${SERVICE_PAGES_DATA.length} services</a></p>
+          </section>
+        </main>`,
+    };
+  }
+
+  if (route === "/services") {
+    return {
+      ...staticPages[route],
+      content: `
+        <main>
+          <nav aria-label="Breadcrumb"><a href="/">Home</a> &gt; Services</nav>
+          <h1>SEO &amp; Backlink Building Services</h1>
+          <p>Compare our ${SERVICE_PAGES_DATA.length} link building services, review their features, and choose a package.</p>
+          <ul>${SERVICE_PAGES_DATA.map((service) => `<li><article><h2><a href="/services/${encodeURIComponent(service.slug)}">${escapeHtml(service.name)}</a></h2><p>${escapeHtml(service.desc)}</p><p>${escapeHtml(service.metric)} · Starting at $${service.price.toFixed(2)} per ${escapeHtml(service.unitLabel)}</p></article></li>`).join("")}</ul>
+        </main>`,
+    };
+  }
+
   const serviceSlug = route.startsWith("/services/")
     ? route.slice("/services/".length)
     : null;
