@@ -28,9 +28,7 @@ const AdminBlog = lazy(() => import("./pages/AdminBlog"));
 
 const SITE_URL =
   import.meta.env.VITE_SITE_URL ||
-  (typeof window !== "undefined"
-    ? window.location.origin
-    : "https://www.jasabacklinks.net");
+  "https://www.jasabacklinks.net";
 
 // --- AUTOMATIC TAB TITLE, META DESCRIPTION, CANONICAL & JSON-LD SCHEMA MANAGER (VIA REACT-HELMET-ASYNC) ---
 function RouteTitleManager() {

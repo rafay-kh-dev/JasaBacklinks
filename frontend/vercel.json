@@ -1,6 +1,13 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://jasabacklinks.onrender.com/api/$1" },
+    { "source": "/services", "destination": "/services.html" },
+    { "source": "/services/:slug", "destination": "/services/:slug.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -2,9 +2,7 @@ import { Helmet } from "react-helmet-async";
 
 const SITE_URL =
   import.meta.env.VITE_SITE_URL ||
-  (typeof window !== "undefined"
-    ? window.location.origin
-    : "https://www.jasabacklinks.net");
+  "https://www.jasabacklinks.net";
 
 export default function SEO({
   title = "Jasa Backlinks | Powered by SeoHub Ltd",

@@ -237,9 +237,7 @@ function BlogPostContent({ slug }) {
   const seoDescription = post.excerpt || post.title;
   const siteOrigin = (
     import.meta.env.VITE_SITE_URL ||
-    (typeof window !== "undefined"
-      ? window.location.origin
-      : "https://www.jasabacklinks.net")
+    "https://www.jasabacklinks.net"
   ).replace(/\/$/, "");
   const articleUrl = `${siteOrigin}/blog/${post.slug}`;
   const blogSchema = {

@@ -26,3 +26,7 @@ production release.
 
 Route components are loaded on demand so visitors download only the code
 required for the page they open.
+
+Production builds prerender the sitemap routes and every service detail route
+into static HTML with route-specific metadata. If `VITE_SITE_URL` is set, it
+must match the canonical host used in `public/sitemap.xml`.
