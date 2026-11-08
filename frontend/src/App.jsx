@@ -6,6 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { readPendingPayment, savePendingPayment, clearPendingPayment } from "./utils/pendingPayment";
 import SEO from "./components/SEO";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -29,6 +30,86 @@ const AdminBlog = lazy(() => import("./pages/AdminBlog"));
 const SITE_URL =
   import.meta.env.VITE_SITE_URL ||
   "https://www.jasabacklinks.net";
+
+const PAYMENT_API_BASE = import.meta.env.PROD
+  ? ""
+  : import.meta.env.VITE_BACKEND_URL || "";
+
+function getPaymentRecoveryPath(serviceId) {
+  if (serviceId === "home") return "/";
+  if (serviceId === "services") return "/services";
+
+  const service = SERVICE_PAGES_DATA.find(
+    (item) => item.slug === serviceId || item.id === serviceId,
+  );
+  return service ? `/services/${service.slug}` : "/services";
+}
+
+function PaymentRecoveryManager() {
+  useEffect(() => {
+    let checking = false;
+    let active = true;
+
+    const recoverPayment = async () => {
+      if (checking) return;
+      const pendingPayment = readPendingPayment();
+      if (!pendingPayment) return;
+
+      checking = true;
+      try {
+        const response = await fetch(
+          `${PAYMENT_API_BASE}/api/payments/session/${encodeURIComponent(pendingPayment.transactionId)}`,
+        );
+        if (!response.ok) {
+          if (response.status !== 404) {
+            throw new Error(`Payment recovery failed with HTTP ${response.status}.`);
+          }
+          return;
+        }
+
+        const paymentSession = await response.json();
+        if (paymentSession.status === "completed") {
+          clearPendingPayment();
+          return;
+        }
+        if (paymentSession.status !== "paid_pending_details") return;
+
+        savePendingPayment({
+          ...pendingPayment,
+          transactionId: paymentSession.transactionId,
+          method: paymentSession.paymentMethod,
+          cart: paymentSession.cart,
+          status: "paid",
+          verifiedAt: Date.now(),
+        });
+
+        const targetPath = getPaymentRecoveryPath(pendingPayment.serviceId);
+        const paymentWasAlreadyVerified = pendingPayment.status === "paid";
+        if (
+          active &&
+          (window.location.pathname !== targetPath || !paymentWasAlreadyVerified)
+        ) {
+          window.location.replace(`${targetPath}?payment_recovery=1`);
+        }
+      } catch (error) {
+        console.error("Could not verify a pending payment for recovery:", error);
+      } finally {
+        checking = false;
+      }
+    };
+
+    recoverPayment();
+    const intervalId = window.setInterval(recoverPayment, 30_000);
+    window.addEventListener("focus", recoverPayment);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", recoverPayment);
+    };
+  }, []);
+
+  return null;
+}
 
 // --- AUTOMATIC TAB TITLE, META DESCRIPTION, CANONICAL & JSON-LD SCHEMA MANAGER (VIA REACT-HELMET-ASYNC) ---
 function RouteTitleManager() {
@@ -356,6 +437,7 @@ export default function App() {
   return (
     <HelmetProvider>
       <Router>
+        <PaymentRecoveryManager />
         <RouteTitleManager />
         <div className="min-h-screen flex flex-col">
           <Header />

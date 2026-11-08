@@ -16,25 +16,22 @@ import {
   getGuestPostingPrice,
   GUEST_POSTING_OPTIONS,
 } from "../config/guestPosting";
+import {
+  clearPendingPayment,
+  readPendingPayment,
+  savePendingPayment,
+} from "../utils/pendingPayment";
 
 // ENVIRONMENT & API CONFIGURATION
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-const BOOMFI_ORDER_STORAGE_KEY = "jasa_pending_boomfi_order";
 
 function readBoomFiReturnState() {
   const params = new URLSearchParams(window.location.search);
   const status = params.get("boomfi_status");
-  let savedOrder = null;
-
-  try {
-    const rawOrder = localStorage.getItem(BOOMFI_ORDER_STORAGE_KEY);
-    savedOrder = rawOrder ? JSON.parse(rawOrder) : null;
-  } catch (error) {
-    console.warn("Could not restore pending BoomFi order:", error);
-  }
+  const savedOrder = readPendingPayment();
 
   const transactionId =
     params.get("tx") ||
@@ -451,7 +448,7 @@ function OrderOnboardingFlowModal({
           "The server did not confirm that your order details were received.",
         );
       }
-      localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
+      clearPendingPayment();
       setIsStep3ThankYou(true);
     } catch (err) {
       console.error("Order details submission failed:", err);
@@ -877,11 +874,14 @@ function PackageEstimator() {
   });
   const guestPostCartId = `guestpost_${guestPostOptions.dadr}_${guestPostOptions.dadr}_${guestPostOptions.niche}_${guestPostOptions.traffic}`;
   const guestPostItem = getGuestPostingItem(guestPostCartId);
-  const returnPayment =
-    boomfiReturn.status === "success" && boomfiReturn.transactionId
+  const isPaymentRecovered =
+    boomfiReturn.savedOrder?.status === "paid" &&
+    Number.isFinite(boomfiReturn.savedOrder.verifiedAt);
+  const returnPayment = isPaymentRecovered
       ? {
-          transactionId: boomfiReturn.transactionId,
-          method: "BoomFi Crypto Gateway",
+          transactionId: boomfiReturn.savedOrder.transactionId,
+          method:
+            boomfiReturn.savedOrder.method || "BoomFi Crypto Gateway",
         }
       : null;
   const [cart, setCart] = useState(restoredCart);
@@ -971,13 +971,17 @@ function PackageEstimator() {
 
   // Clean the return parameters after initializing restored state.
   useEffect(() => {
-    if (boomfiReturn.status === "success" && boomfiReturn.transactionId) {
+    if (isPaymentRecovered) {
       document.body.style.overflow = "hidden";
     }
-    if (boomfiReturn.status === "success" || boomfiReturn.status === "failed") {
+    if (
+      boomfiReturn.status === "success" ||
+      boomfiReturn.status === "failed" ||
+      new URLSearchParams(window.location.search).has("payment_recovery")
+    ) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [boomfiReturn.status, boomfiReturn.transactionId]);
+  }, [boomfiReturn.status, boomfiReturn.transactionId, isPaymentRecovered]);
 
   const setServiceQty = (id, rawVal) => {
     let val = parseInt(rawVal, 10);
@@ -1087,14 +1091,13 @@ function PackageEstimator() {
 
         // Save selected cart & transaction ID before leaving page
         try {
-          localStorage.setItem(
-            BOOMFI_ORDER_STORAGE_KEY,
-            JSON.stringify({
-              cart,
-              transactionId: txId,
-              timestamp: Date.now(),
-            }),
-          );
+          savePendingPayment({
+            cart,
+            serviceId: "home",
+            gateway: "boomfi",
+            transactionId: txId,
+            status: "pending",
+          });
         } catch (error) {
           console.error("Could not save pending BoomFi order:", error);
           setPaymentError(
@@ -1133,6 +1136,18 @@ function PackageEstimator() {
     method = "Credit / Debit Card",
   ) => {
     setIsStripeModalOpen(false);
+    try {
+      savePendingPayment({
+        cart,
+        serviceId: "home",
+        gateway: method === "PayPal Checkout" ? "paypal" : "stripe",
+        transactionId,
+        method,
+        status: "paid",
+      });
+    } catch (storageError) {
+      console.error("Could not persist completed payment for recovery:", storageError);
+    }
     setCompletedPayment({
       transactionId,
       method,
@@ -1142,7 +1157,6 @@ function PackageEstimator() {
   };
 
   const closeOrderModal = () => {
-    localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
     setIsOrderModalOpen(false);
     setCompletedPayment(null);
     document.body.style.overflow = "auto";
@@ -1797,6 +1811,13 @@ function PackageEstimator() {
                                   `${BACKEND_URL}/api/create-paypal-order`,
                                   { cart },
                                 );
+                                savePendingPayment({
+                                  cart,
+                                  serviceId: "home",
+                                  gateway: "paypal",
+                                  transactionId: data.id,
+                                  status: "pending",
+                                });
                                 return data.id;
                               } catch (err) {
                                 setPaymentError(

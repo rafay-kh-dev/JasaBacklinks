@@ -16,13 +16,17 @@ import {
   getGuestPostingItem,
   getGuestPostingPrice,
 } from "../config/guestPosting";
+import {
+  clearPendingPayment,
+  readPendingPayment,
+  savePendingPayment,
+} from "../utils/pendingPayment";
 
 // ENVIRONMENT & API CONFIGURATION
 const STRIPE_PUBLIC_KEY =
   import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_placeholder";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-const BOOMFI_ORDER_STORAGE_KEY = "jasa_pending_boomfi_order";
 
 // CLEAN SVG ICONS
 function StripeWordmarkIcon() {
@@ -73,14 +77,7 @@ function CryptoCoinIcon() {
 function readBoomFiReturnState() {
   const params = new URLSearchParams(window.location.search);
   const status = params.get("boomfi_status");
-  let savedOrder = null;
-
-  try {
-    const rawOrder = localStorage.getItem(BOOMFI_ORDER_STORAGE_KEY);
-    savedOrder = rawOrder ? JSON.parse(rawOrder) : null;
-  } catch (error) {
-    console.warn("Could not restore pending BoomFi order:", error);
-  }
+  const savedOrder = readPendingPayment();
 
   return {
     status,
@@ -416,7 +413,7 @@ function OrderOnboardingFlowModal({
           "The server did not confirm that your order details were received.",
         );
       }
-      localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
+      clearPendingPayment();
       setIsStep3ThankYou(true);
     } catch (err) {
       console.error("Order details submission failed:", err);
@@ -791,11 +788,14 @@ function ServiceDetailPage({ currentService }) {
     restoredCart[activeHeroCartKey] ||
     Math.max(boomfiReturn.savedOrder?.heroQty || minOrderQty, minOrderQty);
 
-  const returnPayment =
-    boomfiReturn.status === "success" && boomfiReturn.transactionId
+  const isPaymentRecovered =
+    boomfiReturn.savedOrder?.status === "paid" &&
+    Number.isFinite(boomfiReturn.savedOrder.verifiedAt);
+  const returnPayment = isPaymentRecovered
       ? {
-          transactionId: boomfiReturn.transactionId,
-          method: "BoomFi Crypto Gateway",
+          transactionId: boomfiReturn.savedOrder.transactionId,
+          method:
+            boomfiReturn.savedOrder.method || "BoomFi Crypto Gateway",
         }
       : null;
 
@@ -827,13 +827,17 @@ function ServiceDetailPage({ currentService }) {
   }, []);
 
   useEffect(() => {
-    if (boomfiReturn.status === "success" && boomfiReturn.transactionId) {
+    if (isPaymentRecovered) {
       document.body.style.overflow = "hidden";
     }
-    if (boomfiReturn.status === "success" || boomfiReturn.status === "failed") {
+    if (
+      boomfiReturn.status === "success" ||
+      boomfiReturn.status === "failed" ||
+      new URLSearchParams(window.location.search).has("payment_recovery")
+    ) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [boomfiReturn.status, boomfiReturn.transactionId]);
+  }, [boomfiReturn.status, boomfiReturn.transactionId, isPaymentRecovered]);
 
   // Keep Guest Posting option changes synced in the cart
   const updateGuestPostOption = (field, value) => {
@@ -915,16 +919,14 @@ function ServiceDetailPage({ currentService }) {
       );
       if (data?.checkoutUrl && data.transactionId) {
         try {
-          localStorage.setItem(
-            BOOMFI_ORDER_STORAGE_KEY,
-            JSON.stringify({
-              cart: cartToUse,
-              heroQty,
-              serviceId: activeHeroCartKey,
-              transactionId: data.transactionId,
-              timestamp: Date.now(),
-            }),
-          );
+          savePendingPayment({
+            cart: cartToUse,
+            heroQty,
+            serviceId: currentService.slug,
+            gateway: "boomfi",
+            transactionId: data.transactionId,
+            status: "pending",
+          });
         } catch (storageErr) {
           console.error("Could not save pending BoomFi state:", storageErr);
           setPaymentError(
@@ -987,6 +989,19 @@ function ServiceDetailPage({ currentService }) {
 
   const handlePaymentSuccess = (transactionId, method) => {
     setIsCheckoutGatewayOpen(false);
+    try {
+      savePendingPayment({
+        cart: checkoutCart,
+        heroQty,
+        serviceId: currentService.slug,
+        gateway: method === "PayPal Checkout" ? "paypal" : "stripe",
+        transactionId,
+        method,
+        status: "paid",
+      });
+    } catch (storageError) {
+      console.error("Could not persist completed payment for recovery:", storageError);
+    }
     setCompletedPayment({ transactionId, method });
     setIsOrderModalOpen(true);
     document.body.style.overflow = "hidden";
@@ -1513,6 +1528,21 @@ function ServiceDetailPage({ currentService }) {
                               `${BACKEND_URL}/api/create-paypal-order`,
                               { cart: singleCart },
                             );
+                            try {
+                              savePendingPayment({
+                                cart: singleCart,
+                                heroQty,
+                                serviceId: currentService.slug,
+                                gateway: "paypal",
+                                transactionId: data.id,
+                                status: "pending",
+                              });
+                            } catch (storageError) {
+                              setPaymentError(
+                                "Your browser could not save this payment for recovery. Enable local storage and try again.",
+                              );
+                              throw storageError;
+                            }
                             return data.id;
                           }}
                           onApprove={async (data) => {
@@ -1777,7 +1807,6 @@ function ServiceDetailPage({ currentService }) {
           onClose={() => {
             setIsOrderModalOpen(false);
             setCompletedPayment(null);
-            localStorage.removeItem(BOOMFI_ORDER_STORAGE_KEY);
             document.body.style.overflow = "auto";
           }}
         />

@@ -52,12 +52,18 @@ describe("sendOrderEmailsIfReady", () => {
 
   it("sends client and admin emails before marking them dispatched", async () => {
     const order = {
-      customer: { email: "buyer@example.com", fullName: "Buyer" },
+      customer: {
+        email: "buyer@example.com",
+        fullName: "<img src=x onerror=alert(1)>",
+        targetUrls: "<script>alert(1)</script>",
+        anchorTexts: "<b>anchor</b>",
+        notes: "<a href=javascript:alert(1)>notes</a>",
+      },
       transactionId: "capture-123",
       paymentMethod: "PayPal Checkout",
       totalLinks: 1,
       totalAmount: 1,
-      packages: [],
+      packages: [{ name: "<svg onload=alert(1)>", qty: 1, subtotal: 1 }],
       emailsDispatched: false,
       save: jest.fn().mockResolvedValue(undefined),
     };
@@ -80,6 +86,17 @@ describe("sendOrderEmailsIfReady", () => {
       expect.objectContaining({ to: "ops@example.com" }),
       expect.any(Object),
     );
+    const clientEmail = axios.post.mock.calls[0][1];
+    expect(clientEmail.html).toContain("&lt;img src=x onerror=alert(1)&gt;");
+    expect(clientEmail.html).toContain("&lt;svg onload=alert(1)&gt;");
+    const adminEmail = axios.post.mock.calls[1][1];
+    expect(adminEmail.html).toContain("&lt;img src=x onerror=alert(1)&gt;");
+    expect(adminEmail.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    expect(adminEmail.html).toContain("&lt;b&gt;anchor&lt;/b&gt;");
+    expect(adminEmail.html).toContain("&lt;a href=javascript:alert(1)&gt;notes");
+    expect(adminEmail.html).toContain("&lt;svg onload=alert(1)&gt;");
+    expect(adminEmail.html).not.toContain("<script>alert(1)</script>");
+    expect(adminEmail.html).not.toContain("<svg onload=alert(1)>");
     expect(order.emailsDispatched).toBe(true);
     expect(order.save).toHaveBeenCalledTimes(1);
   });

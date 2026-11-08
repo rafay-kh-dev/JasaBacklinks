@@ -1,3 +1,15 @@
+const escapeHtml = (value) =>
+  String(value ?? "").replace(/[&<>"']/g, (character) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character];
+  });
+
 // 1. CLIENT EMAIL TEMPLATE (Order Receipt - Signature Jasa Backlinks Theme)
 const getClientEmailHtml = ({
   customer,
@@ -23,7 +35,7 @@ const getClientEmailHtml = ({
               </td>
               <td valign="middle">
                 <p style="margin: 0; font-size: 14px; font-weight: 600; color: #202124; line-height: 1.3;">
-                  ${pkg.name}
+                  ${escapeHtml(pkg.name)}
                 </p>
                 <p style="margin: 2px 0 0; font-size: 12px; color: #5f6368;">
                   DA/DR 50+ Contextual Placement
@@ -104,7 +116,7 @@ const getClientEmailHtml = ({
                   Your campaign is queued for <span style="color: #1a73e8;">placement.</span>
                 </h1>
                 <p style="margin: 0; font-size: 14.5px; color: #5f6368; line-height: 1.6;">
-                  Hi <strong style="color: #202124;">${customer?.fullName || "Valued Partner"}</strong>, thank you for partnering with Jasa Backlinks. Our SEO team has received your target URLs and anchor texts and started processing your <strong style="color: #1a73e8;">${Number(totalLinks || 0).toLocaleString()} DA/DR 50+ backlinks</strong>.
+                  Hi <strong style="color: #202124;">${escapeHtml(customer?.fullName || "Valued Partner")}</strong>, thank you for partnering with Jasa Backlinks. Our SEO team has received your target URLs and anchor texts and started processing your <strong style="color: #1a73e8;">${Number(totalLinks || 0).toLocaleString()} DA/DR 50+ backlinks</strong>.
                 </p>
               </td>
             </tr>
@@ -117,13 +129,13 @@ const getClientEmailHtml = ({
                     <td width="50%" valign="top" style="padding-bottom: 14px; border-bottom: 1px solid #e8eaed;">
                       <p style="margin: 0; font-size: 11.5px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Transaction ID</p>
                       <p style="margin: 4px 0 0; font-size: 13.5px; color: #202124; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 600;">
-                        ${transactionId}
+                        ${escapeHtml(transactionId)}
                       </p>
                     </td>
                     <td width="50%" valign="top" align="right" style="padding-bottom: 14px; border-bottom: 1px solid #e8eaed;">
                       <p style="margin: 0; font-size: 11.5px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Payment Method</p>
                       <p style="margin: 4px 0 0; font-size: 13.5px; color: #202124; font-weight: 600;">
-                        ${paymentMethod}
+                        ${escapeHtml(paymentMethod)}
                       </p>
                     </td>
                   </tr>
@@ -131,7 +143,7 @@ const getClientEmailHtml = ({
                     <td width="50%" valign="top" style="padding-top: 14px;">
                       <p style="margin: 0; font-size: 11.5px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Registered Contact</p>
                       <p style="margin: 4px 0 0; font-size: 13.5px; color: #202124; font-weight: 600;">
-                        ${customer?.contactPlatform || "Direct"}: <span style="color: #1a73e8;">${customer?.contactHandle || customer?.email}</span>
+                        ${escapeHtml(customer?.contactPlatform || "Direct")}: <span style="color: #1a73e8;">${escapeHtml(customer?.contactHandle || customer?.email)}</span>
                       </p>
                     </td>
                     <td width="50%" valign="top" align="right" style="padding-top: 14px;">
@@ -248,7 +260,7 @@ const getAdminEmailHtml = ({
             ${Number(pkg.qty || 0).toLocaleString()}
           </span>
           <span style="font-size: 14px; font-weight: 600; color: #202124;">
-            ${pkg.name}
+            ${escapeHtml(pkg.name)}
           </span>
         </td>
         <td align="right" style="padding: 12px 16px; border-bottom: 1px solid #e8eaed; font-size: 14px; font-weight: 600; color: #202124; white-space: nowrap;">
@@ -320,7 +332,7 @@ const getAdminEmailHtml = ({
                   <tr>
                     <td valign="middle">
                       <p style="margin: 0 0 4px; font-size: 12px; font-weight: 600; color: #1e8e3e; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Payment Captured (${paymentMethod})
+                        Payment Captured (${escapeHtml(paymentMethod)})
                       </p>
                       <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #202124; letter-spacing: -0.5px;">
                         +$${Number(totalAmount || 0).toLocaleString("en-US", {
@@ -329,7 +341,7 @@ const getAdminEmailHtml = ({
                         })} <span style="font-size: 14px; font-weight: 500; color: #5f6368;">USD</span>
                       </h1>
                       <p style="margin: 4px 0 0; font-size: 12.5px; color: #5f6368; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
-                        TXN ID: <strong style="color: #202124;">${transactionId}</strong>
+                        TXN ID: <strong style="color: #202124;">${escapeHtml(transactionId)}</strong>
                       </p>
                     </td>
                     <td align="right" valign="middle">
@@ -355,19 +367,19 @@ const getAdminEmailHtml = ({
                         Client Details
                       </p>
                       <p style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #202124;">
-                        ${customer?.fullName || "N/A"}
+                        ${escapeHtml(customer?.fullName || "N/A")}
                       </p>
-                      <a href="mailto:${customer?.email || ""}" style="font-size: 13.5px; color: #1a73e8; text-decoration: none; font-weight: 500; word-break: break-all;">
-                        ${customer?.email || "N/A"}
+                      <a href="mailto:${escapeHtml(customer?.email || "")}" style="font-size: 13.5px; color: #1a73e8; text-decoration: none; font-weight: 500; word-break: break-all;">
+                        ${escapeHtml(customer?.email || "N/A")}
                       </a>
                     </td>
                     <td width="4%"></td>
                     <td width="48%" valign="top" style="background-color: #fef7e0; border: 1px solid #fde293; border-radius: 16px; padding: 18px;">
                       <p style="margin: 0 0 6px; font-size: 11px; font-weight: 600; color: #b06000; text-transform: uppercase; letter-spacing: 0.6px;">
-                        Direct Contact (${customer?.contactPlatform || "Mandatory"})
+                        Direct Contact (${escapeHtml(customer?.contactPlatform || "Mandatory")})
                       </p>
                       <p style="margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #202124; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;">
-                        ${customer?.contactHandle || "Not Provided"}
+                        ${escapeHtml(customer?.contactHandle || "Not Provided")}
                       </p>
                       <p style="margin: 0; font-size: 12px; color: #5f6368;">
                         Use for instant report & campaign updates
@@ -380,14 +392,14 @@ const getAdminEmailHtml = ({
                   Submitted Target URLs
                 </p>
                 <div style="background-color: #f8f9fa; border: 1px solid #dadce0; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
-                  <pre style="margin: 0; font-size: 13.5px; color: #1a73e8; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.55;">${customer?.targetUrls || "No URLs provided"}</pre>
+                  <pre style="margin: 0; font-size: 13.5px; color: #1a73e8; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.55;">${escapeHtml(customer?.targetUrls || "No URLs provided")}</pre>
                 </div>
 
                 <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
                   Submitted Keywords / Anchor Texts
                 </p>
                 <div style="background-color: #f8f9fa; border: 1px solid #dadce0; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
-                  <pre style="margin: 0; font-size: 13.5px; color: #202124; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.55;">${customer?.anchorTexts || "No keywords provided"}</pre>
+                  <pre style="margin: 0; font-size: 13.5px; color: #202124; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.55;">${escapeHtml(customer?.anchorTexts || "No keywords provided")}</pre>
                 </div>
 
                 <p style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -395,7 +407,7 @@ const getAdminEmailHtml = ({
                 </p>
                 <div style="background-color: #f8fbff; border: 1px solid #d2e3fc; border-radius: 14px; padding: 14px 16px; margin-bottom: 24px;">
                   <p style="margin: 0; font-size: 13.5px; color: #3c4043; line-height: 1.5;">
-                    ${customer?.notes ? customer.notes : "Standard 5 to 7 days turnaround (No custom notes submitted)."}
+                    ${escapeHtml(customer?.notes ? customer.notes : "Standard 5 to 7 days turnaround (No custom notes submitted).")}
                   </p>
                 </div>
 

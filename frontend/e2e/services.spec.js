@@ -216,3 +216,88 @@ test("all service catalogue routes load with service structured data", async ({
 
   expect(pageErrors).toEqual([]);
 });
+
+test("recovers paid orders and opens Step 2 on every checkout route", async ({
+  browser,
+}) => {
+  const recoveryRoutes = [
+    { path: "/", serviceId: "home" },
+    { path: "/services", serviceId: "services" },
+    { path: "/services/id-sidebar-blogroll", serviceId: "id-sidebar-blogroll" },
+  ];
+
+  for (const [index, recovery] of recoveryRoutes.entries()) {
+    const transactionId = `recovery-test-${index}`;
+    const context = await browser.newContext();
+    const recoveryPage = await context.newPage();
+    let sessionRequestCount = 0;
+    await context.route(/paypal\.com\/sdk\/js/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/javascript",
+        body: `window.paypal = {
+          Buttons: () => ({
+            render: () => Promise.resolve(),
+            close: () => Promise.resolve(),
+            isEligible: () => false,
+          }),
+          FUNDING: { CARD: "card" },
+        };`,
+      }),
+    );
+    await context.route("**/api/payments/session/**", async (route) => {
+      sessionRequestCount += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          transactionId,
+          status: "paid_pending_details",
+          paymentMethod: "PayPal Checkout",
+          cart: { id_sidebar: 50 },
+        }),
+      });
+    });
+    await recoveryPage.addInitScript(
+      ({ transactionId, serviceId }) => {
+        if (!localStorage.getItem("jasa_pending_payment")) {
+          localStorage.setItem(
+            "jasa_pending_payment",
+            JSON.stringify({
+              transactionId,
+              serviceId,
+              gateway: "paypal",
+              status: "pending",
+              timestamp: Date.now() - 24 * 60 * 60 * 1000,
+            }),
+          );
+        }
+      },
+      { transactionId, serviceId: recovery.serviceId },
+    );
+
+    await recoveryPage.goto(recovery.path);
+    await expect.poll(() => sessionRequestCount).toBeGreaterThan(0);
+    await expect
+      .poll(() => new URL(recoveryPage.url()).pathname)
+      .toBe(recovery.path);
+    await expect(
+      recoveryPage.getByText("Step 2 of 3", { exact: true }),
+    ).toBeVisible();
+    await expect
+      .poll(async () =>
+        recoveryPage.evaluate(() => {
+          const payment = JSON.parse(
+            localStorage.getItem("jasa_pending_payment"),
+          );
+          return payment?.status === "paid" && Number.isFinite(payment.verifiedAt);
+        }),
+      )
+      .toBe(true);
+    await expect(recoveryPage.locator("body")).toHaveCSS(
+      "overflow",
+      "hidden",
+    );
+    await context.close();
+  }
+});
