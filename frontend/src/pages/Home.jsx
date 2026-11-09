@@ -878,12 +878,11 @@ function PackageEstimator() {
     boomfiReturn.savedOrder?.status === "paid" &&
     Number.isFinite(boomfiReturn.savedOrder.verifiedAt);
   const returnPayment = isPaymentRecovered
-      ? {
-          transactionId: boomfiReturn.savedOrder.transactionId,
-          method:
-            boomfiReturn.savedOrder.method || "BoomFi Crypto Gateway",
-        }
-      : null;
+    ? {
+        transactionId: boomfiReturn.savedOrder.transactionId,
+        method: boomfiReturn.savedOrder.method || "BoomFi Crypto Gateway",
+      }
+    : null;
   const [cart, setCart] = useState(restoredCart);
   const [activeCategory, setActiveCategory] = useState("all");
 
@@ -1146,7 +1145,10 @@ function PackageEstimator() {
         status: "paid",
       });
     } catch (storageError) {
-      console.error("Could not persist completed payment for recovery:", storageError);
+      console.error(
+        "Could not persist completed payment for recovery:",
+        storageError,
+      );
     }
     setCompletedPayment({
       transactionId,
@@ -2065,7 +2067,7 @@ function TrustMetricsSection() {
       topBar: "bg-[#fbbc04]",
     },
     {
-      title: "200,000+",
+      title: "20,000+",
       description: "Global businesses & SEO teams scaled",
       badge: "Global Reach",
       icon: (
@@ -2089,7 +2091,7 @@ function TrustMetricsSection() {
       topBar: "bg-[#1a73e8]",
     },
     {
-      title: "1,000,000+",
+      title: "100,000+",
       description: "High-authority DA/DR 50+ backlinks built",
       badge: "Verified DR 50+",
       icon: (
@@ -2333,7 +2335,7 @@ function AudienceBentoSection() {
                 </span>
                 <span className="w-[1px] h-3 bg-[#dadce0]" />
                 <span className="text-[11px] sm:text-[12px] font-medium text-[#1a73e8]">
-                  .COM • .ID • .EDU
+                  .COM • .EDU
                 </span>
               </div>
             </div>
@@ -2472,32 +2474,32 @@ function ReviewsSection() {
 
   const reviews = [
     {
-      text: "Super simple and easy to use interface to select what I need — well done! The DA/DR 50+ metrics were exactly as promised.",
-      name: "Anthony",
-      role: "SEO Agency Lead",
-      time: "28 days ago",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      text: "Antarmukanya super simpel dan mudah digunakan untuk memilih yang saya butuhkan, kerja bagus! Metrik DA/DR 50+ persis seperti yang dijanjikan.",
+      name: "Rizky Pratama",
+      role: "Lead Agensi SEO",
+      time: "28 hari yang lalu",
+      avatar: "https://randomuser.me/api/portraits/men/11.jpg",
     },
     {
-      text: "The custom placements you guys do for .ID domains are unmatched. Being able to scale local authority instantly is a game changer.",
-      name: "Fridolin Haemmer",
+      text: "Penempatan kustom yang kalian buat untuk domain .ID itu tidak ada tandingannya. Bisa meningkatkan otoritas lokal secara instan, ini benar-benar game changer.",
+      name: "Andi Wijaya",
       role: "Head of Growth",
-      time: "33 days ago",
-      avatar: "https://randomuser.me/api/portraits/men/46.jpg",
+      time: "33 hari yang lalu",
+      avatar: "https://randomuser.me/api/portraits/men/36.jpg",
     },
     {
-      text: "No need to follow-up. The system is transparent and the calculator makes ordering bulk placements effortless.",
-      name: "Alyssa Douglas",
-      role: "Digital Marketing Director",
-      time: "35 days ago",
-      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+      text: "Tidak perlu follow-up. Sistemnya transparan dan kalkulator membuat pemesanan penempatan massal jadi sangat mudah.",
+      name: "Dewi Lestari",
+      role: "Direktur Pemasaran",
+      time: "35 hari yang lalu",
+      avatar: "https://randomuser.me/api/portraits/women/65.jpg",
     },
     {
-      text: "We ordered 1,000 homepage and EDU placements for a competitive fintech client. Rankings jumped into the top 3 within 4 weeks.",
-      name: "Marcus Vance",
-      role: "Founder, Vance Media",
-      time: "41 days ago",
-      avatar: "https://randomuser.me/api/portraits/men/85.jpg",
+      text: "Kami memesan 1.000 penempatan homepage dan EDU untuk klien fintech yang sangat kompetitif. Ranking langsung melonjak ke top 3 dalam 4 minggu.",
+      name: "Fajar Nugroho",
+      role: "Nusantara Media",
+      time: "41 hari yang lalu",
+      avatar: "https://randomuser.me/api/portraits/men/52.jpg",
     },
   ];
 
@@ -3144,7 +3146,7 @@ export default function Home() {
 
             <p className="gw-font-text text-[15px] sm:text-[17px] md:text-[19px] text-[#5f6368] max-w-[700px] leading-[1.6] mb-6 sm:mb-8 px-2">
               Scale your search rankings and AI Overview visibility with clean,
-              high-metric contextual placements across .COM, .ID, .EDU, and .GOV
+              high-metric contextual placements across .COM, .EDU, and .GOV
               domains.
             </p>
 
