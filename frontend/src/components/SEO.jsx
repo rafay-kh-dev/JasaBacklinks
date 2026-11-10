@@ -1,11 +1,10 @@
 import { Helmet } from "react-helmet-async";
 
 const SITE_URL =
-  import.meta.env.VITE_SITE_URL ||
-  "https://www.jasabacklinks.net";
+  import.meta.env.VITE_SITE_URL || "https://www.jasabacklinks.net";
 
 export default function SEO({
-  title = "Jasa Backlinks | Powered by SeoHub Ltd",
+  title = "Jasa Backlinks | SEO Link Building Services",
   description = "Scale your Google rankings with Jasa Backlinks (by SeoHub Ltd). Verified DA/DR 50+ Homepage PBN Posts, Sidebar Blogrolls, .ID Regional, and .EDU/.GOV backlinks starting at $1/link.",
   canonicalUrl = SITE_URL,
   ogImage = `${SITE_URL}/logo.png`,

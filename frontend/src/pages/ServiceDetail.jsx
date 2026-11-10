@@ -792,12 +792,11 @@ function ServiceDetailPage({ currentService }) {
     boomfiReturn.savedOrder?.status === "paid" &&
     Number.isFinite(boomfiReturn.savedOrder.verifiedAt);
   const returnPayment = isPaymentRecovered
-      ? {
-          transactionId: boomfiReturn.savedOrder.transactionId,
-          method:
-            boomfiReturn.savedOrder.method || "BoomFi Crypto Gateway",
-        }
-      : null;
+    ? {
+        transactionId: boomfiReturn.savedOrder.transactionId,
+        method: boomfiReturn.savedOrder.method || "BoomFi Crypto Gateway",
+      }
+    : null;
 
   const [heroQty, setHeroQty] = useState(restoredHeroQty);
   const [checkoutCart, setCheckoutCart] = useState(restoredCart);
@@ -1000,7 +999,10 @@ function ServiceDetailPage({ currentService }) {
         status: "paid",
       });
     } catch (storageError) {
-      console.error("Could not persist completed payment for recovery:", storageError);
+      console.error(
+        "Could not persist completed payment for recovery:",
+        storageError,
+      );
     }
     setCompletedPayment({ transactionId, method });
     setIsOrderModalOpen(true);
@@ -1008,7 +1010,9 @@ function ServiceDetailPage({ currentService }) {
   };
 
   const quickPresets =
-    minOrderQty >= 500 ? [500, 1000, 2000, 3000, 5000] : [50, 100, 250, 500, 1000];
+    minOrderQty >= 500
+      ? [500, 1000, 2000, 3000, 5000]
+      : [50, 100, 250, 500, 1000];
 
   return (
     <PayPalScriptProvider
@@ -1077,12 +1081,12 @@ function ServiceDetailPage({ currentService }) {
                   </span>
                 </div>
 
-                <h2 className="gw-font-display text-[28px] sm:text-[42px] lg:text-[48px] font-medium text-[#202124] leading-[1.12] tracking-[-0.025em] mb-4">
+                <h1 className="gw-font-display text-[28px] sm:text-[42px] lg:text-[48px] font-medium text-[#202124] leading-[1.12] tracking-[-0.025em] mb-4">
                   {currentService.heroHeadline}{" "}
                   <span className="text-[#1a73e8]">
                     {currentService.heroHighlight}
                   </span>
-                </h2>
+                </h1>
 
                 <p className="gw-font-text text-[14.5px] sm:text-[16.5px] text-[#5f6368] leading-[1.65] mb-6">
                   {currentService.desc}

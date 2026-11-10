@@ -65,10 +65,20 @@ const staticPages = {
     description:
       "Read the Jasa Backlinks and SeoHub Ltd Privacy Policy, payment security standards, and strict white-label agency non-disclosure guarantees.",
   },
+  "/privacy-policy": {
+    title: "Privacy Policy | Jasa Backlinks",
+    description:
+      "Read the Jasa Backlinks and SeoHub Ltd Privacy Policy, payment security standards, and strict white-label agency non-disclosure guarantees.",
+  },
   "/terms": {
     title: "Terms of Service | Jasa Backlinks",
     description:
-      "Review our Terms of Service, DA/DR 50+ metric guarantees, 5–7 day turnaround SLAs, and 12-month link replacement policy.",
+      "Review our Terms of Service, DA/DR 50+ metric guarantees, 5-7 day turnaround SLAs, and 12-month link replacement policy.",
+  },
+  "/terms-of-service": {
+    title: "Terms of Service | Jasa Backlinks",
+    description:
+      "Review our Terms of Service, DA/DR 50+ metric guarantees, 5-7 day turnaround SLAs, and 12-month link replacement policy.",
   },
 };
 
@@ -208,9 +218,19 @@ for (const route of routes) {
       : "",
   ].join("\n    ");
 
-  const html = template
+  // FIX: Pehle index.html wale purane title / meta ko saaf karo, warna 2 title ban jate hain
+  // aur Google pehla wala Loading wala utha leta hai
+  const cleanedTemplate = template
+    .replace(/<title[^>]*>.*?<\/title>/gis, "")
+    .replace(/<meta[^>]*name=["']description["'][^>]*>/gis, "")
+    .replace(/<meta[^>]*property=["']og:[^"']*["'][^>]*>/gis, "")
+    .replace(/<meta[^>]*name=["']twitter:[^"']*["'][^>]*>/gis, "")
+    .replace(/<link[^>]*rel=["']canonical["'][^>]*>/gis, "")
+    .replace(/<script[^>]*type=["']application\/ld\+json["'][^>]*>.*?<\/script>/gis, "");
+
+  const html = cleanedTemplate
     .replace("<head>", `<head>\n    ${metaTags}`)
-    .replace('<div id="root"></div>', `<div id="root">${content}</div>`);
+    .replace(/<div id="root">\s*<\/div>/, `<div id="root">${content}</div>`);
   const outputPath =
     route === "/"
       ? path.join(outputDirectory, "index.html")
