@@ -216,7 +216,7 @@ for (const route of routes) {
     )
     .replace(
       "<body>",
-      '<body><div id="app-prerender-loader" role="status"><span class="spinner" aria-hidden="true"></span><span>Loading Jasa Backlinks...</span></div>',
+      '<body><div id="app-prerender-loader" aria-hidden="true"><span class="spinner"></span></div>',
     )
     .replace(
       '<script type="module"',
