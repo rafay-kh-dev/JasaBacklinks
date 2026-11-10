@@ -18,7 +18,7 @@ export default function About() {
       topBar: "bg-[#1a73e8]",
     },
     {
-      value: "1,000,000+",
+      value: "100,000+",
       label: "DA/DR 50+ Links Deployed",
       badge: "Verified Authority",
       color: "text-[#1e8e3e] bg-[#e6f4ea]",
@@ -32,7 +32,7 @@ export default function About() {
       topBar: "bg-[#fbbc04]",
     },
     {
-      value: "99.8%",
+      value: "96.8%",
       label: "Indexation & Network Uptime",
       badge: "Zero Footprints",
       color: "text-[#9334e6] bg-[#f3e8fd]",

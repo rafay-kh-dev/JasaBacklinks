@@ -2965,7 +2965,7 @@ function CTASection() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="gw-font-display font-bold text-[14px] sm:text-[15px] text-[#202124]">
-                    4.9
+                    4.6
                   </span>
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
