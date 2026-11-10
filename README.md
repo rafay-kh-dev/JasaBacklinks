@@ -15,6 +15,8 @@
 
 Jasa Backlinks provides high-authority (DA/DR 50+) contextual placements across global .COM, .ID regional, and .EDU/.GOV networks. The primary engineering objective of this application was to transition the business from manual invoice generation to a fully automated, scalable, and highly converting self-service SaaS portal.
 
+For a code-grounded guide to the repository structure, routes, features, payment and order flows, configuration, deployment, tests, and known implementation gaps, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
 The platform is engineered with a strict minimalist aesthetic inspired by enterprise software, ensuring a frictionless user experience from package selection to post-payment onboarding.
 
 ## Core Architecture & Features

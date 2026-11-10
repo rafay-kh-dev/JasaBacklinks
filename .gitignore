@@ -18,3 +18,6 @@ frontend/playwright-report/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Architecture doc - local only, push nahi karna
+ARCHITECTURE.md
