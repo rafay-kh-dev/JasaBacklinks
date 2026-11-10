@@ -6,8 +6,35 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Self-hosted fonts preload - Ab Google se nahi, apni site se aayenge -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-v20-latin-regular.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/plus-jakarta-sans-v12-latin-500.woff2"
+      crossorigin
+    />
+
+    <!-- FOUC fix - Jab tak CSS na aaye, page white na lage -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
 
     <meta
       name="robots"
