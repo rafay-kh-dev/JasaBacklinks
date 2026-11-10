@@ -128,7 +128,7 @@ function RouteTitleManager() {
   // 1. Static Pages Title & Meta Description Map
   const staticSeoMap = {
     "/": {
-      title: "Jasa Backlinks",
+      title: "Jasa Backlinks | SEO Link Building Services",
       description:
         "Scale your Google rankings with Jasa Backlinks (by SeoHub Ltd). Verified DA/DR 50+ Homepage PBN Posts, Sidebar Blogrolls, .ID Regional, and .EDU/.GOV backlinks starting at $1/link.",
     },
@@ -184,7 +184,7 @@ function RouteTitleManager() {
     },
   };
 
-  let pageTitle = "Jasa Backlinks | Powered by SeoHub Ltd";
+  let pageTitle = staticSeoMap["/"].title;
   let pageDescription = staticSeoMap["/"].description;
   let matchedService = null;
 
@@ -203,7 +203,7 @@ function RouteTitleManager() {
     pageDescription = staticSeoMap[path].description;
   } else if (matchedService) {
     const minOrderQty = matchedService.minQty || 1;
-    pageTitle = `${matchedService.name} (${matchedService.metric}) — $${matchedService.price.toFixed(2)}/Link | Jasa Backlinks`;
+    pageTitle = `${matchedService.name} | Jasa Backlinks`;
     pageDescription = `${matchedService.desc} Starting at $${matchedService.price.toFixed(2)} USD per link (Min ${minOrderQty} ${minOrderQty === 1 ? "link" : "links"}) with verified ${matchedService.metric} metrics and white-label Excel reporting.`;
   } else if (path.startsWith("/services/")) {
     pageTitle = "SEO & Backlink Service | Jasa Backlinks";

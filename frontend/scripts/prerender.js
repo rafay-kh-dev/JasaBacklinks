@@ -36,7 +36,7 @@ for (const service of SERVICE_PAGES_DATA) {
 
 const staticPages = {
   "/": {
-    title: "Jasa Backlinks",
+    title: "Jasa Backlinks | SEO Link Building Services",
     description:
       "Scale your Google rankings with Jasa Backlinks (by SeoHub Ltd). Verified DA/DR 50+ Homepage PBN Posts, Sidebar Blogrolls, .ID Regional, and .EDU/.GOV backlinks starting at $1/link.",
   },
@@ -128,7 +128,7 @@ function getRouteContent(route) {
   );
 
   if (service) {
-    const title = `${service.name} (${service.metric}) — $${service.price.toFixed(2)}/Link | Jasa Backlinks`;
+    const title = `${service.name} | Jasa Backlinks`;
     const description = `${service.desc} Starting at $${service.price.toFixed(2)} USD per link with verified ${service.metric} metrics.`;
     const heading = `${service.heroHeadline} ${service.heroHighlight}`;
     const content = `
@@ -210,18 +210,6 @@ for (const route of routes) {
 
   const html = template
     .replace("<head>", `<head>\n    ${metaTags}`)
-    .replace(
-      "</head>",
-      `<style>#root{visibility:hidden}#app-prerender-loader{position:fixed;inset:0;z-index:9999;display:grid;place-content:center;justify-items:center;gap:14px;background:#fff;color:#202124;font-family:Arial,sans-serif}#app-prerender-loader .spinner{width:32px;height:32px;border:3px solid #e8eaed;border-top-color:#1a73e8;border-radius:50%;animation:app-loader-spin .8s linear infinite}@keyframes app-loader-spin{to{transform:rotate(360deg)}}</style>\n  </head>`,
-    )
-    .replace(
-      "<body>",
-      '<body><div id="app-prerender-loader" aria-hidden="true"><span class="spinner"></span></div>',
-    )
-    .replace(
-      '<script type="module"',
-      `<script>document.head.querySelectorAll('[data-rh="true"]').forEach((tag) => tag.remove());</script>\n    <script type="module"`,
-    )
     .replace('<div id="root"></div>', `<div id="root">${content}</div>`);
   const outputPath =
     route === "/"
