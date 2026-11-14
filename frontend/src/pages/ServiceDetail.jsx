@@ -1,5 +1,5 @@
 import { Link, useParams, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Elements,
   CardNumberElement,
@@ -383,6 +383,32 @@ function OrderOnboardingFlowModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
   const [isStep3ThankYou, setIsStep3ThankYou] = useState(false);
+  const oldUrlRef = useRef(null);
+
+  useEffect(() => {
+    if (isStep3ThankYou) {
+      oldUrlRef.current = window.location.pathname + window.location.search;
+      window.history.pushState(
+        {},
+        "",
+        window.location.pathname + "?thank-you=1",
+      );
+      if (window.fbq) {
+        window.fbq("track", "Purchase", {
+          value: finalTotal,
+          currency: "USD",
+          content_type: "product",
+        });
+      }
+    }
+  }, [isStep3ThankYou, finalTotal]);
+
+  const handleCloseThankYou = () => {
+    if (oldUrlRef.current) {
+      window.history.pushState({}, "", oldUrlRef.current);
+    }
+    onClose();
+  };
 
   if (!isOpen || !paymentData) return null;
 
@@ -521,7 +547,7 @@ function OrderOnboardingFlowModal({
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleCloseThankYou}
               className="gw-font-display w-full h-[48px] sm:h-[50px] rounded-full bg-[#202124] hover:bg-[#3c4043] text-white font-medium text-[14.5px] sm:text-[15px] transition-colors cursor-pointer"
             >
               Done & Return to Page
